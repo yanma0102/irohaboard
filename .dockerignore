@@ -1,0 +1,12 @@
+.git
+.gitignore
+.dockerignore
+docker/README.md
+*.md
+LICENSE
+.editorconfig
+tmp/
+logs/
+*.log
+.DS_Store
+Thumbs.db

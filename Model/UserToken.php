@@ -284,4 +284,194 @@ class UserToken extends AppModel
 			$this->_tableReady = false;
 		}
 	}
+
+	/**
+	 * API トークンを発行し、Bearer 用文字列を返す
+	 *
+	 * @param int $userId ユーザID
+	 * @param int|null $days 有効日数（未指定時は Security.api_token_expired_days、既定30日）
+	 * @return string|null selector:validator（保存失敗・テーブル未作成時は null）
+	 */
+	public function issueApiToken($userId, $days = null)
+	{
+		if(!$this->isAvailable())
+			return null;
+
+		$userId = (int)$userId;
+		if($userId <= 0)
+			return null;
+
+		if($days === null)
+		{
+			$days = (int)Configure::read('api_token_expired_days');
+			if($days <= 0)
+				$days = 30;
+		}
+
+		$days = (int)$days;
+		if($days <= 0)
+			$days = 30;
+
+		$selector = bin2hex(random_bytes(16));
+		$validator = bin2hex(random_bytes(32));
+
+		$data = [
+			'UserToken' => [
+				'user_id' => $userId,
+				'token_type' => 'api',
+				'token_selector' => $selector,
+				'token_hash' => password_hash($validator, PASSWORD_DEFAULT),
+				'expired' => date('Y-m-d H:i:s', strtotime('+' . $days . ' days')),
+				'last_used' => date('Y-m-d H:i:s'),
+				'revoked' => null,
+				'user_ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
+				'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+			]
+		];
+
+		try
+		{
+			$this->create();
+			if(!$this->save($data))
+				return null;
+		}
+		catch(Exception $e)
+		{
+			$this->_tableReady = false;
+			return null;
+		}
+
+		return $selector . ':' . $validator;
+	}
+
+	/**
+	 * Bearer トークン文字列からユーザを認証する
+	 *
+	 * @param string $tokenString selector:validator
+	 * @return array|null ['user' => User配列(password無し), 'token_id' => int]。失敗時 null
+	 */
+	public function authenticateApiToken($tokenString)
+	{
+		if(!$this->isAvailable())
+			return null;
+
+		$parsed = $this->parseCookie($tokenString);
+		if($parsed === null)
+			return null;
+
+		try
+		{
+			$token = $this->find('first', [
+				'conditions' => [
+					'UserToken.token_type' => 'api',
+					'UserToken.token_selector' => $parsed['selector'],
+					'UserToken.revoked' => null,
+					'UserToken.expired >=' => date('Y-m-d H:i:s'),
+				]
+			]);
+
+			if(!$token)
+				return null;
+
+			if(!password_verify($parsed['validator'], $token['UserToken']['token_hash']))
+			{
+				// 不正なトークンの可能性 → 無効化
+				$this->id = $token['UserToken']['id'];
+				$this->saveField('revoked', date('Y-m-d H:i:s'));
+				return null;
+			}
+
+			App::uses('User', 'Model');
+			$User = ClassRegistry::init('User');
+			$user = $User->findById($token['UserToken']['user_id']);
+
+			if(!$user || !empty($user['User']['deleted']))
+				return null;
+
+			$this->id = $token['UserToken']['id'];
+			$this->saveField('last_used', date('Y-m-d H:i:s'));
+
+			unset($user['User']['password']);
+
+			return [
+				'user' => $user['User'],
+				'token_id' => (int)$token['UserToken']['id'],
+			];
+		}
+		catch(Exception $e)
+		{
+			$this->_tableReady = false;
+			return null;
+		}
+	}
+
+	/**
+	 * API トークンを無効化する
+	 *
+	 * @param string $tokenString selector:validator
+	 * @return bool 無効化できた場合 true
+	 */
+	public function revokeApiToken($tokenString)
+	{
+		if(!$this->isAvailable())
+			return false;
+
+		$parsed = $this->parseCookie($tokenString);
+		if($parsed === null)
+			return false;
+
+		try
+		{
+			$token = $this->find('first', [
+				'conditions' => [
+					'UserToken.token_type' => 'api',
+					'UserToken.token_selector' => $parsed['selector'],
+					'UserToken.revoked' => null,
+				]
+			]);
+
+			if(!$token)
+				return false;
+
+			$this->id = $token['UserToken']['id'];
+			return (bool)$this->saveField('revoked', date('Y-m-d H:i:s'));
+		}
+		catch(Exception $e)
+		{
+			$this->_tableReady = false;
+			return false;
+		}
+	}
+
+	/**
+	 * ユーザの API トークンをすべて無効化する
+	 *
+	 * @param int $userId ユーザID
+	 * @return void
+	 */
+	public function revokeAllApiForUser($userId)
+	{
+		if(!$this->isAvailable())
+			return;
+
+		$userId = (int)$userId;
+		if($userId <= 0)
+			return;
+
+		try
+		{
+			$this->updateAll(
+				['UserToken.revoked' => "'" . date('Y-m-d H:i:s') . "'"],
+				[
+					'UserToken.user_id' => $userId,
+					'UserToken.token_type' => 'api',
+					'UserToken.revoked' => null,
+				]
+			);
+		}
+		catch(Exception $e)
+		{
+			$this->_tableReady = false;
+		}
+	}
 }

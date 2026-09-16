@@ -27,6 +27,42 @@
  */
 	Router::connect('/', ['controller' => 'users_courses', 'action' => 'index']);
 	Router::connect('/admin', ['controller' => 'users', 'action' => 'index', 'admin' => true]);
+
+/**
+ * REST API v1
+ *
+ * 認証: Authorization: Bearer <selector:validator>
+ * 応答: JSON
+ */
+	// 認証（トークン発行・失効）
+	Router::connect('/api/v1/auth/token', ['controller' => 'api_auth', 'action' => 'issueToken', '[method]' => 'POST']);
+	Router::connect('/api/v1/auth/token', ['controller' => 'api_auth', 'action' => 'revokeToken', '[method]' => 'DELETE']);
+
+	// ユーザ
+	Router::connect('/api/v1/users', ['controller' => 'api_users', 'action' => 'index', '[method]' => 'GET']);
+	Router::connect('/api/v1/users', ['controller' => 'api_users', 'action' => 'add', '[method]' => 'POST']);
+	Router::connect('/api/v1/users/:id', ['controller' => 'api_users', 'action' => 'view', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/users/:id', ['controller' => 'api_users', 'action' => 'delete', '[method]' => 'DELETE'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+	// コース
+	Router::connect('/api/v1/courses', ['controller' => 'api_courses', 'action' => 'index', '[method]' => 'GET']);
+	Router::connect('/api/v1/courses', ['controller' => 'api_courses', 'action' => 'add', '[method]' => 'POST']);
+	Router::connect('/api/v1/courses/:id', ['controller' => 'api_courses', 'action' => 'view', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/courses/:id', ['controller' => 'api_courses', 'action' => 'delete', '[method]' => 'DELETE'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+	// コンテンツ
+	Router::connect('/api/v1/contents', ['controller' => 'api_contents', 'action' => 'index', '[method]' => 'GET']);
+	Router::connect('/api/v1/contents/:id', ['controller' => 'api_contents', 'action' => 'view', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+	// 学習履歴
+	Router::connect('/api/v1/records', ['controller' => 'api_records', 'action' => 'index', '[method]' => 'GET']);
+	Router::connect('/api/v1/records/:id', ['controller' => 'api_records', 'action' => 'view', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+	// グループ
+	Router::connect('/api/v1/groups', ['controller' => 'api_groups', 'action' => 'index', '[method]' => 'GET']);
+	Router::connect('/api/v1/groups/:id', ['controller' => 'api_groups', 'action' => 'view', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+
 /**
  * ...and connect the rest of 'Pages' controller's URLs.
  */

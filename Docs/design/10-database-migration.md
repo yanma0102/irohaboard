@@ -2,53 +2,49 @@
 
 ## 1. 概要
 
-MySQL 5.7 → 8.4 LTS へのデータベース移行と、CakePHP 5.x との統合設計を定義する。
+MySQL 5.7 → MariaDB 11.4 LTS へのデータベース移行と、CakePHP 5.x との統合設計を定義する。
 
 | 項目 | 現行 | 移行先 |
 |---|---|---|
-| MySQL | 5.7 | **8.4 LTS** |
+| DBMS | MySQL 5.7 | **MariaDB 11.4 LTS** |
 | 文字セット | utf8（utf8mb3） | **utf8mb4** |
 | カラム設定 | utf8mb3 | utf8mb4_unicode_ci |
-| 認証方式 | `mysql_native_password` | `caching_sha2_password`（要対応） |
-| sql_mode | デフォルト | `ONLY_FULL_GROUP_BY` 対応が必要 |
+| 認証方式 | `mysql_native_password` | `mysql_native_password`（MariaDB 前提に詳細は §2.1） |
+| sql_mode | デフォルト | `ONLY_FULL_GROUP_BY` 対応が必要（MariaDB 10.2+ 既定有効） |
+
+### MariaDB 11.4 LTS 概要
+
+| 項目 | 値 |
+|---|---|
+| リリース | GA 2024-05-29 |
+| Community EOL | 2029-05-29 |
+| Docker イメージ | `mariadb:11.4` |
+| CakePHP 5.x サポート | MariaDB 10.1+ を公式サポート |
+| PDO ドライバ | `Cake\Database\Driver\Mysql`（MySQL と同一。設定は MySQL と同じ） |
 
 根拠: `Docs/design/README.md:76-79`, `Docs/cakephp5-migration-spec.md:79-85`, `Config/database.php:15`
 
 ---
 
-## 2. MySQL 5.7 → 8.4 LTS 移行
+## 2. MySQL 5.7 → MariaDB 11.4 LTS 移行
 
-### 2.1 認証方式 (`caching_sha2_password`)
+### 2.1 認証方式
 
-MySQL 8.0 以降のデフォルト認証プラグインは `caching_sha2_password` である。CakePHP 5 の PDO ドライバは `mysql_native_password` と互換性があるが、 CakePHP 5 の `config/app.php` の Datasources 設定で `flags` を用いて対応する。
+**MariaDB 11.4 LTS では `caching_sha2_password` は使用しない。** `caching_sha2_password` は MySQL 8.0 以降の固有機能であり、MariaDB には存在しない。
 
-#### 方針（2択）
+| 項目 | MySQL 8.x | MariaDB 11.4 |
+|---|---|---|
+| 既定認証プラグイン | `caching_sha2_password` | `unix_socket`（10.4+） |
+| `mysql_native_password` | 使用可能（非推奨方向） | 使用可能（PHP/PDO 接続向けに利用可） |
 
-| 方案 | 設定内容 | 利点 | 欠点 |
-|---|---|---|---|
-| **A: mysql_native_password を指定** | MySQL 側で `default_authentication_plugin=mysql_native_password` を設定 | PHP PDO との互換性が高い | 旧方式のため将来非推奨になる可能性 |
-| **B: CakePHP 5 側で対応** | `config/app.php` の Datasources に `PDO::MYSQL_ATTR_SSL_CA` 等のフラグを設定 | MySQL のデフォルトを維持 | PHP の PDO バージョンにより動作が異なる可能性 |
-
-**推奨**: 方案 A — Docker 環境で `default_authentication_plugin=mysql_native_password` を指定する。
-
-根拠: `Docs/cakephp5-migration-spec.md:228-230`（R4 リスク）, `docker/docker-compose.yml`
-
-#### docker-compose.yml での設定
-
-```yaml
-services:
-  db:
-    image: mysql:8.4
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-irohaboard}
-    ...
-```
+MariaDB の既定認証は `unix_socket` であり、ソケット経由のローカル接続ではパスワード不要で接続可能。PHP/PDO による TCP 接続では `mysql_native_password` を使用する。MariaDB 前提では MySQL 8 で問題になった `caching_sha2_password` による接続失敗リスクは基本無い。
 
 #### CakePHP 5 の config/app.php での設定
 
+CakePHP 5 の Datasources 設定で特別な認証関連のフラグ指定は不要。MySQL と同じ `Cake\Database\Driver\Mysql` ドライバをそのまま使用する。
+
 ```php
+// Config/database.php:7-16
 'Datasources' => [
     'default' => [
         'className' => \Cake\Database\Connection::class,
@@ -69,9 +65,11 @@ services:
 
 ### 2.2 `sql_mode` の変更 — `ONLY_FULL_GROUP_BY` 対応
 
-MySQL 8 のデフォルト `sql_mode` には `ONLY_FULL_GROUP_BY` が含まれる。これにより、`GROUP BY` 句に含まれないカラムを `SELECT` または `ORDER BY` で使用したクエリがエラーになる。
+MariaDB 10.2+ でも `ONLY_FULL_GROUP_BY` は既定で有効。MySQL 8 と同様に、`GROUP BY` 句に含まれないカラムを `SELECT` または `ORDER BY` で使用したクエリがエラーになる。
 
-#### 影響範囲（6 箇所）
+> **MariaDB と MySQL の違い**: MariaDB は関数従属性（functional dependency）の判定が MySQL より緩い場合がある。主キーを `GROUP BY` する場合、MySQL では追加カラムの参照が許容されるが、MariaDB では常にエラーになることがある。上記 §4.3 の Info.php 修正がこの例に該当する。
+
+#### 影響範囲（7 箇所）
 
 | # | ファイル | 行 | クエリの概要 | 修正要否 |
 |---|---|---|---|---|
@@ -80,14 +78,14 @@ MySQL 8 のデフォルト `sql_mode` には `ONLY_FULL_GROUP_BY` が含まれ�
 | 3 | `Model/UsersCourse.php` | :87 | `GROUP BY course_id` | **不要**（`COUNT(*)` のみ） |
 | 4 | `Model/UsersCourse.php` | :94 | `GROUP BY course_id` | **不要**（`COUNT(*)` のみ） |
 | 5 | `Model/Content.php` | :138 | `GROUP BY h.content_id` | **不要**（サブクエリ内の集計） |
-| 6 | `Model/Content.php` | :151 | `GROUP BY r.content_id` | **不要**（`1 as is_complete` のみ） |
+| 6 | `Model/Content.php` | :151 | `GROUP BY r.content_id` | **要検証**（`1 as is_complete` のみ。MySQL では不要だが MariaDB での判定を要確認） |
 | 7 | `Model/Info.php` | :119 | `GROUP BY Info.id` + `ORDER BY Info.created desc` | **修正必要** |
 
 根拠: `Model/UsersCourse.php:61-99`, `Model/Content.php:114-167`, `Model/Info.php:110-144`
 
 ### 2.3 `NO_ZERO_DATE` / `NO_ZERO_IN_DATE` の影響
 
-MySQL 8 のデフォルト `sql_mode` には `NO_ZERO_DATE` と `NO_ZERO_IN_DATE` が含まれる。これにより `'0000-00-00 00:00:00'` や `'2024-00-00'` のような日付値を挿入/更新できなくなる。
+MariaDB 10.2+ のデフォルト `sql_mode` には `NO_ZERO_DATE` と `NO_ZERO_IN_DATE` が含まれる。これにより `'0000-00-00 00:00:00'` や `'2024-00-00'` のような日付値を挿入/更新できなくなる。
 
 #### 影響範囲
 
@@ -106,7 +104,17 @@ MySQL 8 のデフォルト `sql_mode` には `NO_ZERO_DATE` と `NO_ZERO_IN_DATE
 
 ## 3. utf8mb4 変換
 
-### 3.1 変換対象テーブル（全 16 テーブル）
+### 3.1 MariaDB における文字セットの既定値
+
+MariaDB 11.x では新規データベースの既定文字セットが `utf8mb4`。既存データ（MySQL 5.7 起点）は `utf8`（`utf8mb3`）で格納されているため、**utf8mb4 への変換は引き続き必要**。
+
+| 項目 | MariaDB 11.4 の既定 |
+|---|---|
+| 新規 DB の既定文字セット | `utf8mb4` |
+| 新規 DB の既定照合順序 | `utf8mb4_general_ci` |
+| 移行時の変換先 | `utf8mb4_unicode_ci`（既存の照合順序を維持） |
+
+### 3.2 変換対象テーブル（全 16 テーブル）
 
 | # | テーブル名 | 現行の文字セット | 移行先 |
 |---|---|---|---|
@@ -129,7 +137,7 @@ MySQL 8 のデフォルト `sql_mode` には `NO_ZERO_DATE` と `NO_ZERO_IN_DATE
 
 根拠: `Config/Schema/app.sql:1-277`（全テーブルが `DEFAULT CHARSET=utf8`）
 
-### 3.2 変換 SQL
+### 3.3 変換 SQL
 
 ```sql
 -- 全テーブルの utf8mb4 変換
@@ -153,7 +161,7 @@ ALTER TABLE ib_cake_sessions  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_u
 
 > **注意**: `CONVERT TO CHARACTER SET` はテーブル全体と全インデックスを再構築する。大きなテーブルでは時間がかかる。`ib_records`（学習履歴）や `ib_contents`（コンテンツ）が最大のテーブルとなる可能性がある。
 
-### 3.3 database.php / config/app.php の encoding 変更
+### 3.4 database.php / config/app.php の encoding 変更
 
 ```php
 // 現行: Config/database.php:15
@@ -165,7 +173,7 @@ ALTER TABLE ib_cake_sessions  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_u
 
 根拠: `Config/database.php:15`, `Docs/design/README.md:77-79`
 
-### 3.4 LIKE 演算子の BIGINT カラム
+### 3.5 LIKE 演算子の BIGINT カラム
 
 `utf8mb4` 変換後、`varchar` カラムのインデックス長が制限される可能性がある。CakePHP 5 では `utf8mb4` を使う場合、インデックスのプレフィックス長を指定する必要がある:
 
@@ -196,7 +204,7 @@ GROUP BY h.course_id, h.user_id
 
 **分析**: `SELECT` するカラムは `h.course_id`, `h.user_id`, `MAX(...)`, `MIN(...)` のみ。`h.course_id` と `h.user_id` は `GROUP BY` に含まれる。
 
-**結論**: `ONLY_FULL_GROUP_BY` でも **修正不要**。
+**結論**: MariaDB 11.4 でも **修正不要**。
 
 #### 行 86-87: CompleteCount サブクエリ
 
@@ -221,7 +229,7 @@ GROUP BY course_id
 
 **結論**: **修正不要**。
 
-### 4.2 Content.php（2 箇所）— 修正不要
+### 4.2 Content.php（2 箇所）— 1 箇所は要検証
 
 **ファイル**: `Model/Content.php`
 
@@ -234,7 +242,7 @@ GROUP BY h.content_id
 
 **分析**: `SELECT` するカラムは `h.content_id`, `MAX(...)`, `MIN(...)`, `MAX(id)`, `SUM(...)`, `COUNT(*)` のみ。`h.content_id` は `GROUP BY` に含まれる。
 
-**結論**: **修正不要**。
+**結論**: MariaDB 11.4 でも **修正不要**。
 
 #### 行 151: CompleteRecord サブクエリ
 
@@ -245,7 +253,7 @@ GROUP BY r.content_id
 
 **分析**: `SELECT` は `r.content_id`, `1 as is_complete` のみ。`r.content_id` は `GROUP BY` に含まれる。`1 as is_complete` は定数。
 
-**結論**: **修正不要**。
+**結論**: MariaDB 11.4 では原則 **修正不要**（定数の参照は許容される）。ただし、MariaDB の関数従属性判定の微妙な差異が影響する可能性があるため、**移行後に動作確認が必要**。
 
 ### 4.3 Info.php（1 箇所）— **修正必要**
 
@@ -266,7 +274,7 @@ GROUP BY
 ORDER BY Info.created desc
 ```
 
-**問題**: `SELECT Info.id` + `GROUP BY Info.id` は正しいが、`ORDER BY Info.created desc` が `ONLY_FULL_GROUP_BY` でエラーになる。`Info.created` は `GROUP BY` に含まれておらず、集計関数でもないため。
+**問題**: `SELECT Info.id` + `GROUP BY Info.id` は正しいが、`ORDER BY Info.created desc` が `ONLY_FULL_GROUP_BY` でエラーになる。`Info.created` は `GROUP BY` に含まれておらず、集計関数でもないため。MySQL 5.7 では主キーの関数従属性で許容されていたが、MariaDB 10.2+ では MySQL より厳格に判定する場合がある。
 
 **修正案**:
 
@@ -295,9 +303,68 @@ CakePHP 5 に移行後、raw SQL はそのまま `Connection::execute()` また�
 
 ---
 
-## 5. update.sql の不整合修正
+## 5. コードベース互換性調査結果
 
-### 5.1 不整合の内容
+### 5.1 そのまま動作するもの
+
+以下の構文・機能は MariaDB 11.4 で完全に互換がある。アプリコードの修正は不要。
+
+| 分類 | 対象 | 根拠 |
+|---|---|---|
+| カラム型 | `int`, `varchar`, `datetime`, `text`, `decimal` 等 | MariaDB は MySQL のカラム型をすべてサポート |
+| ENGINE | `InnoDB`（`app.sql` で明示） | MariaDB 11.4 の既定は InnoDB |
+| AUTO_INCREMENT | 全テーブルで使用 | 互換 |
+| INDEX | 全インデックス定義 | 互換 |
+| `SET FOREIGN_KEY_CHECKS` | `app.sql` で使用 | 互換 |
+| `ALTER TABLE` | `app.sql`, `update.sql` で使用 | 互換 |
+| `INSERT/UPDATE/DELETE` | 全クエリ | 互換 |
+| `DATE_FORMAT()` | `UsersCourse.php` で使用 | 互換 |
+| `IFNULL()` | `UsersCourse.php` で使用 | 互換 |
+| `COUNT()`, `MIN()`, `MAX()`, `SUM()` | 全モデル | 互換 |
+| `FIELD()` | `Content.php` で `ORDER BY FIELD()` 使用 | 互換 |
+| `rand()` | `Content.php` で `ORDER BY rand()` 使用 | 互換 |
+| `group_concat()` | `UsersCourse.php` で使用 | 互換 |
+| サブクエリ | 全モデル | 互換 |
+| `INNER JOIN` / `LEFT OUTER JOIN` | 全モデル | 互換 |
+| `DELETE ... IN (SELECT ...)` | 未使用だが構文互換 | 互換 |
+| `ORDER BY FIELD/rand` | `Content.php` で使用 | 互換 |
+
+### 5.2 要検証（移行後に動作確認が必要）
+
+| # | ファイル:行 | 内容 | 理由 |
+|---|---|---|---|
+| 1 | `Model/Info.php:119` | `GROUP BY Info.id` + `ORDER BY Info.created desc` | MariaDB の `ONLY_FULL_GROUP_BY` でエラーの可能性。§4.3 で修正済み |
+| 2 | `Model/Content.php:151` | `GROUP BY r.content_id` + `SELECT 1 as is_complete` | 定数の参照は原則許容されるが、MariaDB での判定を要確認 |
+
+### 5.3 修正不要（MySQL 固有機能が未使用）
+
+以下の MySQL 8.x 固有機能は本コードベースで未使用のため、 MariaDB 移行で問題とならない。
+
+| 機能 | 状況 |
+|---|---|
+| JSON 型 | 未使用 |
+| ウィンドウ関数 | 未使用 |
+| CTE（`WITH` 句） | 未使用 |
+| `WITH ROLLUP` | 未使用 |
+| `ON DUPLICATE KEY UPDATE` | 未使用 |
+| パーティション | 未使用 |
+| FULLTEXT インデックス | 未使用 |
+| GTID | 未使用（MariaDB と MySQL の GTID は非互換だが本件では影響なし） |
+
+### 5.4 予約語の扱い
+
+| 予約語 | MySQL 8.x | MariaDB 11.4 | 影響 |
+|---|---|---|---|
+| `groups` | 予約語 | 予約語（10.2+、Window Functions 由来） | **実害なし** — ORM がバッククォートする |
+| `comment` | 予約語 | **予約語ではない** | なし |
+| `status` | 予約語 | **予約語ではない** | なし |
+| `options` | 予約語 | **予約語ではない** | なし |
+
+---
+
+## 6. update.sql の不整合修正
+
+### 6.1 不整合の内容
 
 `Config/Schema/update.sql:37` に以下の INDEX 作成文がある:
 
@@ -309,7 +376,7 @@ ALTER TABLE ib_records ADD INDEX idx_group_course_user_content_id(group_id, cour
 
 根拠: `Config/Schema/app.sql:82-99`（`ib_records` の定義に `group_id` なし）、`Config/Schema/update.sql:37`
 
-### 5.2 修正方針（2択）
+### 6.2 修正方針（2択）
 
 | 方案 | 内容 | 利点 | 欠点 |
 |---|---|---|---|
@@ -318,7 +385,7 @@ ALTER TABLE ib_records ADD INDEX idx_group_course_user_content_id(group_id, cour
 
 **推奨**: 方案 B — `ib_records` に `group_id` が存在しないことは設計上の意図であるため（学習履歴はコース＋ユーザ＋コンテンツで特定）、INDEX の行を削除する。
 
-### 5.3 修正後の update.sql
+### 6.3 修正後の update.sql
 
 ```sql
 -- 削除する行:
@@ -333,11 +400,11 @@ ALTER TABLE ib_records ADD INDEX idx_created(created);
 
 ---
 
-## 6. テーブルプレフィックス `ib_` の CakePHP 5 での設定
+## 7. テーブルプレフィックス `ib_` の CakePHP 5 での設定
 
 CakePHP 5 にはグローバルなテーブルプレフィックス設定がない。
 
-### 6.1 設定方法（推奨案）
+### 7.1 設定方法（推奨案）
 
 **各 Table クラスの `initialize()` で `$this->setTable('ib_xxx')` を明示する。**
 
@@ -360,7 +427,7 @@ class UsersTable extends Table
 
 根拠: `Docs/design/README.md:70-74`
 
-### 6.2 基底 AppTable でのプレフィックスロジック（検討）
+### 7.2 基底 AppTable でのプレフィックスロジック（検討）
 
 CakePHP 5 の Table クラスはテーブル名を自動推定するため（`UsersTable` → `users`）、基底 `AppTable` でプレフィックスを付与するロジックを実装できる:
 
@@ -384,7 +451,7 @@ class AppTable extends Table
 
 > **注意**: この方法はテーブル名の自動推論に依存するため、手動で `setTable()` を呼ぶ方法（推奨案）の方が確実である。
 
-### 6.3 CakePHP 5 の Datasources prefix 設定
+### 7.3 CakePHP 5 の Datasources prefix 設定
 
 CakePHP 5 の `config/app.php` の `Datasources` には `prefix` キーが存在するが、これは **CakePHP 5.4 以降で非推奨** になりつつある。確実性のため、Table クラスでの `setTable()` を推奨する。
 
@@ -392,19 +459,18 @@ CakePHP 5 の `config/app.php` の `Datasources` には `prefix` キーが存在
 
 ---
 
-## 7. 移行手順
+## 8. 移行手順
 
-### 7.1 ステップバイステップ
+### 8.1 ステップバイステップ
 
 #### Step 1: 現行 DB のバックアップ
 
 ```bash
-# mysqldump でバックアップ
+# mysqldump でバックアップ（MySQL 5.7 側のツール）
 mysqldump -u root -p irohaboard > /backup/irohaboard_before_migration.sql
 
 # バックアップの検証
 wc -l /backup/irohaboard_before_migration.sql
-mysql -u root -p irohaboard < /backup/irohaboard_before_migration.sql --dry-run 2>&1 || true
 ```
 
 #### Step 2: update.sql の不整合修正
@@ -430,17 +496,17 @@ sed -i 's/DEFAULT CHARSET=utf8/DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_c
 # 2. update.sql の group_id インデックス行を削除（Step 2 で修正済みの場合を除く）
 ```
 
-#### Step 5: MySQL 8.4 にリストア
+#### Step 5: MariaDB 11.4 にリストア
 
 ```bash
-# MySQL 8.4 のコンテナを起動
+# MariaDB 11.4 のコンテナを起動
 docker compose up -d db
 
 # データベースを作成
-mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS irohaboard CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mariadb -u root -p -e "CREATE DATABASE IF NOT EXISTS irohaboard CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # ダンプをリストア
-mysql -u root -p irohaboard < /backup/irohaboard_migration.sql
+mariadb -u root -p irohaboard < /backup/irohaboard_migration.sql
 ```
 
 #### Step 6: utf8mb4 変換（ダンプで変更未能力な場合）
@@ -473,17 +539,19 @@ ALTER TABLE ib_cake_sessions  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_u
 -- アプリケーションコード（src/Model/Table/InfosTable.php）で修正
 ```
 
-#### Step 8: 認証方式の確認
+#### Step 8: MariaDB の接続確認
 
 ```sql
--- MySQL 8.4 の認証プラグインを確認
+-- MariaDB の認証プラグインを確認
 SELECT user, host, plugin FROM mysql.user WHERE user = 'root';
 
--- mysql_native_password を使用していることを確認
--- 問題がある場合:
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
+-- unix_socket または mysql_native_password が使用されていることを確認
+-- PHP/PDO 接続で問題がある場合のみ:
+ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('password');
 FLUSH PRIVILEGES;
 ```
+
+> **注意**: MariaDB 11.4 ではデフォルトが `unix_socket` 認証のため、パスワードベースの認証に変更する必要がある場合がある。Docker 環境では `MYSQL_ROOT_PASSWORD` 環境変数が `MARIADB_ROOT_PASSWORD` でも動作する（両方対応）。
 
 #### Step 9: データ整合性の確認
 
@@ -505,15 +573,15 @@ WHERE table_schema = 'irohaboard';
 
 ---
 
-## 8. リバース手順
+## 9. リバース手順
 
 万が一のロールバック手順。
 
-### 8.1 ロールバック手順
+### 9.1 ロールバック手順
 
 ```bash
-# Step 1: 現在の MySQL 8.4 のデータをバックアップ
-mysqldump -u root -p irohaboard > /backup/irohaboard_rollback.sql
+# Step 1: 現在の MariaDB 11.4 のデータをバックアップ
+mariadb-dump -u root -p irohaboard > /backup/irohaboard_rollback.sql
 
 # Step 2: MySQL 5.7 のコンテナを起動
 # docker-compose.yml の MySQL バージョンを 5.7 に戻して起動
@@ -525,28 +593,76 @@ mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS irohaboard CHARACTER SET utf8
 mysql -u root -p irohaboard < /backup/irohaboard_before_migration.sql
 ```
 
-### 8.2 ロールバックの注意点
+### 9.2 ロールバックの注意点
 
 | 注意事項 | 内容 |
 |---|---|
 | データ損失 | 移行後に追加されたデータは失われる |
 | 時間経過 | 移行作業中にデータが変更されている可能性がある |
 | utf8mb4 → utf8 | utf8mb4 のデータを utf8 に変換すると、4 バイト文字が切り捨てられる |
+| ツール名 | ロールバック時は MySQL 5.7 のツール（`mysqldump`）を使用 |
 
 ---
 
-## 9. CakePHP Migrations プラグインの利用検討
+## 10. Docker 構成
 
-### 9.1 有用性
+### 10.1 docker-compose.yml の DB サービス
+
+```yaml
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-irohaboard}
+      # MariaDB でも MYSQL_* 環境変数はそのまま動作（MARIADB_* も可）
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  mariadb_data:
+```
+
+> **healthcheck の補足**: MariaDB イメージには `healthcheck.sh` が同梱されている。`mariadb-admin ping` を代替として使用することも可能。MySQL の `mysqladmin ping` とはツール名が異なる。
+
+根拠: `docker/docker-compose.yml`
+
+### 10.2 MariaDB 環境変数の互換性
+
+| 環境変数 | MariaDB 11.4 での動作 |
+|---|---|
+| `MYSQL_ROOT_PASSWORD` | **動作する**（MySQL 互換） |
+| `MYSQL_DATABASE` | **動作する**（MySQL 互換） |
+| `MYSQL_USER` | **動作する**（MySQL 互換） |
+| `MYSQL_PASSWORD` | **動作する**（MySQL 互換） |
+| `MARIADB_ROOT_PASSWORD` | **動作する**（MariaDB 固有） |
+| `MARIADB_DATABASE` | **動作する**（MariaDB 固有） |
+
+> MariaDB Docker イメージは `MYSQL_*` と `MARIADB_*` の両方の環境変数をサポートする。既存の `docker-compose.yml` の環境変数は変更不要。
+
+---
+
+## 11. CakePHP Migrations プラグインの利用検討
+
+### 11.1 有用性
 
 | 項目 | 評価 |
 |---|---|
-| スキーマバージョン管理 | 有用。変更履止をファイルで管理できる |
+| スキーマバージョン管理 | 有用。変更履歴をファイルで管理できる |
 | 移行の自動化 | 部分的に有用。`CONVERT TO CHARACTER SET` 等の DDL は対応外 |
 | ロールバック | 有用。`migrations rollback` で前バージョンに戻せる |
 | チーム開発 | 有用。スキーマ変更を Git で管理できる |
 
-### 9.2 制約
+### 11.2 制約
 
 | 制約 | 内容 |
 |---|---|
@@ -555,7 +671,7 @@ mysql -u root -p irohaboard < /backup/irohaboard_before_migration.sql
 | プレフィックス | CakePHP 5 の Migrations プラグインはプレフィックス対応が限定的 |
 | 学習コスト | チーム全体での習得が必要 |
 
-### 9.3 推奨
+### 11.3 推奨
 
 **今回の移行では CakePHP Migrations プラグインは使用しない。**
 
@@ -570,7 +686,7 @@ mysql -u root -p irohaboard < /backup/irohaboard_before_migration.sql
 
 ---
 
-## 10. 移行前後の検証チェックリスト
+## 12. 移行前後の検証チェックリスト
 
 | # | 検証項目 | 検証方法 | 期待結果 |
 |---|---|---|---|
@@ -578,6 +694,8 @@ mysql -u root -p irohaboard < /backup/irohaboard_before_migration.sql
 | 2 | 文字セット | `SHOW CREATE TABLE ib_users` | `utf8mb4` |
 | 3 | レコード数の整合 | `SELECT COUNT(*) FROM 各テーブル` | 移行前と一致 |
 | 4 | インデックス | `SHOW INDEX FROM 各テーブル` | 移行前と一致 |
-| 5 | 認証方式 | `SELECT plugin FROM mysql.user` | `mysql_native_password` |
-| 6 | GROUP BY の動作 | 各モデルのクエリを実行 | エラーなし |
-| 7 | CakePHP 5 からの接続 | アプリケーション起動 | 正常接続 |
+| 5 | MariaDB バージョン | `SELECT VERSION()` | `11.4.x` |
+| 6 | 認証方式 | `SELECT plugin FROM mysql.user` | `unix_socket` または `mysql_native_password` |
+| 7 | GROUP BY の動作 | 各モデルのクエリを実行 | エラーなし |
+| 8 | CakePHP 5 からの接続 | アプリケーション起動 | 正常接続 |
+| 9 | utf8mb4 照合順序 | `SHOW COLLATION WHERE Collation = 'utf8mb4_unicode_ci'` | MariaDB で利用可能 |

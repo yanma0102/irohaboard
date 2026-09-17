@@ -6,7 +6,7 @@
 | 対象システム | iroha Board（eラーニングシステム） |
 | 対象リポジトリ | `/root/project/irohaboard` |
 | 現行構成 | CakePHP 2.10.24 / PHP 8.1 / MySQL 5.7 / Apache 2.4（Docker） |
-| 移行先 | CakePHP 5.4.x / PHP 8.4 / MySQL 8.4 LTS |
+| 移行先 | CakePHP 5.4.x / PHP 8.4 / MariaDB 11.4 LTS / Apache 2.4（Docker） |
 | ステータス | 検討（未承認・未実行） |
 | 作成日 | 2026-09-16 |
 | 前提ブランチ | `dev`（本仕様書は `docs/cakephp5-migration-spec` にて管理） |
@@ -79,12 +79,23 @@ CakePHP 2.10 から CakePHP 5.x への移行について、対象範囲・移行
 |---|---|---|---|
 | CakePHP | 2.10.24 | **5.4.x**（最新 5.4.2: 2026-09-05） | 最新安定版 |
 | PHP | 8.1 | **8.4** | CakePHP 5.x は PHP 8.2 以上必須。5.1 以降 PHP 8.4 対応 |
-| MySQL | 5.7 | **8.4 LTS** | CakePHP 5.x は MySQL 5.7+ 対応。8.0 は 2026-04-21 に EOL |
+| MariaDB | 5.7（MySQL 経由） | **11.4 LTS** | CakePHP 5.x は MariaDB 10.1+ を公式サポート。MySQL と同一の `Mysql` ドライバを使用。GA 2024-05-29、Community EOL 2029-05-29 |
 | Apache | 2.4（mod_php） | 2.4（変更なし） | — |
 | Debian | Bullseye | Bookworm / Trixie | `php:8.4-apache` ベース |
 | Composer | 2 | 2 | 変更なし |
 
-### 3.1 CakePHP 6.x について
+### 3.1 MariaDB 11.4 LTS 採用の根拠
+
+| 項目 | 内容 |
+|---|---|
+| CakePHP 5 対応 | CakePHP 5.x は MariaDB 10.1+ を公式サポート。MySQL と同一の `Mysql` ドライバを使用し、接続設定・ORM 動作は MySQL と同一 |
+| `caching_sha2_password` の問題が無い | MySQL 8 固有の `caching_sha2_password` は MariaDB では使われないため、接続認証エラーのリスクが解消される |
+| ライセンス | GPLv2（恒久）＋クライアント LGPL ＋ FLOSS 例外。商用利用に問題なし |
+| セキュリティサポート | Community EOL 2029-05-29。長期にわたりセキュリティ修正が提供される |
+| コードベース互換性 | アプリコードの修正は不要。MySQL 固有機能（JSON 型/ウィンドウ関数/CTE/パーティション/FULLTEXT）は未使用。予約語 `groups` は ORM がバッククォートするため実害なし |
+| 環境変数互換性 | MariaDB Docker イメージでも `MYSQL_*` 環境変数はそのまま動作 |
+
+### 3.2 CakePHP 6.x について
 
 CakePHP 6.0 は開発中（未 GA、PHP 8.4 以上必須）。GA 時期は未定のため、本移行では 5.4 を採用する。
 
@@ -308,7 +319,7 @@ REST API v1 の入出力仕様（`Docs/API.md`、799行）は維持する。
 | Data（Model 16 + AppModel + raw SQL） | 5-7日 | ORM 全面書き換え + SQL 修正 |
 | View（.ctp 50 + Helper 3） | 5-7日 | リネーム + ヘルパー修正 + BoostCake 置換 |
 | Config / Routing / Bootstrap | 3-5日 | 全面書き換え |
-| DB 移行（utf8mb4 + MySQL 8.4） | 2-3日 | GROUP BY 修正 + 文字セット変換 + 認証方式対応 |
+| DB 移行（utf8mb4 + MariaDB 11.4） | 2-3日 | GROUP BY 修正 + 文字セット変換 |
 | テスト / 検証 | 5-7日 | 全画面回帰 + API + CSRF 動作確認 |
 | Docker / デプロイ | 1-2日 | Dockerfile / compose / Apache 設定 |
 | **合計** | **32-48人日** | 1名: 6-9週間 / 2名: 4-5週間 |
@@ -372,16 +383,17 @@ REST API v1 の入出力仕様（`Docs/API.md`、799行）は維持する。
 
 ### Phase 5: DB 移行・テスト（1-2週間）
 
-- MySQL 8.4 へのデータ移行（utf8mb3 → utf8mb4 変換含む）
-- GROUP BY 6箇所の `ONLY_FULL_GROUP_BY` 対応
-- `caching_sha2_password` 対応
+- MariaDB 11.4 へのデータ移行（utf8mb3 → utf8mb4 変換含む、`mysqldump` による論理移行）
+- GROUP BY 6箇所の `ONLY_FULL_GROUP_BY` 対応（MariaDB 10.2+ でも既定有効）
+- `caching_sha2_password` 対応は不要（MariaDB では使用しない）
+- MariaDB ヘルスチェック検証（`healthcheck.sh --connect --innodb_initialized`）
 - 全画面回帰テスト、API 回帰テスト
 
 **完了条件**: テストチェックリスト全項目パス、移行前後でデータ整合
 
 ### Phase 6: 安定化・デプロイ（1週間）
 
-- Dockerfile / compose 変更（`php:8.4-apache` + `mysql:8.4`）
+- Dockerfile / compose 変更（`php:8.4-apache` + `mariadb:11.4`）
 - DebugKit の環境別ロード確認（本番無効）
 - セキュリティヘッダー・ログ・監視の確認
 - 本番デプロイ
@@ -394,10 +406,10 @@ REST API v1 の入出力仕様（`Docs/API.md`、799行）は維持する。
 
 | # | リスク | 影響 | 確率 | 緩和策 |
 |---|---|---|---|---|
-| R1 | ORM 全面書き換えで集計・サブクエリ結果が変わる | 高 | 中 | 移行前後の SQL 結果を MySQL 5.7 で照合 |
+| R1 | ORM 全面書き換えで集計・サブクエリ結果が変わる | 高 | 中 | 移行前後の SQL 結果を MariaDB 11.4 で照合 |
 | R2 | Auth 移行でログインフローが壊れる | 高 | 中 | Phase 1 で認証フローを先行移植・検証 |
 | R3 | Custom ディレクトリのオーバーライド機構が動作しない | 中 | 中 | Phase 1 で autoload + classmap を検証 |
-| R4 | MySQL 8.4 の `caching_sha2_password` で接続失敗 | 高 | 中 | Phase 5 で接続検証、認証方式を設定 |
+| R4 | DB 接続時の認証方式による接続失敗 | 高 | 低 | MariaDB では `caching_sha2_password` を使用しないため、MySQL 8.4 で検討されていた接続失敗リスクは低減。ただし接続設定（`MYSQL_*` 環境変数）の動作確認は Phase 5 で実施 |
 | R5 | GROUP BY 修正で集計結果が変わる | 高 | 低 | 修正前後で結果を突合 |
 | R6 | REST API v1 の互換性が壊れる | 高 | 低 | `Docs/API.md` 準拠の回帰テスト |
 | R7 | admin プレフィクス URL 変更で既存リンクが壊れる | 中 | 高 | 旧 URL からのリダイレクト |
@@ -459,6 +471,11 @@ REST API v1 の入出力仕様（`Docs/API.md`、799行）は維持する。
 | Upgrade Tool 対応範囲 | https://github.com/cakephp/upgrade |
 | PHP サポート状況 | https://www.php.net/supported-versions.php |
 | MySQL EOL | https://www.mysql.com/support/eol-notice.html |
+| MariaDB 11.4 LTS リリースノート | https://mariadb.com/kb/en/mariadb-11-4-release-notes/ |
+| MariaDB サポートポリシー | https://mariadb.org/about/support-policy/ |
+| MariaDB ライセンス | https://mariadb.com/kb/en/mariadb-licensing-faq/ |
+| CakePHP MariaDB サポート | https://book.cakephp.org/5.x/en/deployment/database-configuration.html |
+| MariaDB Docker イメージ | https://hub.docker.com/_/mariadb |
 | 代替プラグイン | https://packagist.org/packages/friendsofcake/bootstrap-ui, https://packagist.org/packages/cakephp/debug_kit |
 
 > 本仕様書は 2026-09-16 時点の調査に基づく。外部情報は変更され得るため、実行前に最新情報の再確認を要する。

@@ -265,7 +265,7 @@ $contentsQuestions = $this->ContentsQuestions->find()
     ->all();
 ```
 
-> **特に 114-118 の `->order('rand())` は MySQL の RAND() を使用。CakePHP 5 でも `$query->order($query->func()->rand())` または `->order('RAND()')` で対応可能。**
+> **特に 114-118 の `->order('rand())` は `RAND()` 関数を使用。CakePHP 5 でも `$query->order($query->func()->rand())` または `->order('RAND()')` で対応可能。MariaDB でも `RAND()` は同じ構文で動作する。**
 
 **⑭ `EnquetesQuestionsController` 各所（Controller/EnquetesQuestionsController.php:92-95, 102-105, 212-215）**
 
@@ -536,7 +536,7 @@ public function hasRight(int $userId, int $courseId): bool
 }
 ```
 
-> **MySQL 8 対応**: このクエリは `GROUP BY` を使用していないため、MySQL 8 の `ONLY_FULL_GROUP_BY` で問題なし。
+> **MariaDB 対応**: このクエリは `GROUP BY` を使用していないため、MariaDB 11.4 の `ONLY_FULL_GROUP_BY` でも問題なし。
 
 #### ⑦-⑨ `Course::deleteCourse()` — コース削除
 
@@ -569,7 +569,7 @@ public function deleteCourse(int $courseId): void
 }
 ```
 
-> **MySQL 8 対応**: `DELETE ... WHERE ... IN (SELECT ...)` は MySQL 8 でも動作。ただし `FOREIGN_KEY_CHECKS=0` が必要な場合がある（app.sql:1 で設定済み）。CakePHP 5 の Migration で永続的に設定するか、各 DELETE 前に設定を検討。
+> **MariaDB 対応**: `DELETE ... WHERE ... IN (SELECT ...)` は MariaDB 11.4 でも動作。ただし `FOREIGN_KEY_CHECKS=0` が必要な場合がある（app.sql:1 で設定済み）。CakePHP 5 の Migration で永続的に設定するか、各 DELETE 前に設定を検討。
 
 #### ⑩ `Group::getUserIdByGroupID()` — グループユーザ ID 取得
 
@@ -792,14 +792,15 @@ public function getGroupUsers(int $groupId): array
 }
 ```
 
-### 2.4 raw SQL で保持するもの — MySQL 8 対応
+### 2.4 raw SQL で保持するもの — MariaDB 11.4 対応
 
 #### ① `Content::getContentRecord()`（Model/Content.php:112-167）
 
-**MySQL 8 対応の注意点**:
-- **GROUP BY**: サブクエリ内 `GROUP BY h.content_id`（app.sql:138）は MySQL 8 の `ONLY_FULL_GROUP_BY` でも問題なし（`content_id` で GROUP BY しているが、SELECT も `content_id` のみなので OK）。
-- **サブクエリ**: MySQL 8 でも FROM 句内のサブクエリ（デリベーテッドテーブル）は動作。
-- **CAST/DATE_FORMAT**: `DATE_FORMAT(created, '%Y/%m/%d')` は MySQL 8 でも動作。
+**MariaDB 11.4 対応の注意点**:
+- **GROUP BY**: サブクエリ内 `GROUP BY h.content_id`（app.sql:138）は MariaDB 11.4 の `ONLY_FULL_GROUP_BY` でも問題なし（`content_id` で GROUP BY しているが、SELECT も `content_id` のみなので OK）。MariaDB は関数従属性の判定が MySQL より緩い場合があるが、本件では影響なし。
+- **サブクエリ**: MariaDB 11.4 でも FROM 句内のサブクエリ（デリベーテッドテーブル）は動作。
+- **CAST/DATE_FORMAT**: `DATE_FORMAT(created, '%Y/%m/%d')` は MariaDB 11.4 でも動作。
+- **使用関数の互換性**: `DATE_FORMAT`/`IFNULL`/`COUNT`/`MIN`/`MAX`/`SUM`/`FIELD()`/`group_concat()` 等はすべて MariaDB で利用可能。サブクエリ・`INNER JOIN`/`LEFT OUTER JOIN`・`DELETE ... IN (SELECT)` も MariaDB 互換。
 
 **CakePHP 5 での実行方法**:
 ```php
@@ -811,12 +812,12 @@ $data = $connection->execute($sql, $params)->fetchAll('assoc');
 
 #### ⑯ `UsersCourse::getCourseRecord()`（Model/UsersCourse.php:59-108）
 
-**MySQL 8 対応の注意点**:
+**MariaDB 11.4 対応の注意点**:
 - サブクエリ `Record`（app.sql:66-73）の `GROUP BY h.course_id, h.user_id` は `ONLY_FULL_GROUP_BY` で問題なし。
 - サブクエリ `CompleteCount`（app.sql:75-87）の `GROUP BY r.course_id, r.content_id` → 外部の `GROUP BY course_id` はサブクエリ内なので問題なし。
 - サブクエリ `ContentCount`（app.sql:90-94）の `GROUP BY course_id` は問題なし。
 
-**MySQL 8 で問題となる可能性**: なし。この SQL は `ONLY_FULL_GROUP_BY` に適合。
+**MariaDB 11.4 で問題となる可能性**: なし。この SQL は `ONLY_FULL_GROUP_BY` に適合。
 
 #### ⑭-⑮ `User::deleteUserRecords()`（Model/User.php:158-172）
 
@@ -827,7 +828,7 @@ DELETE FROM ib_records_questions WHERE record_id IN (SELECT id FROM ib_records W
 DELETE FROM ib_records WHERE user_id = :user_id
 ```
 
-**MySQL 8 対応**: `DELETE ... WHERE ... IN (SELECT ...)` は MySQL 8 でも動作。FK 制約がある場合は `FOREIGN_KEY_CHECKS=0` が必要（app.sql:1 で設定済み）。
+**MariaDB 11.4 対応**: `DELETE ... WHERE ... IN (SELECT ...)` は MariaDB 11.4 でも動作。FK 制約がある場合は `FOREIGN_KEY_CHECKS=0` が必要（app.sql:1 で設定済み）。
 
 **CakePHP 5 での実行方法**:
 ```php

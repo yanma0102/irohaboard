@@ -8,7 +8,7 @@ iroha Board の CakePHP 2.10 → 5.x 移行後のシステム全体構成を定�
 |---|---|---|
 | CakePHP | 2.10.24 | **5.4.x** |
 | PHP | 8.1 | **8.4** |
-| MySQL | 5.7 | **8.4 LTS** |
+| MySQL | 5.7 | **MariaDB 11.4 LTS** |
 | Apache | 2.4（mod_php） | 2.4（変更なし） |
 | Composer | 未使用 | **2**（依存管理を導入） |
 | Debian | Bullseye | Bookworm / Trixie（`php:8.4-apache` ベース） |
@@ -302,6 +302,8 @@ MYSQL_PASSWORD=ib_password
 | `CAKEPHP_DEBUG` | `config/app.php` → `debug` | デバッグモード | 現行はコメントアウト（`Config/core.php:37-38`） |
 | `DEFAULT_TIMEZONE` | `config/app.php` → `App.defaultTimezone` | タイムゾーン | `Config/core.php:297` |
 
+> **注**: MariaDB Docker イメージでも `MYSQL_*` 環境変数（`MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE` 等）はそのまま動作する。CakePHP の `Datasources` 設定も MySQL と同一の `Mysql` ドライバを使用するため変更不要。
+
 ---
 
 ## 6. Docker 構成
@@ -425,7 +427,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: mysql:8.4
+    image: mariadb:11.4
     ports:
       - "3306:3306"
     environment:
@@ -436,7 +438,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpass"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -452,7 +454,7 @@ volumes:
 
 | 現行 | 移行先 | 変更理由 |
 |---|---|---|
-| `image: mysql:5.7` | `image: mysql:8.4` | MySQL 8.4 LTS 対応 |
+| `image: mysql:5.7` | `image: mariadb:11.4` | MariaDB 11.4 LTS 対応（MySQL と同一の `Mysql` ドライバを使用） |
 | `environment:` で直接設定 | `env_file:` + `environment:` | `.env` ファイルで環境変数を管理 |
 | なし | `env_file: ../.env` | 環境変数の外部化 |
 
@@ -501,7 +503,7 @@ session.cookie_samesite = Lax
 
 | 拡張 | 用途 | 現行 Dockerfile | 移行先 Dockerfile |
 |---|---|---|---|
-| `pdo_mysql` | CakePHP 5 の DB ドライバ | `docker/Dockerfile:15` | 継続 |
+| `pdo_mysql` | CakePHP 5 の DB ドライバ（MariaDB でも同一） | `docker/Dockerfile:15` | 継続 |
 | `mbstring` | 多バイト文字列処理 | `docker/Dockerfile:18` | 継続 |
 | `gd` | 画像処理 | `docker/Dockerfile:17` | 継続 |
 | `intl` | 国際化（i18n） | `docker/Dockerfile:20` | 継続 |

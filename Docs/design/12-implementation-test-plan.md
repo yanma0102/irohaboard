@@ -22,13 +22,13 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 | 0-4 | 手動テストチェックリストの作成（ログイン→コース→コンテンツ→テスト→管理画面） | チェックリスト | なし |
 | 0-5 | API エンドポイント一覧と期待応答の文書化（`Docs/API.md` 準拠） | API 仕様書 | なし |
 | 0-6 | ロールバック手順の文書化 | ロールバック手順書 | 0-2 |
-| 0-7 | Docker 環境の構築（PHP 8.4 + MySQL 8.4） | Docker 環境 | 0-1 |
+| 0-7 | Docker 環境の構築（PHP 8.4 + MariaDB 11.4） | Docker 環境 | 0-1 |
 
 #### 完了条件
 
 - 影響範囲リスト・手順書・テストチェックリストが揃う
 - CakePHP 5 の骨格が動作する
-- Docker 環境で PHP 8.4 + MySQL 8.4 が起動する
+- Docker 環境で PHP 8.4 + MariaDB 11.4 が起動する
 
 #### ロールバック方針
 
@@ -88,7 +88,7 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 
 - 全クエリ・保存・削除・検索が正常動作
 - raw SQL の実行結果が移行前と一致
-- GROUP BY の修正が MySQL 8.4 でエラーなし
+- GROUP BY の修正が MariaDB 11.4 でエラーなし
 
 #### ロールバック方針
 
@@ -169,10 +169,10 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 
 | # | タスク | 出力物 | 依存 |
 |---|---|---|---|
-| 5-1 | MySQL 8.4 へのデータ移行（mysqldump → リストア） | 移行済み DB | 0-2, 0-3 |
+| 5-1 | MariaDB 11.4 へのデータ移行（mariadb-dump → リストア） | 移行済み DB | 0-2, 0-3 |
 | 5-2 | utf8mb3 → utf8mb4 変換（全 16 テーブル） | 変換済み DB | 5-1 |
 | 5-3 | GROUP BY 7 箇所の `ONLY_FULL_GROUP_BY` 対応 | SQL 修正 | 5-1 |
-| 5-4 | `caching_sha2_password` 対応（mysql_native_password 設定） | DB 設定 | 5-1 |
+| 5-4 | MariaDB 11.4 への認証方式の確認（MariaDB では `caching_sha2_password` が不要、既定の `unix_socket` / PDO `mysql_native_password` で動作） | DB 設定 | 5-1 |
 | 5-5 | 全画面回帰テスト（手動テストチェックリスト準拠） | テスト結果 | 4-12 |
 | 5-6 | API 回帰テスト（24 エンドポイント全般） | テスト結果 | 3-3 |
 | 5-7 | データ整合性の確認（移行前後でデータ照合） | テスト結果 | 5-2 |
@@ -185,7 +185,7 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 
 #### ロールバック方針
 
-- MySQL 5.7 のコンテナを起動し、Step 1 のバックアップからリストア
+- MariaDB 11.4 のコンテナを起動し、Step 1 のバックアップからリストア
 - 詳細は `Docs/design/10-database-migration.md:8` 参照
 
 根拠: `Docs/cakephp5-migration-spec.md:373-380`
@@ -198,7 +198,7 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 
 | # | タスク | 出力物 | 依存 |
 |---|---|---|---|
-| 6-1 | Dockerfile / compose 変更（`php:8.4-apache` + `mysql:8.4`） | Docker 設定 | 5-1 |
+| 6-1 | Dockerfile / compose 変更（`php:8.4-apache` + `mariadb:11.4`） | Docker 設定 | 5-1 |
 | 6-2 | DebugKit の環境別ロード確認（本番無効） | 設定確認 | 1-7 |
 | 6-3 | セキュリティヘッダー・ログ・監視の確認 | 確認結果 | 6-1 |
 | 6-4 | 本番デプロイ | デプロイ完了 | 6-1 |
@@ -341,6 +341,17 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 
 根拠: `Docs/API.md`, `Docs/design/README.md:132-134`
 
+### 3.4 MariaDB 11.4 での要検証クエリ
+
+移行元（CakePHP 2.x）に存在する raw SQL うち、MariaDB 11.4 で `ONLY_FULL_GROUP_BY` 等の挙動が異なる可能性がある箇所。Phase 2 完了時に個別検証が必須。
+
+| # | ファイル | 行番号 | 概要 | 検証内容 |
+|---|---|---|---|---|
+| Q1 | `Model/Info.php` | 119 | `GROUP BY Info.id`（SELECT に集約関数なし） | MariaDB 11.4 の `ONLY_FULL_GROUP_BY` モードでエラーとならないか、正しい結果が返るか |
+| Q2 | `Model/Content.php` | 151 | `GROUP BY r.content_id`（SELECT に集約関数なし） | MariaDB 11.4 の `ONLY_FULL_GROUP_BY` モードでエラーとならないか、正しい結果が返るか |
+
+> **補足**: 上記クエリは `SELECT` 列が `GROUP BY` 列に包含されていないため、`ONLY_FULL_GROUP_BY` 有効時に警告/エラーとなる可能性がある。MariaDB 11.4 では既定で `ONLY_FULL_GROUP_BY` が有効（MySQL 8.4 と同等）であるため、修正が必要な場合は `ONLY_FULL_GROUP_BY` の除外対象列を明示する、またはクエリを改修する。
+
 ---
 
 ## 4. トレーサビリティ
@@ -389,10 +400,10 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 
 | # | リスク | 影響 | 確率 | 検知フェーズ | 検知方法 | 緩和策 |
 |---|---|---|---|---|---|---|
-| R1 | ORM 全面書き換えで集計・サブクエリ結果が変わる | 高 | 中 | Phase 2 | raw SQL の実行結果を MySQL 5.7 と突合 | 移行前後の SQL 結果を照合 |
+| R1 | ORM 全面書き換えで集計・サブクエリ結果が変わる | 高 | 中 | Phase 2 | raw SQL の実行結果を MariaDB 11.4 で突合 | 移行前後の SQL 結果を照合 |
 | R2 | Auth 移行でログインフローが壊れる | 高 | 中 | Phase 3 | ログイン→ログアウトフローの手動テスト | Phase 1 で認証フローを先行移植・検証 |
 | R3 | Custom ディレクトリのオーバーライド機構が動作しない | 中 | 中 | Phase 1 | autoload + classmap の動作検証 | Phase 1 で検証 |
-| R4 | MySQL 8.4 の `caching_sha2_password` で接続失敗 | 高 | 中 | Phase 5 | MySQL 8.4 への接続テスト | Phase 5 で接続検証、認証方式を設定 |
+| R4 | MySQL 8.4 の `caching_sha2_password` で接続失敗 | 低 | 低 | Phase 5 | MariaDB 11.4 では `caching_sha2_password` が存在しないため該当リスクなし。既定認証（`unix_socket` / `mysql_native_password`）で接続テスト | MariaDB 11.4 では認証方式対応が不要 |
 | R5 | GROUP BY 修正で集計結果が変わる | 高 | 低 | Phase 5 | GROUP BY 修正前後の結果を突合 | 修正前後で結果を照合 |
 | R6 | REST API v1 の互換性が壊れる | 高 | 低 | Phase 5 | API 回帰テスト（24 エンドポイント） | `Docs/API.md` 準拠の回帰テスト |
 | R7 | admin プレフィクス URL 変更で既存リンクが壊れる | 中 | 高 | Phase 3 | URL の動作確認 | 旧 URL からのリダイレクト |
@@ -425,7 +436,7 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 | Data（Model 16 + AppModel + raw SQL） | 5–7 | ORM 全面書き換え + SQL 修正 |
 | View（.ctp 51 + Helper 3） | 5–7 | リネーム + ヘルパー修正 + BoostCake 置換 |
 | Config / Routing / Bootstrap | 3–5 | 全面書き換え |
-| DB 移行（utf8mb4 + MySQL 8.4） | 2–3 | GROUP BY 修正 + 文字セット変換 + 認証方式対応 |
+| DB 移行（utf8mb4 + MariaDB 11.4） | 1.5–2.5 | GROUP BY 修正 + 文字セット変換 |
 | テスト / 検証 | 5–7 | 全画面回帰 + API + CSRF 動作確認 |
 | Docker / デプロイ | 1–2 | Dockerfile / compose / Apache 設定 |
 | **合計** | **31–46** | |
@@ -460,7 +471,7 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 | 4 | フォーム送信が正常（CSRF / FormProtection） | 手動テスト | □ |
 | 5 | API の全 24 エンドポイントが動作 | API テスト | □ |
 | 6 | データ整合性が確認される | SQL での照合 | □ |
-| 7 | MySQL 8.4 で GROUP BY エラーなし | ログ確認 | □ |
+| 7 | MariaDB 11.4 で GROUP BY エラーなし | ログ確認 | □ |
 | 8 | utf8mb4 変換が完了 | `SHOW CREATE TABLE` で確認 | □ |
 | 9 | Docker 環境が正常に構築される | `docker compose up` | □ |
 | 10 | 本番環境で全機能動作 | 本番デプロイ後の確認 | □ |

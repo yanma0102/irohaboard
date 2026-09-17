@@ -15,7 +15,7 @@
 | 07 | `07-controllers.md` | Controller 設計（全22ファイル・全76アクションの移行マッピング） |
 | 08 | `08-rest-api.md` | REST API 設計（24エンドポイントの仕様・リクエスト/レスポンス・認証） |
 | 09 | `09-views.md` | View 設計（.ctp→.php・BoostCake→bootstrap-ui・画面別ヘルパー対応） |
-| 10 | `10-database-migration.md` | DB 移行設計（utf8mb4変換・MySQL 8.4・GROUP BY修正・手順・リバース） |
+| 10 | `10-database-migration.md` | DB 移行設計（utf8mb4変換・MariaDB 11.4・GROUP BY修正・手順・リバース） |
 | 11 | `11-config-bootstrap.md` | 設定・起動設計（config/app.php・Application.php・Custom ディレクトリ再実装） |
 | 12 | `12-implementation-test-plan.md` | 実装計画・テスト設計（フェーズ別手順・テストケース・トレーサビリティ） |
 
@@ -29,7 +29,7 @@
 |---|---|
 | CakePHP | 5.4.x（最新 5.4.2: 2026-09-05） |
 | PHP | 8.4 |
-| MySQL | 8.4 LTS |
+| MariaDB | 11.4 LTS |
 | Composer | 2 |
 | Debian | Bookworm / Trixie |
 
@@ -76,6 +76,7 @@ CakePHP 5 にはグローバルなテーブルプレフィックス設定がな�
 ### DB エンコーディング
 
 - `utf8mb4` / `utf8mb4_unicode_ci` に統一
+- MariaDB 11.x は新規データベースの既定が `utf8mb4`。既存データベースは `utf8mb3` の場合があるため `utf8mb4` への変換が必要
 - CakePHP 5 の `database.php` → `config/app.php` の `Datasources` 設定で `'encoding' => 'utf8mb4'`
 
 ### 認証
@@ -118,7 +119,7 @@ CakePHP 5 にはグローバルなテーブルプレフィックス設定がな�
 ### Raw SQL
 
 - 複雑なレポート系クエリ（`UsersCourse::getCourseRecord()`、`Content::getContentRecord()` 等）は **そのまま保持**（`Connection::execute()` または `Table::query()` で実行）
-- GROUP BY 6 箇所は MySQL 8 の `ONLY_FULL_GROUP_BY` に合わせて修正
+- GROUP BY 6 箇所は MariaDB 11.4 の `ONLY_FULL_GROUP_BY` に合わせて修正
 - setOrder 系の更新クエリは `Query` オブジェクトに置換
 
 ### Custom ディレクトリ

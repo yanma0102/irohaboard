@@ -178,6 +178,21 @@ class ApiBaseController extends Controller
 	}
 
 	/**
+	 * 文字列フィルタを完全一致で行うか（?exact=1）
+	 *
+	 * @return bool
+	 */
+	protected function wantsExact()
+	{
+		$exact = $this->request->query('exact');
+
+		if($exact === null || $exact === '')
+			return false;
+
+		return filter_var($exact, FILTER_VALIDATE_BOOLEAN);
+	}
+
+	/**
 	 * JSON レスポンスを構築する
 	 *
 	 * @param array $payload レスポンス内容

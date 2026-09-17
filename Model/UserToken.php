@@ -290,9 +290,10 @@ class UserToken extends AppModel
 	 *
 	 * @param int $userId ユーザID
 	 * @param int|null $days 有効日数（未指定時は Security.api_token_expired_days、既定30日）
+	 * @param bool $permanent true の場合、無期限トークン（期限 9999-12-31）を発行
 	 * @return string|null selector:validator（保存失敗・テーブル未作成時は null）
 	 */
-	public function issueApiToken($userId, $days = null)
+	public function issueApiToken($userId, $days = null, $permanent = false)
 	{
 		if(!$this->isAvailable())
 			return null;
@@ -301,16 +302,25 @@ class UserToken extends AppModel
 		if($userId <= 0)
 			return null;
 
-		if($days === null)
+		if($permanent)
 		{
-			$days = (int)Configure::read('api_token_expired_days');
+			$expired = '9999-12-31 23:59:59';
+		}
+		else
+		{
+			if($days === null)
+			{
+				$days = (int)Configure::read('api_token_expired_days');
+				if($days <= 0)
+					$days = 30;
+			}
+
+			$days = (int)$days;
 			if($days <= 0)
 				$days = 30;
-		}
 
-		$days = (int)$days;
-		if($days <= 0)
-			$days = 30;
+			$expired = date('Y-m-d H:i:s', strtotime('+' . $days . ' days'));
+		}
 
 		$selector = bin2hex(random_bytes(16));
 		$validator = bin2hex(random_bytes(32));
@@ -321,7 +331,7 @@ class UserToken extends AppModel
 				'token_type' => 'api',
 				'token_selector' => $selector,
 				'token_hash' => password_hash($validator, PASSWORD_DEFAULT),
-				'expired' => date('Y-m-d H:i:s', strtotime('+' . $days . ' days')),
+				'expired' => $expired,
 				'last_used' => date('Y-m-d H:i:s'),
 				'revoked' => null,
 				'user_ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',

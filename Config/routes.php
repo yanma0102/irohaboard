@@ -42,7 +42,18 @@
 	Router::connect('/api/v1/users', ['controller' => 'api_users', 'action' => 'index', '[method]' => 'GET']);
 	Router::connect('/api/v1/users', ['controller' => 'api_users', 'action' => 'add', '[method]' => 'POST']);
 	Router::connect('/api/v1/users/:id', ['controller' => 'api_users', 'action' => 'view', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/users/:id', ['controller' => 'api_users', 'action' => 'edit', '[method]' => 'PUT'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/users/:id', ['controller' => 'api_users', 'action' => 'edit', '[method]' => 'PATCH'], ['pass' => ['id'], 'id' => '[0-9]+']);
 	Router::connect('/api/v1/users/:id', ['controller' => 'api_users', 'action' => 'delete', '[method]' => 'DELETE'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+	// ユーザのパスワード変更
+	Router::connect('/api/v1/users/:id/password', ['controller' => 'api_users', 'action' => 'changePassword', '[method]' => 'PUT'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/users/:id/password', ['controller' => 'api_users', 'action' => 'changePassword', '[method]' => 'PATCH'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+	// ユーザのコース割当
+	Router::connect('/api/v1/users/:id/courses', ['controller' => 'api_users', 'action' => 'courses', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/users/:id/courses', ['controller' => 'api_users', 'action' => 'assignCourse', '[method]' => 'POST'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/users/:id/courses/:course_id', ['controller' => 'api_users', 'action' => 'unassignCourse', '[method]' => 'DELETE'], ['pass' => ['id', 'course_id'], 'id' => '[0-9]+', 'course_id' => '[0-9]+']);
 
 	// コース
 	Router::connect('/api/v1/courses', ['controller' => 'api_courses', 'action' => 'index', '[method]' => 'GET']);
@@ -61,6 +72,17 @@
 	// グループ
 	Router::connect('/api/v1/groups', ['controller' => 'api_groups', 'action' => 'index', '[method]' => 'GET']);
 	Router::connect('/api/v1/groups/:id', ['controller' => 'api_groups', 'action' => 'view', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+
+	// グループのユーザ割当
+	Router::connect('/api/v1/groups/:id/users', ['controller' => 'api_groups', 'action' => 'users', '[method]' => 'GET'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/groups/:id/users', ['controller' => 'api_groups', 'action' => 'assignUser', '[method]' => 'POST'], ['pass' => ['id'], 'id' => '[0-9]+']);
+	Router::connect('/api/v1/groups/:id/users/:user_id', ['controller' => 'api_groups', 'action' => 'unassignUser', '[method]' => 'DELETE'], ['pass' => ['id', 'user_id'], 'id' => '[0-9]+', 'user_id' => '[0-9]+']);
+
+	// 未定義の /api 配下（またはメソッド不一致）は JSON の 404 を返す
+	Router::connect('/api/v1/*', ['controller' => 'api_errors', 'action' => 'notFound']);
+	Router::connect('/api/v1', ['controller' => 'api_errors', 'action' => 'notFound']);
+	Router::connect('/api/*', ['controller' => 'api_errors', 'action' => 'notFound']);
+	Router::connect('/api', ['controller' => 'api_errors', 'action' => 'notFound']);
 
 
 /**

@@ -36,7 +36,12 @@ class ApiCoursesController extends ApiBaseController
 			// スタッフは全件参照可能
 			$title = $this->queryParam('title');
 			if($title !== null)
-				$conditions['Course.title LIKE'] = '%' . $title . '%';
+			{
+				if($this->wantsExact())
+					$conditions['Course.title'] = $title;
+				else
+					$conditions['Course.title LIKE'] = '%' . $title . '%';
+			}
 		}
 		else
 		{
@@ -50,7 +55,12 @@ class ApiCoursesController extends ApiBaseController
 
 			$title = $this->queryParam('title');
 			if($title !== null)
-				$conditions['Course.title LIKE'] = '%' . $title . '%';
+			{
+				if($this->wantsExact())
+					$conditions['Course.title'] = $title;
+				else
+					$conditions['Course.title LIKE'] = '%' . $title . '%';
+			}
 		}
 
 		$fields = [
@@ -138,7 +148,12 @@ class ApiCoursesController extends ApiBaseController
 		$saved = $this->Course->save(['Course' => $fields]);
 
 		if($saved)
+		{
+			$saved['Course']['id'] = (int)$saved['Course']['id'];
+			$saved['Course']['user_id'] = (int)$saved['Course']['user_id'];
+			$saved['Course']['sort_no'] = (int)$saved['Course']['sort_no'];
 			return $this->ok($saved['Course'], 201);
+		}
 
 		$this->fail(400, 'Validation failed', $this->Course->validationErrors);
 	}

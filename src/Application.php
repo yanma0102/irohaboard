@@ -80,12 +80,6 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // and make an error page/response
             ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
 
-            // API ルート用エラーハンドリング（ApiException → JSON レスポンス）
-            ->insertAfter(
-                ErrorHandlerMiddleware::class,
-                new ApiErrorMiddleware()
-            )
-
             // Validate Host header to prevent Host Header Injection attacks.
             // In production, ensures App.fullBaseUrl is configured and validates
             // the incoming Host header against it.
@@ -101,6 +95,12 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // caching in production could improve performance.
             // See https://github.com/CakeDC/cakephp-cached-routing
             ->add(new RoutingMiddleware($this))
+
+            // API ルート用エラーハンドリング（ApiException → JSON レスポンス）
+            // 標準のミドルウェア順序（ErrorHandler → HostHeader → Asset → Routing）を
+            // 維持するため、RoutingMiddleware の直後に挿入する。
+            // これによりコントローラ層でスローされた ApiException を捕捉できる。
+            ->insertAfter(RoutingMiddleware::class, new ApiErrorMiddleware())
 
             // Parse various types of encoded request bodies so that they are
             // available as array through $request->getData()

@@ -22,6 +22,7 @@
 			<?= $this->fetch('content'); ?>
 		</div>
 	</div>
-	<?= $this->element('sql_dump'); ?>
+	<?php /* sql_dump 要素は CakePHP 5 には存在しない。呼ぶと MissingElementException →
+	         エラー描画の無限再帰（debug=false でハング）になるため呼び出さない。 */ ?>
 </body>
 </html>

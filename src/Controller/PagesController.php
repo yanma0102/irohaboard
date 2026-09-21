@@ -32,6 +32,28 @@ use Cake\View\Exception\MissingTemplateException;
 class PagesController extends AppController
 {
     /**
+     * 静的ページは認証不要とする
+     *
+     * Pages コントローラは templates/Pages/ 配下の静的なページを描画するだけで
+     * ユーザーデータを扱わない。未認証リクエストを一律にログイン画面へ
+     * リダイレクトすると、ディレクトリトラバーサル（403）や存在しないページ
+     * （404 / Missing Template 500）といったフレームワーク標準のエラー応答が
+     * 失われるため、display アクションのみ認証を免除する。
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->Authentication->allowUnauthenticated(['display']);
+
+        // display は静的なページを表示するだけでフォーム入力を受け付けないため、
+        // FormProtection のトークン検証対象から外す（CSRF ミドルウェアの検証は有効なまま）。
+        $this->FormProtection->setConfig('unlockedActions', ['display']);
+    }
+
+    /**
      * Displays a view
      *
      * @param string ...$path Path segments.

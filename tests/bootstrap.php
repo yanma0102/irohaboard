@@ -18,7 +18,7 @@ declare(strict_types=1);
 use Cake\Chronos\Chronos;
 use Cake\Core\Configure;
 use Cake\TestSuite\ConnectionHelper;
-use Migrations\TestSuite\Migrator;
+use Cake\TestSuite\Fixture\SchemaLoader;
 
 /**
  * Test runner bootstrap.
@@ -55,6 +55,4 @@ ConnectionHelper::addTestAliases();
 // hook into your migration tool of choice here or
 // load schema from a SQL dump file with
 // use Cake\TestSuite\Fixture\SchemaLoader;
-// (new SchemaLoader())->loadSqlFiles('./tests/schema.sql', 'test');
-
-(new Migrator())->run();
+(new SchemaLoader())->loadSqlFiles('./tests/schema.sql', 'test');

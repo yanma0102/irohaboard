@@ -84,7 +84,7 @@ class UpdateController extends Controller
             $this->db = ConnectionManager::get('default');
 
             // パッケージアップデート用クエリ
-            $this->path = ROOT . DS . 'config' . DS . 'Schema' . DS . 'update.sql';
+            $this->path = ROOT . DS . 'config' . DS . 'schema' . DS . 'update.sql';
             $err_update = $this->_executeSQLScript();
 
             // カスタマイズ用クエリ
@@ -128,12 +128,46 @@ class UpdateController extends Controller
     }
 
     /**
+     * 例外から SQLSTATE / ドライバエラーコードを取得する
+     *
+     * CakePHP 5 の DatabaseException は errorInfo を保持しないことがあるため、
+     * 例外メッセージ（SQLSTATE[xxxxx]: ... : nnnn ...）からも抽出する。
+     *
+     * @param \Exception $e 例外
+     * @return array<int, mixed> [SQLSTATE, ドライバエラーコード, メッセージ]
+     */
+    private function _getSqlErrorInfo(\Exception $e): array
+    {
+        $errorInfo = $e->errorInfo ?? null;
+        if (!is_array($errorInfo)) {
+            $previous = $e->getPrevious();
+            if ($previous !== null) {
+                $errorInfo = $previous->errorInfo ?? null;
+            }
+        }
+        if (is_array($errorInfo) && count($errorInfo) >= 3) {
+            return array_values($errorInfo);
+        }
+
+        $message = $e->getMessage();
+        if (preg_match('/SQLSTATE\[([0-9A-Z]+)\](?:[^0-9]*([0-9]+))?/', $message, $matches) === 1) {
+            return [$matches[1], isset($matches[2]) ? (int)$matches[2] : 0, $message];
+        }
+
+        return ['', 0, $message];
+    }
+
+    /**
      * SQL スクリプトの実行
      *
      * @return array<string>
      */
     private function _executeSQLScript(): array
     {
+        if (!file_exists($this->path)) {
+            return [sprintf('SQLファイルが見つかりません: %s', $this->path)];
+        }
+
         $statements = file_get_contents($this->path);
         $statements = explode(';', $statements);
         $err_statements = [];
@@ -144,12 +178,14 @@ class UpdateController extends Controller
             }
 
             // %salt% を置換
-            $statement = str_replace('%salt%', Configure::read('Security.salt'), $statement);
+            // %salt% を置換（旧 SHA1 パスワード互換のため CakePHP 2 時代の salt を使用）
+            $salt = (string)(Configure::read('legacy_security_salt') ?? Configure::read('Security.salt') ?? '');
+            $statement = str_replace('%salt%', $salt, $statement);
 
             try {
                 $this->db->execute($statement);
             } catch (\Exception $e) {
-                $errorInfo = $e->errorInfo ?? [];
+                $errorInfo = $this->_getSqlErrorInfo($e);
 
                 // レコード重複追加エラー
                 if (($errorInfo[0] ?? '') === '23000') {

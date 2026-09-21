@@ -197,7 +197,7 @@ class InstallController extends Controller
      */
     private function _install(): void
     {
-        $this->path = ROOT . DS . 'config' . DS . 'Schema' . DS . 'app.sql';
+        $this->path = ROOT . DS . 'config' . DS . 'schema' . DS . 'app.sql';
         $err_statements = $this->_executeSQLScript();
 
         if (count($err_statements) > 0) {
@@ -218,12 +218,46 @@ class InstallController extends Controller
     }
 
     /**
+     * 例外から SQLSTATE / ドライバエラーコードを取得する
+     *
+     * CakePHP 5 の DatabaseException は errorInfo を保持しないことがあるため、
+     * 例外メッセージ（SQLSTATE[xxxxx]: ... : nnnn ...）からも抽出する。
+     *
+     * @param \Exception $e 例外
+     * @return array<int, mixed> [SQLSTATE, ドライバエラーコード, メッセージ]
+     */
+    private function _getSqlErrorInfo(\Exception $e): array
+    {
+        $errorInfo = $e->errorInfo ?? null;
+        if (!is_array($errorInfo)) {
+            $previous = $e->getPrevious();
+            if ($previous !== null) {
+                $errorInfo = $previous->errorInfo ?? null;
+            }
+        }
+        if (is_array($errorInfo) && count($errorInfo) >= 3) {
+            return array_values($errorInfo);
+        }
+
+        $message = $e->getMessage();
+        if (preg_match('/SQLSTATE\[([0-9A-Z]+)\](?:[^0-9]*([0-9]+))?/', $message, $matches) === 1) {
+            return [$matches[1], isset($matches[2]) ? (int)$matches[2] : 0, $message];
+        }
+
+        return ['', 0, $message];
+    }
+
+    /**
      * SQL スクリプトの実行
      *
      * @return array<string>
      */
     private function _executeSQLScript(): array
     {
+        if (!file_exists($this->path)) {
+            return [sprintf('SQLファイルが見つかりません: %s', $this->path)];
+        }
+
         $statements = file_get_contents($this->path);
         $statements = explode(';', $statements);
         $err_statements = [];
@@ -233,7 +267,7 @@ class InstallController extends Controller
                 try {
                     $this->db->execute($statement);
                 } catch (\Exception $e) {
-                    $errorInfo = $e->errorInfo ?? [];
+                    $errorInfo = $this->_getSqlErrorInfo($e);
                     if (($errorInfo[0] ?? '') === '42S21') {
                         continue;
                     }

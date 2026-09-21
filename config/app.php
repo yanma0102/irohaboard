@@ -52,8 +52,8 @@ return [
     'App' => [
         'namespace' => 'App',
         'encoding' => env('APP_ENCODING', 'UTF-8'),
-        'defaultLocale' => env('APP_DEFAULT_LOCALE', 'en_US'),
-        'defaultTimezone' => env('APP_DEFAULT_TIMEZONE', 'UTC'),
+        'defaultLocale' => env('APP_DEFAULT_LOCALE', 'ja_JP'),
+        'defaultTimezone' => env('APP_DEFAULT_TIMEZONE', 'Asia/Tokyo'),
         'base' => false,
         'dir' => 'src',
         'webroot' => 'webroot',
@@ -418,6 +418,11 @@ return [
      */
     'Session' => [
         'defaults' => 'php',
+        'cookie' => 'AppSession',
+        'timeout' => 1440,
+        'ini' => [
+            'session.cookie_path' => '/',
+        ],
     ],
 
     /**

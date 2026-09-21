@@ -8,17 +8,6 @@
  *
  * It's loaded within the context of `Application::routes()` method which
  * receives a `RouteBuilder` instance `$routes` as method argument.
- *
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
 use Cake\Routing\Route\DashedRoute;
@@ -30,67 +19,199 @@ use Cake\Routing\RouteBuilder;
  * if required.
  */
 return function (RouteBuilder $routes): void {
-    /*
-     * The default class to use for all routes
-     *
-     * The following route classes are supplied with CakePHP and are appropriate
-     * to set as the default:
-     *
-     * - Route
-     * - InflectedRoute
-     * - DashedRoute
-     *
-     * If no call is made to `Router::defaultRouteClass()`, the class used is
-     * `Route` (`Cake\Routing\Route\Route`)
-     *
-     * Note that `Route` does not do any inflections on URLs which will result in
-     * inconsistently cased URLs when used with `{plugin}`, `{controller}` and
-     * `{action}` markers.
-     */
     $routes->setRouteClass(DashedRoute::class);
 
     $routes->scope('/', function (RouteBuilder $builder): void {
-        /*
-         * Here, we are connecting '/' (base path) to a controller called 'Pages',
-         * its action called 'display', and we pass a param to select the view file
-         * to use (in this case, templates/Pages/home.php)...
-         */
-        $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+        // / → UsersCourses::index
+        $builder->connect('/', [
+            'controller' => 'UsersCourses',
+            'action' => 'index',
+        ]);
 
-        /*
-         * ...and connect the rest of 'Pages' controller's URLs.
-         */
+        // /admin → Admin/Users::index
+        $builder->prefix('Admin', function (RouteBuilder $builder): void {
+            $builder->connect('/', [
+                'controller' => 'Users',
+                'action' => 'index',
+            ]);
+
+            // /admin/users/login → Admin/Users::login
+            $builder->connect('/users/login', [
+                'controller' => 'Users',
+                'action' => 'login',
+            ]);
+        });
+
+        // /pages/* は Pages コントローラ
         $builder->connect('/pages/*', 'Pages::display');
+
+        // REST API v1
+        $builder->scope('/api/v1', function (RouteBuilder $builder): void {
+            // 認証（トークン発行・失効）
+            $builder->connect('/auth/token', [
+                'controller' => 'Api/Auth',
+                'action' => 'issueToken',
+                '_method' => 'POST',
+            ]);
+            $builder->connect('/auth/token', [
+                'controller' => 'Api/Auth',
+                'action' => 'revokeToken',
+                '_method' => 'DELETE',
+            ]);
+
+            // ユーザ
+            $builder->connect('/users', [
+                'controller' => 'Api/Users',
+                'action' => 'index',
+                '_method' => 'GET',
+            ]);
+            $builder->connect('/users', [
+                'controller' => 'Api/Users',
+                'action' => 'add',
+                '_method' => 'POST',
+            ]);
+            $builder->connect('/users/{id}', [
+                'controller' => 'Api/Users',
+                'action' => 'view',
+                '_method' => 'GET',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/users/{id}', [
+                'controller' => 'Api/Users',
+                'action' => 'edit',
+                '_method' => 'PUT',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/users/{id}', [
+                'controller' => 'Api/Users',
+                'action' => 'edit',
+                '_method' => 'PATCH',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/users/{id}', [
+                'controller' => 'Api/Users',
+                'action' => 'delete',
+                '_method' => 'DELETE',
+            ], ['id' => '[0-9]+']);
+
+            // ユーザのパスワード変更
+            $builder->connect('/users/{id}/password', [
+                'controller' => 'Api/Users',
+                'action' => 'changePassword',
+                '_method' => 'PUT',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/users/{id}/password', [
+                'controller' => 'Api/Users',
+                'action' => 'changePassword',
+                '_method' => 'PATCH',
+            ], ['id' => '[0-9]+']);
+
+            // ユーザのコース割当
+            $builder->connect('/users/{id}/courses', [
+                'controller' => 'Api/Users',
+                'action' => 'courses',
+                '_method' => 'GET',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/users/{id}/courses', [
+                'controller' => 'Api/Users',
+                'action' => 'assignCourse',
+                '_method' => 'POST',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/users/{id}/courses/{course_id}', [
+                'controller' => 'Api/Users',
+                'action' => 'unassignCourse',
+                '_method' => 'DELETE',
+            ], ['id' => '[0-9]+', 'course_id' => '[0-9]+']);
+
+            // コース
+            $builder->connect('/courses', [
+                'controller' => 'Api/Courses',
+                'action' => 'index',
+                '_method' => 'GET',
+            ]);
+            $builder->connect('/courses', [
+                'controller' => 'Api/Courses',
+                'action' => 'add',
+                '_method' => 'POST',
+            ]);
+            $builder->connect('/courses/{id}', [
+                'controller' => 'Api/Courses',
+                'action' => 'view',
+                '_method' => 'GET',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/courses/{id}', [
+                'controller' => 'Api/Courses',
+                'action' => 'delete',
+                '_method' => 'DELETE',
+            ], ['id' => '[0-9]+']);
+
+            // コンテンツ
+            $builder->connect('/contents', [
+                'controller' => 'Api/Contents',
+                'action' => 'index',
+                '_method' => 'GET',
+            ]);
+            $builder->connect('/contents/{id}', [
+                'controller' => 'Api/Contents',
+                'action' => 'view',
+                '_method' => 'GET',
+            ], ['id' => '[0-9]+']);
+
+            // 学習履歴
+            $builder->connect('/records', [
+                'controller' => 'Api/Records',
+                'action' => 'index',
+                '_method' => 'GET',
+            ]);
+            $builder->connect('/records/{id}', [
+                'controller' => 'Api/Records',
+                'action' => 'view',
+                '_method' => 'GET',
+            ], ['id' => '[0-9]+']);
+
+            // グループ
+            $builder->connect('/groups', [
+                'controller' => 'Api/Groups',
+                'action' => 'index',
+                '_method' => 'GET',
+            ]);
+            $builder->connect('/groups/{id}', [
+                'controller' => 'Api/Groups',
+                'action' => 'view',
+                '_method' => 'GET',
+            ], ['id' => '[0-9]+']);
+
+            // グループのユーザ割当
+            $builder->connect('/groups/{id}/users', [
+                'controller' => 'Api/Groups',
+                'action' => 'users',
+                '_method' => 'GET',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/groups/{id}/users', [
+                'controller' => 'Api/Groups',
+                'action' => 'assignUser',
+                '_method' => 'POST',
+            ], ['id' => '[0-9]+']);
+            $builder->connect('/groups/{id}/users/{user_id}', [
+                'controller' => 'Api/Groups',
+                'action' => 'unassignUser',
+                '_method' => 'DELETE',
+            ], ['id' => '[0-9]+', 'user_id' => '[0-9]+']);
+        });
+
+        // 未定義の /api/* は Api/Errors::notFound（JSON 404）
+        $builder->scope('/api', function (RouteBuilder $builder): void {
+            $builder->connect('*', [
+                'controller' => 'Api/Errors',
+                'action' => 'notFound',
+            ]);
+            $builder->connect('/', [
+                'controller' => 'Api/Errors',
+                'action' => 'notFound',
+            ]);
+        });
 
         /*
          * Connect catchall routes for all controllers.
-         *
-         * The `fallbacks` method is a shortcut for
-         *
-         * ```
-         * $builder->connect('/{controller}', ['action' => 'index']);
-         * $builder->connect('/{controller}/{action}/*', []);
-         * ```
-         *
-         * It is NOT recommended to use fallback routes after your initial prototyping phase!
-         * See https://book.cakephp.org/5/en/development/routing.html#fallbacks-method for more information
+         * Phase 1 時点では削除せず維持（Controller 移行完了後、Phase 6 で fallbacks は削除する）
          */
         $builder->fallbacks();
     });
-
-    /*
-     * If you need a different set of middleware or none at all,
-     * open new scope and define routes there.
-     *
-     * ```
-     * $routes->scope('/api', function (RouteBuilder $builder): void {
-     *     // No $builder->applyMiddleware() here.
-     *
-     *     // Parse specified extensions from URLs
-     *     // $builder->setExtensions(['json', 'xml']);
-     *
-     *     // Connect API actions here.
-     * });
-     * ```
-     */
 };

@@ -10,3 +10,17 @@ logs/
 *.log
 .DS_Store
 Thumbs.db
+
+# CakePHP 5 (migration 先) 要素は既存ビルドから除外
+vendor/
+src/
+config/
+templates/
+bin/
+tests/
+resources/
+plugins/
+phpcs.xml
+phpstan.neon
+psalm.xml
+phpunit.xml.dist

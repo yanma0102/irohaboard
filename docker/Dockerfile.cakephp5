@@ -31,6 +31,9 @@ COPY docker/apache-app.conf /etc/apache2/conf-available/irohaboard.conf
 RUN a2enconf irohaboard \
     && echo 'ServerName localhost' >> /etc/apache2/apache2.conf
 
+# Apache MPM(prefork) 設定をコピー（ワーカー数上限と定期再生成でメモリ肥大を防止）
+COPY docker/mpm-prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
+
 # PHP 設定ファイルをコピー
 COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
 

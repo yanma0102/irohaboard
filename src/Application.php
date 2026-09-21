@@ -120,8 +120,14 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
      */
     public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
     {
+        // admin プレフィックスの場合は管理画面ログインへリダイレクトする
+        $prefix = $request->getAttribute('params')['prefix'] ?? null;
+        $loginUrl = ($prefix === 'Admin')
+            ? '/admin/users/login'
+            : '/users/login';
+
         $service = new AuthenticationService([
-            'unauthenticatedRedirect' => '/users/login',
+            'unauthenticatedRedirect' => $loginUrl,
             'queryParam' => 'redirect',
         ]);
 
@@ -144,7 +150,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
         // Authenticator: Form（ログインフォーム）
         $service->loadAuthenticator('Authentication.Form', [
-            'loginUrl' => '/users/login',
+            'loginUrl' => $loginUrl,
             'identifier' => $identifier,
         ]);
 

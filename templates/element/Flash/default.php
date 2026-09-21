@@ -1,0 +1,1 @@
+<div id="<?= $key; ?>Message" class="<?= !empty($params['class']) ? $params['class'] : 'message'; ?>"><?= $message; ?></div>

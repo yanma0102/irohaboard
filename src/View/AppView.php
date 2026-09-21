@@ -2,40 +2,37 @@
 declare(strict_types=1);
 
 /**
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * iroha Board Project
  *
- * Licensed under The MIT License
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link      https://cakephp.org CakePHP(tm) Project
- * @since     3.0.0
- * @license   https://opensource.org/licenses/mit-license.php MIT License
+ * @author        Kotaro Miura
+ * @copyright     2015-2021 iroha Soft, Inc. (https://irohasoft.jp)
+ * @license       https://www.gnu.org/licenses/gpl-3.0.en.html GPL License
  */
+
 namespace App\View;
 
 use Cake\View\View;
 
 /**
- * Application View
+ * AppView - 全てのビューの基底クラス
  *
- * Your application's default view class
- *
- * @link https://book.cakephp.org/5/en/views.html#the-app-view
+ * CakePHP 5 版
  */
 class AppView extends View
 {
     /**
-     * Initialization hook method.
-     *
-     * Use this method to add common initialization code like adding helpers.
-     *
-     * e.g. `$this->addHelper('Html');`
+     * 初期化
      *
      * @return void
      */
     public function initialize(): void
     {
+        parent::initialize();
+
+        $this->loadHelper('Html');
+        $this->loadHelper('Form');
+        $this->loadHelper('Flash');
+        $this->loadHelper('Pagination');
+        $this->loadHelper('AppView');
     }
 }

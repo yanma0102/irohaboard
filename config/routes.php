@@ -48,6 +48,141 @@ return function (RouteBuilder $routes): void {
         // /pages/* は Pages コントローラ
         $builder->connect('/pages/*', 'Pages::display');
 
+        // ---- Front-end (non-admin) explicit routes ----
+
+        // UsersCourses
+        $builder->connect('/users-courses', [
+            'controller' => 'UsersCourses',
+            'action' => 'index',
+        ]);
+
+        // Users (front)
+        $builder->connect('/users/login', [
+            'controller' => 'Users',
+            'action' => 'login',
+        ]);
+        $builder->connect('/users/logout', [
+            'controller' => 'Users',
+            'action' => 'logout',
+        ]);
+        $builder->connect('/users/setting', [
+            'controller' => 'Users',
+            'action' => 'setting',
+        ]);
+        $builder->connect('/users/index', [
+            'controller' => 'Users',
+            'action' => 'index',
+        ]);
+
+        // Contents (front)
+        $builder->connect('/contents/index/{course_id}/{user_id}', [
+            'controller' => 'Contents',
+            'action' => 'index',
+        ], ['pass' => ['course_id', 'user_id']]);
+        $builder->connect('/contents/index/{course_id}', [
+            'controller' => 'Contents',
+            'action' => 'index',
+        ], ['pass' => ['course_id']]);
+        $builder->connect('/contents/view/{content_id}', [
+            'controller' => 'Contents',
+            'action' => 'view',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/contents/preview', [
+            'controller' => 'Contents',
+            'action' => 'preview',
+        ]);
+        $builder->connect('/contents/preview/{course_id}', [
+            'controller' => 'Contents',
+            'action' => 'preview',
+        ]);
+        $builder->connect('/contents/file-download/{content_id}', [
+            'controller' => 'Contents',
+            'action' => 'file_download',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/contents/file-movie/{content_id}', [
+            'controller' => 'Contents',
+            'action' => 'file_movie',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/contents/file-image/{file_name}', [
+            'controller' => 'Contents',
+            'action' => 'file_image',
+        ], ['pass' => ['file_name']]);
+        // Note: /contents/add is needed because the Contents view/preview template
+        // generates a URL for Contents::add via Form->create(). The form is intercepted
+        // by JavaScript and posts to Records::add instead.
+        $builder->connect('/contents/add', [
+            'controller' => 'Contents',
+            'action' => 'add',
+        ]);
+
+        // ContentsQuestions (front)
+        $builder->connect('/contents-questions/index/{content_id}/{record_id}', [
+            'controller' => 'ContentsQuestions',
+            'action' => 'index',
+        ], ['pass' => ['content_id', 'record_id']]);
+        $builder->connect('/contents-questions/index/{content_id}', [
+            'controller' => 'ContentsQuestions',
+            'action' => 'index',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/contents-questions/record/{content_id}/{record_id}', [
+            'controller' => 'ContentsQuestions',
+            'action' => 'record',
+        ], ['pass' => ['content_id', 'record_id']]);
+
+        // EnquetesQuestions (front)
+        $builder->connect('/enquetes-questions/index/{content_id}/{record_id}', [
+            'controller' => 'EnquetesQuestions',
+            'action' => 'index',
+        ], ['pass' => ['content_id', 'record_id']]);
+        $builder->connect('/enquetes-questions/index/{content_id}', [
+            'controller' => 'EnquetesQuestions',
+            'action' => 'index',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/enquetes-questions/record/{content_id}/{record_id}', [
+            'controller' => 'EnquetesQuestions',
+            'action' => 'record',
+        ], ['pass' => ['content_id', 'record_id']]);
+
+        // Infos (front)
+        $builder->connect('/infos', [
+            'controller' => 'Infos',
+            'action' => 'index',
+        ]);
+        $builder->connect('/infos/index', [
+            'controller' => 'Infos',
+            'action' => 'index',
+        ]);
+        $builder->connect('/infos/view/{info_id}', [
+            'controller' => 'Infos',
+            'action' => 'view',
+        ], ['pass' => ['info_id']]);
+
+        // Records (front)
+        $builder->connect('/records/add/{content_id}', [
+            'controller' => 'Records',
+            'action' => 'add',
+        ], ['pass' => ['content_id']]);
+
+        // Install (utility)
+        $builder->connect('/install', [
+            'controller' => 'Install',
+            'action' => 'index',
+        ]);
+        $builder->connect('/install/*', [
+            'controller' => 'Install',
+            'action' => 'installed',
+        ]);
+
+        // Update (utility)
+        $builder->connect('/update', [
+            'controller' => 'Update',
+            'action' => 'index',
+        ]);
+        $builder->connect('/update/*', [
+            'controller' => 'Update',
+            'action' => 'error',
+        ]);
+
         // REST API v1
         $builder->scope('/api/v1', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
 
@@ -212,10 +347,7 @@ return function (RouteBuilder $routes): void {
             'action' => 'notFound',
         ]);
 
-        /*
-         * Connect catchall routes for all controllers.
-         * Phase 1 時点では削除せず維持（Controller 移行完了後、Phase 6 で fallbacks は削除する）
-         */
-        $builder->fallbacks();
+        // NOTE: Global $builder->fallbacks() was removed in Phase 6.
+        // All front-end and API routes are now explicit.
     });
 };

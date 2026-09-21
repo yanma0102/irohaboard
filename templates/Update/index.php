@@ -7,7 +7,7 @@
 			<p style="margin:20px">データベースのアップデートが完了しました。</p>
 		</div>
 		<div class="panel-footer text-center">
-			<button class="btn btn-primary" onclick="location.href='<?= Router::url(['controller' => 'users', 'action' => 'login', 'admin' => true]) ?>'">管理者ログイン画面へ</button>
+			<button class="btn btn-primary" onclick="location.href='<?= $this->Url->build(['controller' => 'users', 'action' => 'login', 'prefix' => 'Admin']) ?>'">管理者ログイン画面へ</button>
 		</div>
 	</div>
 </div>

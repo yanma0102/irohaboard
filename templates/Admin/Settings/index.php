@@ -20,11 +20,13 @@
 		</div>
 		<div class="panel-body">
 		<?php
-			echo $this->Form->create('Setting', Configure::read('form_defaults'));
-			echo $this->Form->control('title',		['label' => __('システム名'),		'value'=>$settings['title']]);
-			echo $this->Form->control('copyright',	['label' => __('コピーライト'),		'value'=>$settings['copyright']]);
-			echo $this->Form->control('color',		['label' => __('テーマカラー'),		'options'=>$colors, 'selected'=>$settings['color']]);
-			echo $this->Form->control('information',	['label' => __('全体のお知らせ'),	'value'=>$settings['information'], 'type' => 'textarea']);
+			$formDefaults = Configure::read('form_defaults');
+			unset($formDefaults['inputDefaults']);
+			echo $this->Form->create(null, $formDefaults);
+			echo $this->Form->control('Setting.title',		['label' => __('システム名'),		'value'=>$settings['title']]);
+			echo $this->Form->control('Setting.copyright',	['label' => __('コピーライト'),		'value'=>$settings['copyright']]);
+			echo $this->Form->control('Setting.color',		['label' => __('テーマカラー'),		'options'=>$colors, 'selected'=>$settings['color']]);
+			echo $this->Form->control('Setting.information',	['label' => __('全体のお知らせ'),	'value'=>$settings['information'], 'type' => 'textarea']);
 			echo Configure::read('form_submit_before')
 				.$this->Form->submit(__('保存'), Configure::read('form_submit_defaults'))
 				.Configure::read('form_submit_after');

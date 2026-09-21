@@ -135,16 +135,19 @@ $config['demo_password'] = "pass";
 $config['remember_token_expired_days'] = 14;
 
 // フォームのスタイル(BoostCake)の基本設定
+// ※ CakePHP 5 では inputDefaults は Form->create() で非対応。
+//    inputDefaults は AppFormHelper::control() 内でマージする。
 $config['form_defaults'] = [
-	'inputDefaults' => [
-		'div' => 'form-group',
-		'label' => [
-			'class' => 'col col-sm-3 control-label'
-		],
-		'wrapInput' => 'col col-sm-9',
-		'class' => 'form-control'
-	],
 	'class' => 'form-horizontal'
+];
+
+$config['form_input_defaults'] = [
+	'div' => 'form-group',
+	'label' => [
+		'class' => 'col col-sm-3 control-label'
+	],
+	'wrapInput' => 'col col-sm-9',
+	'class' => 'form-control'
 ];
 
 $config['form_submit_defaults'] = [

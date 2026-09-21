@@ -19,8 +19,8 @@
 			<tbody>
 			<?php foreach ($infos as $info): ?>
 			<tr>
-				<td width="100" valign="top"><?= h(Utils::getYMD($info['Info']['created'])); ?></td>
-				<td><?= $this->Html->link($info['Info']['title'], ['controller' => 'infos', 'action' => 'view', $info['Info']['id']]); ?></td>
+				<td width="100" valign="top"><?= h(Utils::getYMD($info->created)); ?></td>
+				<td><?= $this->Html->link($info->title, ['controller' => 'infos', 'action' => 'view', $info->id]); ?></td>
 			</tr>
 			<?php endforeach; ?>
 			</tbody>
@@ -36,14 +36,14 @@
 		<ul class="list-group">
 		<?php foreach ($courses as $course): ?>
 		<?php //debug($course)?>
-			<a href="<?= Router::url(['controller' => 'contents', 'action' => 'index', $course['Course']['id']]);?>" class="list-group-item">
-				<?php if($course[0]['left_cnt'] != 0){?>
-				<button type="button" class="btn btn-danger btn-rest"><?= __('残り')?> <span class="badge"><?= h($course[0]['left_cnt']); ?></span></button>
+			<a href="<?= $this->Url->build(['controller' => 'contents', 'action' => 'index', $course['id']]);?>" class="list-group-item">
+				<?php if($course['left_cnt'] != 0){?>
+				<button type="button" class="btn btn-danger btn-rest"><?= __('残り')?> <span class="badge"><?= h($course['left_cnt']); ?></span></button>
 				<?php }?>
-				<h4 class="list-group-item-heading"><?= h($course['Course']['title']);?></h4>
+				<h4 class="list-group-item-heading"><?= h($course['title']);?></h4>
 				<p class="list-group-item-text">
-					<span class="first-date"><?= __('学習開始日').': '.Utils::getYMD($course['Record']['first_date']); ?></span>
-					<span class="last-date"><?= __('前回学習日').': '.Utils::getYMD($course['Record']['last_date']); ?></span>
+					<span class="first-date"><?= __('学習開始日').': '.Utils::getYMD($course['first_date']); ?></span>
+					<span class="last-date"><?= __('前回学習日').': '.Utils::getYMD($course['last_date']); ?></span>
 				</p>
 			</a>
 		<?php endforeach; ?>

@@ -16,9 +16,9 @@
 
 	echo $this->Html->getCrumbs(' / ');
 	
-	$title = h($info['Info']['title']);
-	$date  = h(Utils::getYMD($info['Info']['created']));
-	$body  = $info['Info']['body'];
+	$title = h($info->title);
+	$date  = h(Utils::getYMD($info->created));
+	$body  = $info->body;
 	$target = Configure::read('open_link_same_window') ? [] : ['target' => '_blank'];
 	$body  = $this->Text->autoLinkUrls($body, $target);
 	$body  = nl2br($body);

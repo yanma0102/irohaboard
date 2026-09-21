@@ -20,12 +20,12 @@
 			</tr>
 			</thead>
 			<tbody>
-			<?php foreach ($infos as $info): ?>
-			<tr>
-				<td width="100" valign="top"><?= h(Utils::getYMD($info['Info']['created'])); ?>&nbsp;</td>
-				<td><?= $this->Html->link($info['Info']['title'], ['action' => 'view', $info['Info']['id']]); ?>&nbsp;</td>
-			</tr>
-			<?php endforeach; ?>
+		<?php foreach ($infos as $info): ?>
+		<tr>
+			<td width="100" valign="top"><?= h(Utils::getYMD($info->created)); ?>&nbsp;</td>
+			<td><?= $this->Html->link($info->title, ['action' => 'view', $info->id]); ?>&nbsp;</td>
+		</tr>
+		<?php endforeach; ?>
 			</tbody>
 			</table>
 			<?= $this->element('paging');?>

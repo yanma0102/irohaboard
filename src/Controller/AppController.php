@@ -75,7 +75,7 @@ class AppController extends Controller
 
         // セッション内の設定情報が他サイトのものであれば、設定情報及びログイン情報をクリア
         if ($this->hasSession('Setting')) {
-            if ($this->readSession('Setting.app_dir') != APP_DIR) {
+            if ($this->readSession('Setting.app_dir') != ROOT) {
                 // セッション内の設定情報を削除
                 $this->deleteSession('Setting');
 

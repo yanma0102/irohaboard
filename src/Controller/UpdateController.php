@@ -107,13 +107,13 @@ class UpdateController extends Controller
 
                 $this->log($log);
                 $this->error();
-                $this->viewBuilder()->setOption('template', 'error');
+                $this->viewBuilder()->setTemplate('error');
                 return;
             }
         } catch (\Exception $e) {
             $this->err_msg = 'データベースへの接続に失敗しました。設定ファイル(config/app_local.php)をご確認ください。';
             $this->error();
-            $this->viewBuilder()->setOption('template', 'error');
+            $this->viewBuilder()->setTemplate('error');
         }
     }
 

@@ -44,12 +44,12 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 	</div>
 
 	<div class="panel panel-info">
-	<div class="panel-heading"><?= h($course['Course']['title']); ?></div>
+	<div class="panel-heading"><?= h($course['title']); ?></div>
 	<div class="panel-body">
-	<?php if($course['Course']['introduction'] != '') {?>
+	<?php if($course['introduction'] != '') {?>
 	<div class="well">
 	<?php
-		$introduction = $this->Text->autoLinkUrls($course['Course']['introduction'], [ 'target' => '_blank']);
+		$introduction = $this->Text->autoLinkUrls($course['introduction'], [ 'target' => '_blank']);
 		$introduction = nl2br($introduction);
 		echo $introduction;
 	?>
@@ -73,42 +73,42 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 	<?php
 		$icon			= ''; // アイコン用クラス
 		$title_link		= ''; // コンテンツタイトル（リンク付き）
-		$kind			= Configure::read('content_kind.'.$content['Content']['kind']); // 学習種別
+		$kind			= Configure::read('content_kind.'.$content['kind']); // 学習種別
 		$understanding	= ''; // 理解度・テスト結果
 		
 		// コンテンツの種別
-		switch($content['Content']['kind'])
+		switch($content['kind'])
 		{
 			case 'test': // テスト
 				$icon  = 'glyphicon glyphicon-check text-danger';
 				$title_link = $this->Html->link(
-					$content['Content']['title'], [
+					$content['title'], [
 					'controller' => 'contents_questions',
 					'action' => 'index',
-					$content['Content']['id']
+					$content['id']
 				]);
-				$kind  = Configure::read('content_kind.'.$content['Content']['kind']);
+				$kind  = Configure::read('content_kind.'.$content['kind']);
 
 				// テスト結果が存在する場合、テスト結果へのリンクを出力
-				if ($content['Record']['record_id'] != null)
+				if ($content['record_id'] != null)
 				{
-					$result = Configure::read('record_result.'.$content[0]['is_passed']);
+					$result = Configure::read('record_result.'.$content['is_passed']);
 					
 					$understanding = $this->Html->link(
 						$result, [
 						'controller' => 'contents_questions',
 						'action' => 'record',
-						$content['Content']['id'],
-						$content['Record']['record_id']
+						$content['id'],
+						$content['record_id']
 					]);
 				}
 				break;
 			case 'enquete': // アンケート
 				$icon  = 'glyphicon glyphicon-check text-danger';
-				$kind  = Configure::read('content_kind.'.$content['Content']['kind']);
+				$kind  = Configure::read('content_kind.'.$content['kind']);
 
 				// アンケート結果が存在する場合、アンケート結果へのリンクを出力
-				if ($content['Record']['record_id'] != null)
+				if ($content['record_id'] != null)
 				{
 					$result = '回答';
 					
@@ -116,26 +116,26 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 						$result, [
 						'controller' => 'enquetes_questions',
 						'action' => 'record',
-						$content['Content']['id'],
-						$content['Record']['record_id']
+						$content['id'],
+						$content['record_id']
 					]);
 				}
 				
 				$title_link = $this->Html->link(
-					$content['Content']['title'], [
+					$content['title'], [
 					'controller' => 'enquetes_questions',
 					'action' => 'index',
-					$content['Content']['id']
+					$content['id']
 				]);
 				break;
 			case 'file': // 配布資料
 				$icon  = 'glyphicon glyphicon-file text-success';
 				$title_link = $this->Html->link(
-					$content['Content']['title'], 
+					$content['title'], 
 					[
 						'controller' => 'contents',
 						'action' => 'file_download',
-						$content['Content']['id']
+						$content['id']
 					],
 					[
 						'target' => '_blank'
@@ -143,46 +143,46 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 				);
 				
 				// URLが指定されている場合はそのまま開く
-				if(strpos($content['Content']['url'], 'http') === 0)
-					$title_link = $this->Html->link($content['Content']['title'], $content['Content']['url'], ['target' => '_blank']);
+				if(strpos($content['url'], 'http') === 0)
+					$title_link = $this->Html->link($content['title'], $content['url'], ['target' => '_blank']);
 				
 				break;
 			default : // その他（学習）
 				$icon  = 'glyphicon glyphicon-play-circle text-info';
 				$title_link = $this->Html->link(
-					$content['Content']['title'], [
+					$content['title'], [
 					'controller' => 'contents',
 					'action' => 'view',
-					$content['Content']['id']
+					$content['id']
 				]);
 				$kind  =  __('学習'); // 一律学習と表記
-				$understanding = h(Configure::read('record_understanding.'.$content[0]['understanding']));
+				$understanding = h(Configure::read('record_understanding.'.$content['understanding']));
 				break;
 		}
 		
 		// 管理者による学習履歴表示の場合、学習画面へのリンクを出力しない
 		if($is_admin_record)
-			$title_link = h($content['Content']['title']);
+			$title_link = h($content['title']);
 		
-		if($content['Content']['status'] == 0)
+		if($content['status'] == 0)
 			$title_link .= ' <span class="status-closed">(非公開)</span>';
 		
 		//debug($content);
 		?>
-		<?php if($content['Content']['kind'] == 'label') { // ラベルの場合、タイトルのみ表示 ?>
+		<?php if($content['kind'] == 'label') { // ラベルの場合、タイトルのみ表示 ?>
 		<tr>
-			<td colspan="8" class="content-label"><?= h($content['Content']['title']); ?>&nbsp;</td>
+			<td colspan="8" class="content-label"><?= h($content['title']); ?>&nbsp;</td>
 		</tr>
 		<?php }else{?>
 		<tr>
 			<td><span class="<?= $icon; ?>"></span>&nbsp;<?= $title_link; ?>&nbsp;</td>
 			<td class="ib-col-center" nowrap><?= h($kind); ?>&nbsp;</td>
-			<td class="ib-col-date"><?= Utils::getYMD($content['Record']['first_date']); ?>&nbsp;</td>
-			<td class="ib-col-date"><?= Utils::getYMD($content['Record']['last_date']); ?>&nbsp;</td>
-			<td class="ib-col-center"><?= str_replace('00:00:00', '', Utils::getHNSBySec($content['Record']['study_sec'])); ?>&nbsp;</td>
-			<td class="ib-col-center"><?= h($content['Record']['study_count']); ?>&nbsp;</td>
+			<td class="ib-col-date"><?= Utils::getYMD($content['first_date']); ?>&nbsp;</td>
+			<td class="ib-col-date"><?= Utils::getYMD($content['last_date']); ?>&nbsp;</td>
+			<td class="ib-col-center"><?= str_replace('00:00:00', '', Utils::getHNSBySec($content['study_sec'])); ?>&nbsp;</td>
+			<td class="ib-col-center"><?= h($content['study_count']); ?>&nbsp;</td>
 			<td nowrap class="ib-col-center"><?= $understanding; ?></td>
-			<td class="ib-col-center"><?= ($content['CompleteRecord']['is_complete'] == 1) ? '<span class="glyphicon glyphicon-ok text-muted"></span>' : ''; ?></td>
+			<td class="ib-col-center"><?= ($content['is_complete'] == 1) ? '<span class="glyphicon glyphicon-ok text-muted"></span>' : ''; ?></td>
 		</tr>
 		<?php }?>
 	<?php endforeach; ?>

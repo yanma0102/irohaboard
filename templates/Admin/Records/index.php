@@ -5,7 +5,7 @@
 	function openRecord(course_id, user_id)
 	{
 		window.open(
-			'<?= Router::url(['controller' => 'contents', 'action' => 'record']) ?>/'+course_id+'/'+user_id,
+			'<?= $this->Url->build(['controller' => 'contents', 'action' => 'record']) ?>/'+course_id+'/'+user_id,
 			'irohaboard_record',
 			'width=1100, height=700, menubar=no, toolbar=no, scrollbars=yes'
 		);
@@ -14,7 +14,7 @@
 	function openTestRecord(content_id, record_id)
 	{
 		window.open(
-			'<?= Router::url(['controller' => 'contents_questions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
+			'<?= $this->Url->build(['controller' => 'contents_questions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
 			'irohaboard_record',
 			'width=1100, height=700, menubar=no, toolbar=no, scrollbars=yes'
 		);
@@ -23,7 +23,7 @@
 	function openRecordEnquete(content_id, record_id)
 	{
 		window.open(
-			'<?= Router::url(['controller' => 'enquetes_questions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
+			'<?= $this->Url->build(['controller' => 'enquetes_questions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
 			'irohaboard_record',
 			'width=1100, height=700, menubar=no, toolbar=no, scrollbars=yes'
 		);
@@ -38,7 +38,7 @@
 	
 	function downloadCSVDetail()
 	{
-		var url = '<?= Router::url(['action' => 'csv']) ?>/' + $('#MembersEventEventId').val() + '/' + $('#MembersEventStatus').val() + '/' + $('#MembersEventUsername').val();
+		var url = '<?= $this->Url->build(['action' => 'csv']) ?>/' + $('#MembersEventEventId').val() + '/' + $('#MembersEventStatus').val() + '/' + $('#MembersEventUsername').val();
 		$("#RecordCmd").val("csv_detail");
 		$("#RecordAdminIndexForm").submit();
 		$("#RecordCmd").val("");
@@ -49,7 +49,7 @@
 	<div class="ib-page-title"><?= __('学習履歴一覧'); ?></div>
 	<div class="ib-horizontal">
 	<?php
-		echo $this->Form->create('Record');
+		echo $this->Form->create(null);
 		echo '<div class="ib-search-buttons">';
 		echo $this->Form->submit(__('検索'),	['class' => 'btn btn-info', 'div' => false]);
 		echo $this->Form->hidden('cmd');
@@ -94,20 +94,20 @@
 	<tbody>
 	<?php foreach ($records as $record): ?>
 	<tr>
-		<td><?= h($record['User']['username']); ?>&nbsp;</td>
-		<td><?= h($record['User']['name']); ?>&nbsp;</td>
-		<td><a href="javascript:openRecord(<?= h($record['Course']['id']); ?>, <?= h($record['User']['id']); ?>);"><?= h($record['Course']['title']); ?></a></td>
-		<td><?= h($record['Content']['title']); ?>&nbsp;</td>
-		<td class="ib-col-center"><?= h($record['Record']['score']); ?>&nbsp;</td>
-		<td class="ib-col-center"><?= h($record['Record']['pass_score']); ?>&nbsp;</td>
-		<?php if ($record['Content']['kind'] == 'enquete') {?>
-		<td class="ib-col-center"><a href="javascript:openRecordEnquete(<?= h($record['Content']['id']); ?>, <?= h($record['Record']['id']); ?>);">回答</a></td>
+		<td><?= h($record->user->username); ?>&nbsp;</td>
+		<td><?= h($record->user->name); ?>&nbsp;</td>
+		<td><a href="javascript:openRecord(<?= h($record->course->id); ?>, <?= h($record->user->id); ?>);"><?= h($record->course->title); ?></a></td>
+		<td><?= h($record->content->title); ?>&nbsp;</td>
+		<td class="ib-col-center"><?= h($record->score); ?>&nbsp;</td>
+		<td class="ib-col-center"><?= h($record->pass_score); ?>&nbsp;</td>
+		<?php if ($record->content->kind == 'enquete') {?>
+		<td class="ib-col-center"><a href="javascript:openRecordEnquete(<?= h($record->content->id); ?>, <?= h($record->id); ?>);">回答</a></td>
 		<?php } else {?>
-		<td nowrap class="ib-col-center"><a href="javascript:openTestRecord(<?= h($record['Content']['id']); ?>, <?= h($record['Record']['id']); ?>);"><?= Configure::read('record_result.'.$record['Record']['is_passed']); ?></a></td>
+		<td nowrap class="ib-col-center"><a href="javascript:openTestRecord(<?= h($record->content->id); ?>, <?= h($record->id); ?>);"><?= Configure::read('record_result.'.$record->is_passed); ?></a></td>
 		<?php }?>
-		<td nowrap class="ib-col-center"><?= h(Configure::read('record_understanding.'.$record['Record']['understanding'])); ?>&nbsp;</td>
-		<td class="ib-col-center"><?= h(Utils::getHNSBySec($record['Record']['study_sec'])); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= h(Utils::getYMDHN($record['Record']['created'])); ?>&nbsp;</td>
+		<td nowrap class="ib-col-center"><?= h(Configure::read('record_understanding.'.$record->understanding)); ?>&nbsp;</td>
+		<td class="ib-col-center"><?= h(Utils::getHNSBySec($record->study_sec)); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= h(Utils::getYMDHN($record->created)); ?>&nbsp;</td>
 	</tr>
 	<?php endforeach; ?>
 	</tbody>

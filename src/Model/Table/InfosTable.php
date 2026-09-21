@@ -92,6 +92,31 @@ class InfosTable extends AppTable
     }
 
     /**
+     * お知らせ一覧クエリを取得（フロント用）
+     *
+     *CakePHP 5: SelectQuery を返し、コントローラで $this->paginate($query) に渡す
+     *
+     * @param int $userId ユーザID
+     * @param int|null $limit 取得件数
+     * @return \Cake\ORM\Query
+     */
+    public function getInfoOption(int $userId, ?int $limit = null): \Cake\ORM\Query
+    {
+        $infoIdList = $this->getInfoIdList($userId, $limit);
+
+        $query = $this->find()
+            ->select(['Infos.id', 'Infos.title', 'Infos.created'])
+            ->where(['Infos.id IN' => $infoIdList])
+            ->orderBy(['Infos.created' => 'DESC']);
+
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        return $query;
+    }
+
+    /**
      * お知らせへのアクセス権限チェック
      *
      * @param int $userId   アクセス者のユーザID

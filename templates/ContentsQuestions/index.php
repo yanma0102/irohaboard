@@ -16,7 +16,7 @@
 
 <?php $this->start('script-embedded'); ?>
 <script>
-	var TIMELIMIT_SEC	= parseInt('<?= $content['Content']['timelimit'] ?>') * 60;	// 制限時間（単位：秒）
+	var TIMELIMIT_SEC	= parseInt('<?= $content->timelimit ?>') * 60;	// 制限時間（単位：秒）
 	var IS_RECORD		= '<?= $is_record ?>';										// テスト結果表示フラグ
 	var MSG_TIMELIMIT	= '<?= __('制限時間を過ぎましたので自動採点を行います。') ?>';
 	var MSG_REST_TIME	= '<?= __('残り時間') ?>';
@@ -30,11 +30,11 @@
 	// 管理者による学習履歴表示モードの場合、コース一覧リンクを表示しない
 	if($is_admin_record)
 	{
-		$course_url = ['controller' => 'contents', 'action' => 'record', $record['Course']['id'], $record['Record']['user_id']];
+		$course_url = ['controller' => 'contents', 'action' => 'record', $record->course_id, $record->user_id];
 	}
 	else
 	{
-		$course_url = ['controller' => 'contents', 'action' => 'index', $content['Course']['id']];
+		$course_url = ['controller' => 'contents', 'action' => 'index', $content->course_id];
 		$this->Html->addCrumb(
 			'<span class="glyphicon glyphicon-book" aria-hidden="true"></span> コース一覧',
 			['controller' => 'users_courses','action' => 'index'],
@@ -42,8 +42,8 @@
 		);
 	}
 	
-	$this->Html->addCrumb($content['Course']['title'], $course_url);
-	$this->Html->addCrumb(h($content['Content']['title'])); // addCrumb 内でエスケープされない為、別途エスケープ
+	$this->Html->addCrumb($content->course->title, $course_url);
+	$this->Html->addCrumb(h($content->title)); // addCrumb 内でエスケープされない為、別途エスケープ
 	echo $this->Html->getCrumbs(' / ');
 	?>
 	</div>
@@ -51,8 +51,8 @@
 	<!-- テスト結果ヘッダ表示 -->
 	<?php if($is_record){ ?>
 		<?php
-			$result_color  = ($record['Record']['is_passed'] == 1) ? 'text-primary' : 'text-danger';
-			$result_label  = ($record['Record']['is_passed'] == 1) ? __('合格') : __('不合格');
+		$result_color  = ($record->is_passed == 1) ? 'text-primary' : 'text-danger';
+		$result_label  = ($record->is_passed == 1) ? __('合格') : __('不合格');
 		?>
 		<table class="result-table">
 			<caption><?= __('テスト結果'); ?></caption>
@@ -62,11 +62,11 @@
 			</tr>
 			<tr>
 				<td><?= __('得点'); ?></td>
-				<td><?= $record['Record']['score'].' / '.$record['Record']['full_score']; ?></td>
+				<td><?= $record->score.' / '.$record->full_score; ?></td>
 			</tr>
 			<tr>
 				<td><?= __('合格基準得点'); ?></td>
-				<td><?= ($record['Record']['pass_score']) ? $record['Record']['pass_score'] : __('設定されていません'); ?></td>
+				<td><?= ($record->pass_score) ? $record->pass_score : __('設定されていません'); ?></td>
 			</tr>
 		</table>
 	<?php }?>
@@ -80,17 +80,17 @@
 		
 		if($is_record)
 		{
-			foreach ($record['RecordsQuestion'] as $rec)
+			foreach ($record->records_questions as $rec)
 			{
 				$question_records[$rec['question_id']] = $rec;
 			}
 		}
 		
-		echo $this->Form->create('ContentsQuestion');
+		echo $this->Form->create(null);
 	?>
 		<?php foreach ($contentsQuestions as $contentsQuestion): ?>
 			<?php
-			$question		= $contentsQuestion['ContentsQuestion'];	// 問題情報
+			$question		= $contentsQuestion;	// 問題情報
 			$title			= $question['title'];						// 問題のタイトル
 			$body			= $question['body'];						// 問題文
 			$question_id	= $question['id'];							// 問題ID
@@ -154,7 +154,7 @@
 					$is_correct = ($question_records[$question_id]['is_correct'] == '1');
 				
 				// 不正解時の表示モード
-				$wrong_mode	= $content['Content']['wrong_mode'];
+				$wrong_mode	= $content->wrong_mode;
 				
 				// 正解番号から正解ラベルへ変換
 				$correct_label = ''; // 正解ラベル
@@ -221,12 +221,12 @@
 			// テスト実施の場合のみ、採点ボタンを表示
 			if (!$is_record)
 			{
-				echo $this->Form->hidden('study_sec');
+				echo $this->Form->hidden('ContentsQuestion.study_sec');
 				echo '<input type="button" value="'.__('採点').'" class="btn btn-primary btn-lg btn-score" onclick="$(\'#confirmModal\').modal()">';
 				echo '&nbsp;';
 			}
 			
-			echo '<input type="button" value="'.__('戻る').'" class="btn btn-default btn-lg" onclick="location.href=\''.Router::url($course_url).'\'">';
+			echo '<input type="button" value="'.__('戻る').'" class="btn btn-default btn-lg" onclick="location.href=\''. $this->Url->build($course_url).'\'">';
 			echo '</div><!--end-->';
 			echo $this->Form->end();
 		?>

@@ -1,3 +1,4 @@
+<?php use Cake\Core\Configure; ?>
 <?= $this->element('admin_menu');?>
 <div class="admin-users-import">
 <?= $this->Html->link(__('<< 戻る'), ['action' => 'index'])?>
@@ -25,12 +26,11 @@
 				<th>受講コース・・・<?= Configure::read('import_course_count');?>列</th>
 			</tr>
 			</table>
-			<?php use Cake\Core\Configure; ?>
 <?php
 				// PHP8.1対応
 				$this->Form->unlockField('csvfile.full_path');
 				
-				echo $this->Form->create('User',['type'=>'file']);
+				echo $this->Form->create(null,['type'=>'file']);
 				echo $this->Form->control('csvfile',['label'=>'','type'=>'file']);
 				echo $this->Form->submit('インポート', Configure::read('form_submit_defaults'));
 				echo $this->Form->end();

@@ -18,24 +18,24 @@
 		</div>
 		<div class="panel-body">
 		<?php
-			echo $this->Form->create('User', Configure::read('form_defaults'));
+			echo $this->Form->create(null, Configure::read('form_defaults'));
 			
 			$password_label = $this->AppView->isEditPage() ? __('新しいパスワード') : __('パスワード');
 			
-			echo $this->Form->control('id');
-			echo $this->Form->control('username',				['label' => __('ログインID')]);
+			echo $this->Form->control('User.id');
+			echo $this->Form->control('User.username',				['label' => __('ログインID')]);
 			echo $this->Form->control('User.new_password',	['label' => $password_label, 'type' => 'password', 'autocomplete' => 'new-password']);
-			echo $this->Form->control('name',					['label' => __('氏名')]);
+			echo $this->Form->control('User.name',					['label' => __('氏名')]);
 			
 			// root アカウント、もしくは admin 権限以外の場合、権限変更を許可しない
 			$disabled = (($username == 'root') || ($loginedUser['role'] != 'admin'));
 			
-			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
+			echo $this->Form->inputRadio('User.role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
 			
-			echo $this->Form->control('email',				['label' => __('メールアドレス')]);
-			echo $this->Form->control('Group',				['label' => __('所属グループ')]);
-			echo $this->Form->control('Course',				['label' => __('受講コース')]);
-			echo $this->Form->control('comment',				['label' => __('備考')]);
+			echo $this->Form->control('User.email',				['label' => __('メールアドレス')]);
+			echo $this->Form->control('User.Group',				['label' => __('所属グループ')]);
+			echo $this->Form->control('User.Course',				['label' => __('受講コース')]);
+			echo $this->Form->control('User.comment',				['label' => __('備考')]);
 			echo Configure::read('form_submit_before')
 				.$this->Form->submit(__('保存'), Configure::read('form_submit_defaults'))
 				.Configure::read('form_submit_after');
@@ -45,9 +45,9 @@
 			if($this->AppView->isEditPage())
 			{
 				echo $this->Form->postLink(__('学習履歴を削除'),
-					['action' => 'clear', $this->request->data['User']['id']],
+					['action' => 'clear', $user['id']],
 					['class' => 'btn btn-default pull-right btn-clear'],
-					__('学習履歴を削除してもよろしいですか？', $this->request->data['User']['name']));
+					__('学習履歴を削除してもよろしいですか？', $user['name']));
 			}
 		?>
 		</div>

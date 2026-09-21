@@ -88,7 +88,7 @@ class InstallController extends Controller
             if (!extension_loaded('mbstring')) {
                 $this->err_msg = 'PHP モジュール mbstring がロードされていません';
                 $this->error();
-                $this->viewBuilder()->setOption('template', 'error');
+                $this->viewBuilder()->setTemplate('error');
                 return;
             }
 
@@ -96,13 +96,13 @@ class InstallController extends Controller
             if (!extension_loaded('pdo_mysql')) {
                 $this->err_msg = 'PHP モジュール pdo_mysql がロードされていません';
                 $this->error();
-                $this->viewBuilder()->setOption('template', 'error');
+                $this->viewBuilder()->setTemplate('error');
                 return;
             }
         } catch (\Exception $e) {
             $this->err_msg = '各種モジュールチェック中にエラーが発生いたしました。';
             $this->error();
-            $this->viewBuilder()->setOption('template', 'error');
+            $this->viewBuilder()->setTemplate('error');
             return;
         }
 
@@ -117,7 +117,7 @@ class InstallController extends Controller
             $this->set('username', '');
 
             if (count($data) > 0) {
-                $this->viewBuilder()->setOption('template', 'installed');
+                $this->viewBuilder()->setTemplate('installed');
             } else {
                 if ($this->request->is('post')) {
                     $username = $this->request->getData('User.username', '');
@@ -158,7 +158,7 @@ class InstallController extends Controller
         } catch (\Exception $e) {
             $this->err_msg = 'データベースへの接続に失敗しました。設定ファイル(config/app_local.php)をご確認ください。';
             $this->error();
-            $this->viewBuilder()->setOption('template', 'error');
+            $this->viewBuilder()->setTemplate('error');
         }
     }
 
@@ -210,10 +210,10 @@ class InstallController extends Controller
 
             $this->log($log);
             $this->error();
-            $this->viewBuilder()->setOption('template', 'error');
+            $this->viewBuilder()->setTemplate('error');
         } else {
             $this->complete();
-            $this->viewBuilder()->setOption('template', 'complete');
+            $this->viewBuilder()->setTemplate('complete');
         }
     }
 

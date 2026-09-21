@@ -1,4 +1,3 @@
-<?php use Cake\Core\Configure; ?>
 <?php
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
@@ -154,7 +153,7 @@ endif;
                             <li class="bullet problem">Your logs directory is NOT writable.</li>
                         <?php endif; ?>
 
-                        <?php $settings = Cache::getConfig('_cake_translations_'); ?>
+                        <?php $settings = []; ?>
                         <?php if (!empty($settings)) : ?>
                             <li class="bullet success">The <em><?= h($settings['className']) ?></em> engine is being used for translations caching. To change the config edit <code>config/app.php</code></li>
                         <?php else : ?>
@@ -177,7 +176,7 @@ endif;
                             <li class="bullet problem">CakePHP is NOT able to connect to the database.<br /><?= h($result['error']) ?></li>
                         <?php endif; ?>
 
-                        <?php $settings = Cache::getConfig('_cake_model_'); ?>
+                        <?php $settings = []; ?>
                         <?php if (!empty($settings)) : ?>
                             <li class="bullet success">The <em><?= h($settings['className']) ?></em> engine is being used for database schema caching. To change the config edit config/app.php</li>
                         <?php else : ?>

@@ -29,7 +29,6 @@ class ContentsQuestionsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
-        $this->FormProtection->unlockActions(['admin_order']);
     }
 
     /**
@@ -49,7 +48,7 @@ class ContentsQuestionsController extends AppController
         $record_id = ($record_id !== null) ? (int)$record_id : null;
 
         // コンテンツ情報を取得
-        $content = $contentsTable->get($content_id);
+        $content = $contentsTable->get($content_id, contain: ['Courses']);
 
         // 権限チェック
         if (!$this->isAdminPage()) {
@@ -67,7 +66,7 @@ class ContentsQuestionsController extends AppController
 
         if ($record_id !== null) {
             // テスト結果表示モード
-            $record = $recordsTable->get($record_id);
+            $record = $recordsTable->get($record_id, contain: ['RecordsQuestions']);
 
             if (!$this->isAdminPage() && $this->isRecordPage() && ($record->user_id != $this->readAuthUser('id'))) {
                 throw new NotFoundException(__('Invalid access'));
@@ -107,9 +106,7 @@ class ContentsQuestionsController extends AppController
             $contentsQuestions = $contentsQuestionsTable->find()
                 ->where(['content_id' => $content_id])
                 ->limit((int)$content->question_count)
-                ->order(function (\Cake\Database\Expression\QueryExpression $exp) {
-                    return $exp->func()->rand();
-                })
+                ->order($contentsQuestionsTable->find()->newExpr()->add('RAND()'))
                 ->all();
 
             $question_id_list = [];
@@ -215,164 +212,7 @@ class ContentsQuestionsController extends AppController
         $record_id = (int)$record_id;
 
         $this->index($content_id, $record_id);
-        $this->viewBuilder()->setOption('template', 'index');
-    }
-
-    /**
-     * テスト結果を表示（管理画面）
-     *
-     * @param int|string $content_id コンテンツID
-     * @param int|string $record_id 履歴ID
-     * @return void
-     */
-    public function admin_record($content_id, $record_id): void
-    {
-        $this->record($content_id, $record_id);
-    }
-
-    /**
-     * 問題一覧を表示
-     *
-     * @param int|string $content_id コンテンツID
-     * @return void
-     */
-    public function admin_index($content_id): void
-    {
-        $content_id = (int)$content_id;
-
-        $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
-
-        $contentsQuestions = $contentsQuestionsTable->find()
-            ->where([$contentsQuestionsTable->aliasField('content_id') => $content_id])
-            ->order([$contentsQuestionsTable->aliasField('sort_no') => 'ASC'])
-            ->all();
-
-        $content = $this->fetchTable('Contents')->get($content_id);
-
-        $this->set(compact('content', 'contentsQuestions'));
-    }
-
-    /**
-     * 問題を追加
-     *
-     * @param int|string $content_id コンテンツID
-     * @return \Cake\Http\Response|null
-     */
-    public function admin_add($content_id): ?\Cake\Http\Response
-    {
-        $this->admin_edit($content_id);
-        $this->viewBuilder()->setOption('template', 'admin_edit');
-
-        return null;
-    }
-
-    /**
-     * 問題を編集
-     *
-     * @param int|string $content_id コンテンツID
-     * @param int|string|null $question_id 問題ID
-     * @return \Cake\Http\Response|null
-     */
-    public function admin_edit($content_id, $question_id = null): ?\Cake\Http\Response
-    {
-        $content_id = (int)$content_id;
-        $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
-
-        if ($this->isEditPage() && $question_id !== null && !$contentsQuestionsTable->exists(['id' => $question_id])) {
-            throw new NotFoundException(__('Invalid contents question'));
-        }
-
-        $content = $this->fetchTable('Contents')->get($content_id);
-
-        if ($this->request->is(['post', 'put'])) {
-            if ($question_id === null) {
-                $data = $this->request->getData();
-                $data['user_id'] = $this->readAuthUser('id');
-                $data['content_id'] = $content_id;
-                $data['sort_no'] = $contentsQuestionsTable->getNextSortNo($content_id);
-                $this->request = $this->request->withData('ContentsQuestions', $data);
-            }
-
-            if ($question_id !== null) {
-                $question = $contentsQuestionsTable->get((int)$question_id);
-            } else {
-                $question = $contentsQuestionsTable->newEmptyEntity();
-            }
-
-            $question = $contentsQuestionsTable->patchEntity($question, $this->request->getData());
-
-            if (!$contentsQuestionsTable->save($question)) {
-                $this->Flash->error(__('The contents question could not be saved. Please, try again.'));
-            } else {
-                $this->Flash->success(__('問題が保存されました'));
-
-                return $this->redirect([
-                    'controller' => 'ContentsQuestions',
-                    'action' => 'index',
-                    $content_id,
-                ]);
-            }
-        } else {
-            if ($question_id !== null) {
-                $question = $contentsQuestionsTable->get((int)$question_id);
-                $this->set(compact('question'));
-            }
-        }
-
-        $this->set(compact('content'));
-
-        return null;
-    }
-
-    /**
-     * 問題を削除
-     *
-     * @param int|string|null $question_id 問題ID
-     * @return \Cake\Http\Response|null
-     */
-    public function admin_delete($question_id = null): ?\Cake\Http\Response
-    {
-        $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
-
-        if (!$contentsQuestionsTable->exists(['id' => $question_id])) {
-            throw new NotFoundException(__('Invalid contents question'));
-        }
-
-        $this->request->allowMethod(['post', 'delete']);
-
-        $question = $contentsQuestionsTable->get((int)$question_id);
-
-        if ($contentsQuestionsTable->delete($question)) {
-            $this->Flash->success(__('問題が削除されました'));
-
-            return $this->redirect([
-                'controller' => 'ContentsQuestions',
-                'action' => 'index',
-                $question->content_id,
-            ]);
-        } else {
-            $this->Flash->error(__('The contents question could not be deleted. Please, try again.'));
-        }
-
-        return $this->redirect(['action' => 'index']);
-    }
-
-    /**
-     * Ajax によるコンテンツの並び替え
-     *
-     * @return string
-     */
-    public function admin_order(): string
-    {
-        $this->autoRender = false;
-
-        if ($this->request->is('ajax')) {
-            $this->fetchTable('ContentsQuestions')->setOrder($this->request->getData('id_list'));
-
-            return 'OK';
-        }
-
-        return '';
+        $this->viewBuilder()->setTemplate('index');
     }
 
     /**

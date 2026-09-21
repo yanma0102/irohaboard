@@ -97,8 +97,8 @@
 	function init()
 	{
 		// リッチテキストエディタを起動
-		CommonUtil.setRichTextEditor('#ContentsQuestionBody', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->webroot ?>');
-		CommonUtil.setRichTextEditor('#ContentsQuestionExplain', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->webroot ?>');
+		CommonUtil.setRichTextEditor('#ContentsQuestionBody', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
+		CommonUtil.setRichTextEditor('#ContentsQuestionExplain', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
 		
 		// 保存時、コード表示モードの場合、解除する（編集中の内容を反映するため）
 		$("form").submit( function() {
@@ -165,8 +165,8 @@
 	<div class="ib-breadcrumb">
 	<?php 
 		$this->Html->addCrumb(__('コース一覧'),  ['controller' => 'courses', 'action' => 'index']);
-		$this->Html->addCrumb($content['Course']['title'],  ['controller' => 'contents', 'action' => 'index', $content['Course']['id']]);
-		$this->Html->addCrumb($content['Content']['title'], ['controller' => 'enquetes_questions', 'action' => 'index', $content['Content']['id']]);
+		$this->Html->addCrumb($content['course']['title'],  ['controller' => 'contents', 'action' => 'index', $content['course']['id']]);
+		$this->Html->addCrumb($content['title'], ['controller' => 'enquetes_questions', 'action' => 'index', $content['id']]);
 		
 		echo $this->Html->getCrumbs(' / ');
 	?>
@@ -177,7 +177,7 @@
 		</div>
 		<div class="panel-body">
 			<?php
-				echo $this->Form->create('ContentsQuestion', Configure::read('form_defaults'));;
+				echo $this->Form->create(null, Configure::read('form_defaults'));;
 				echo $this->Form->control('id');
 				echo $this->Form->control('title',	['label' => __('タイトル')]);
 				echo $this->Form->control('body',		['label' => __('質問文')]);

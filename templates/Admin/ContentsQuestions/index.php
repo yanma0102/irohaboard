@@ -26,7 +26,7 @@
 				});
 
 				$.ajax({
-					url: "<?= Router::url(['action' => 'order']) ?>",
+					url: "<?= $this->Url->build(['action' => 'order']) ?>",
 					type: "POST",
 					data: { id_list : id_list, _Token : { key : token } },
 					dataType: "text",
@@ -51,8 +51,8 @@
 	<div class="ib-breadcrumb">
 	<?php 
 		$this->Html->addCrumb(__('コース一覧'), ['controller' => 'courses', 'action' => 'index']);
-		$this->Html->addCrumb($content['Course']['title'], ['controller' => 'contents', 'action' => 'index', $content['Course']['id']]);
-		$this->Html->addCrumb(h($content['Content']['title']));
+		$this->Html->addCrumb($content['course']['title'], ['controller' => 'contents', 'action' => 'index', $content['course']['id']]);
+		$this->Html->addCrumb(h($content['title']));
 		
 		echo $this->Html->getCrumbs(' / ');
 	?>
@@ -60,7 +60,7 @@
 	<div class="ib-page-title"><?= __('テスト問題一覧'); ?></div>
 	
 	<div class="buttons_container">
-		<button type="button" class="btn btn-primary btn-add" onclick="location.href='<?= Router::url(['action' => 'add', $content['Content']['id']]) ?>'">+ 追加</button>
+		<button type="button" class="btn btn-primary btn-add" onclick="location.href='<?= $this->Url->build(['action' => 'add', $content['id']]) ?>'">+ 追加</button>
 	</div>
 	
 	<div class="alert alert-warning"><?= __('ドラッグアンドドロップで出題順が変更できます。'); ?></div>
@@ -80,25 +80,25 @@
 	<tbody>
 	<?php foreach ($contentsQuestions as $contentsQuestion): ?>
 	<tr>
-		<td class="td-reader"><?= h($contentsQuestion['ContentsQuestion']['title']); ?>&nbsp;</td>
-		<td class="td-reader"><?= h(strip_tags($contentsQuestion['ContentsQuestion']['body'])); ?>&nbsp;</td>
-		<td class="td-reader"><?= h($contentsQuestion['ContentsQuestion']['options']); ?>&nbsp;</td>
-		<td><?= h($contentsQuestion['ContentsQuestion']['correct']); ?>&nbsp;</td>
-		<td><?= h($contentsQuestion['ContentsQuestion']['score']); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($contentsQuestion['ContentsQuestion']['created']); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($contentsQuestion['ContentsQuestion']['modified']); ?>&nbsp;</td>
+		<td class="td-reader"><?= h($contentsQuestion['title']); ?>&nbsp;</td>
+		<td class="td-reader"><?= h(strip_tags($contentsQuestion['body'])); ?>&nbsp;</td>
+		<td class="td-reader"><?= h($contentsQuestion['options']); ?>&nbsp;</td>
+		<td><?= h($contentsQuestion['correct']); ?>&nbsp;</td>
+		<td><?= h($contentsQuestion['score']); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= Utils::getYMDHN($contentsQuestion['created']); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= Utils::getYMDHN($contentsQuestion['modified']); ?>&nbsp;</td>
 		<td class="actions text-center">
-			<button type="button" class="btn btn-success" onclick="location.href='<?= Router::url(['action' => 'edit', $contentsQuestion['Content']['id'], $contentsQuestion['ContentsQuestion']['id']]) ?>'">編集</button>
+			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $contentsQuestion['content_id'], $contentsQuestion['id']]) ?>'">編集</button>
 			<?php if($loginedUser['role'] == 'admin') {?>
-			<?= $this->Form->postLink(__('削除'), ['action' => 'delete', $contentsQuestion['ContentsQuestion']['id']], ['class'=>'btn btn-danger'], 
-					__('[%s] を削除してもよろしいですか?', $contentsQuestion['ContentsQuestion']['title'])); ?>
+			<?= $this->Form->postLink(__('削除'), ['action' => 'delete', $contentsQuestion['id']], ['class'=>'btn btn-danger'], 
+					__('[%s] を削除してもよろしいですか?', $contentsQuestion['title'])); ?>
 			<?php }?>
-			<?= $this->Form->hidden('id', ['id'=>'', 'class'=>'target_id', 'value'=>$contentsQuestion['ContentsQuestion']['id']]);?>
+			<?= $this->Form->hidden('id', ['id'=>'', 'class'=>'target_id', 'value'=>$contentsQuestion['id']]);?>
 		</td>
 	</tr>
 	<?php endforeach; ?>
 	</tbody>
 	</table>
-	<?= $this->Form->create('ContentsQuestion');?>
+	<?= $this->Form->create(null);?>
 	<?= $this->Form->end(); ?>
 </div>

@@ -8,7 +8,7 @@
 		<div class="panel-body">
 		<?php use Cake\Core\Configure; ?>
 <?php
-			echo $this->Form->create('Course', Configure::read('form_defaults'));
+			echo $this->Form->create(null, Configure::read('form_defaults'));
 			echo $this->Form->control('id');
 			echo $this->Form->control('title',	['label' => __('コース名')]);
 			echo $this->Form->control('introduction',	['label' => __('コース紹介')]);

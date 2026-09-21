@@ -27,7 +27,7 @@
 			$('#uploadDialog').modal('show');
 
 			// アップロード用のページを指定
-			$('#uploadFrame').attr('src', '<?= Router::url(['controller' => 'contents', 'action' => 'upload'])?>/' + content_kind);
+			$('#uploadFrame').attr('src', '<?= $this->Url->build(['controller' => 'contents', 'action' => 'upload'])?>/' + content_kind);
 			return false;
 		});
 
@@ -73,7 +73,7 @@
 				break;
 			case 'html': // リッチテキスト
 				// リッチテキストエディタを起動
-				CommonUtil.setRichTextEditor('#ContentBody', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->webroot ?>');
+				CommonUtil.setRichTextEditor('#ContentBody', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
 				$('#btnPreview').show();
 				break;
 			case 'movie': // 動画
@@ -105,12 +105,12 @@
 		if((content_kind == 'movie') && (!content_url.startsWith('http')))
 		{
 			file_name = content_url.split('/').pop();
-			content_url = '<?= Router::url(['controller' => 'contents', 'action' => 'preview_movie'], true)?>/' + file_name;
+			content_url = '<?= $this->Url->build(['controller' => 'contents', 'action' => 'preview_movie'], ['_full' => true])?>/' + file_name;
 		}
 
 		// プレビュー内容を保存
 		$.ajax({
-			url  : '<?= Router::url(['action' => 'preview']) ?>',
+			url  : '<?= $this->Url->build(['action' => 'preview']) ?>',
 			type : 'POST',
 			data : {
 				content_title : $('#ContentTitle').val(),
@@ -122,7 +122,7 @@
 			dataType: 'text',
 			success : function(response) {
 				//通信成功時の処理
-				var url = '<?= Router::url(['controller' => 'contents', 'action' => 'preview', 'admin' => false])?>';
+				var url = '<?= $this->Url->build(['controller' => 'contents', 'action' => 'preview', 'prefix' => false])?>';
 				
 				window.open(url, '_preview', 'width=1200, height=700, resizable=yes');
 			},
@@ -155,7 +155,7 @@
 <div class="admin-contents-edit">
 	<?php
 		$this->Html->addCrumb(__('コース一覧'), ['controller' => 'courses', 'action' => 'index']);
-		$this->Html->addCrumb($course['Course']['title'],  ['controller' => 'contents', 'action' => 'index', $course['Course']['id']]);
+		$this->Html->addCrumb($course['title'],  ['controller' => 'contents', 'action' => 'index', $course['id']]);
 
 		echo $this->Html->getCrumbs(' / ');
 	?>
@@ -165,7 +165,7 @@
 		</div>
 		<div class="panel-body">
 		<?php
-			echo $this->Form->create('Content', Configure::read('form_defaults'));
+			echo $this->Form->create(null, Configure::read('form_defaults'));
 			echo $this->Form->control('id');
 			echo $this->Form->control('title', ['label' => __('コンテンツ名')]);
 			echo $this->Form->inputRadio('kind', ['label' => __('コンテンツ種別'), 'separator'=>"<br>", 'options' => Configure::read('content_kind_comment')]);
@@ -207,7 +207,7 @@
 			// コンテンツ移動用（編集の場合のみ）
 			if($this->AppView->isEditPage())
 			{
-				echo $this->Form->inputExp('course_id', ['label' => __('所属コース'), 'value' => $course['Course']['id']],
+				echo $this->Form->inputExp('course_id', ['label' => __('所属コース'), 'value' => $course['id']],
 					__('変更することで他のコースにコンテンツを移動できます。'));
 			}
 

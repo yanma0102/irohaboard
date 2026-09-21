@@ -20,34 +20,4 @@ use Cake\Core\Configure;
  */
 class SettingsController extends AppController
 {
-    /**
-     * システム設定項目を表示
-     *
-     * @return \Cake\Http\Response|null
-     */
-    public function admin_index(): ?\Cake\Http\Response
-    {
-        $settingsTable = $this->fetchTable('Settings');
-
-        if ($this->request->is(['post', 'put'])) {
-            if (Configure::read('demo_mode')) {
-                return null;
-            }
-
-            $settingsTable->setSettings($this->getData('Setting'));
-
-            foreach ($this->getData('Setting') as $key => $value) {
-                $this->writeSession('Setting.' . $key, $value);
-            }
-
-            $this->Flash->success(__('設定が保存されました'));
-        }
-
-        $settings = $settingsTable->getSettings();
-        $colors = Configure::read('theme_colors');
-
-        $this->set(compact('settings', 'colors'));
-
-        return null;
-    }
 }

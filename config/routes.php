@@ -40,6 +40,9 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Users',
                 'action' => 'login',
             ]);
+
+            // Catch-all for admin controllers (e.g. /admin/contents/index, /admin/groups/index)
+            $builder->fallbacks();
         });
 
         // /pages/* は Pages コントローラ

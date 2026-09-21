@@ -3,7 +3,7 @@
 <head>
 	<?= $this->Html->charset(); ?>
 	
-	<title><?= $content['Content']['title']; ?></title>
+	<title><?= $content['title']; ?></title>
 	<meta name="application-name" content="<?= APP_NAME; ?>">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 	<meta name="viewport" content="width=device-width,initial-scale=1">
@@ -31,43 +31,46 @@
 		echo $this->fetch('script-embedded');
 	?>
 	<script>
-	var URL_RECORDS_ADD		= '<?= Router::url(['controller' => 'records', 'action' => 'add', $content['Content']['id']])?>'; // 学習履歴保存用URL
-	var URL_CONTNES_INDEX	= '<?= Router::url(['action' => 'index', $content['Course']['id']])?>'; // コンテンツ一覧画面
+	var URL_RECORDS_ADD		= '<?= $this->Url->build(['controller' => 'records', 'action' => 'add', $content['id']])?>'; // 学習履歴保存用URL
+	var URL_CONTNES_INDEX	= '<?= $this->Url->build(['action' => 'index', $content['course_id']])?>'; // コンテンツ一覧画面
 	var BUTTON_PC_LIST		= <?= json_encode(Configure::read('record_understanding_pc')) ?>;
 	var BUTTON_SPN_LIST		= <?= json_encode(Configure::read('record_understanding_spn')) ?>;
 	</script>
 </head>
 <body>
 <?php
-	switch($content['Content']['kind'])
+	switch($content['kind'])
 	{
 		case 'url': // URLコンテンツ
-			$body = '<iframe id="contentFrame" width="100%" height="100%" scrolling="yes" src="'.h($content['Content']['url']).'"></iframe>';
+			$body = '<iframe id="contentFrame" width="100%" height="100%" scrolling="yes" src="'.h($content['url']).'"></iframe>';
 			break;
 		case 'movie': // 動画コンテンツ
-			$url = h($content['Content']['url']);
+			$url = h($content['url']);
 
 			if(strpos($url, 'http') === false)
 			{
-				$url = Router::url(['controller' => 'contents', 'action' => 'file_movie', $content['Content']['id']]);
+				$url = $this->Url->build(['controller' => 'contents', 'action' => 'file_movie', $content['id']]);
 			}
 
 			$body = '<video src="'.$url.'" controls width="100%" oncontextmenu="return false;"></video>';
 			break;
 		case 'text': // テキスト型コンテンツ
-			$body = h($content['Content']['body']);
+			$body = h($content['body']);
 			$body = $this->Text->autoLinkUrls($body);
 			$body = nl2br($body);
 			break;
 		case 'html': // リッチテキストコンテンツ
-			$body = $content['Content']['body'];
-			//$body = str_replace('src="/uploads/', 'src="'.Router::url(['controller' => 'contents', 'action' => 'file_image']).'/', $body);
+			$body = $content['body'];
+			//$body = str_replace('src="/uploads/', 'src="'. $this->Url->build(['controller' => 'contents', 'action' => 'file_image']).'/', $body);
+			break;
+		default: // test / label / enquete / file 等は直接閲覧不可
+			$body = '';
 			break;
 	}
 ?>
 <div class="content-view">
-	<div class="content-title"><?= h($content['Content']['title'])?></div>
-	<div class="content-body content-body-<?= $content['Content']['kind']?>"><?= $body;?></div>
+	<div class="content-title"><?= h($content['title'])?></div>
+	<div class="content-body content-body-<?= $content['kind']?>"><?= $body;?></div>
 	<div class="content-foot">
 		<div class="content-menu">
 			<div class="select-message text-success"><?= __('理解度を選択して終了して下さい。');?></div>
@@ -75,7 +78,7 @@
 			<span class='understanding-spn'></span>
 			<button type="button" class="btn btn-danger" onclick="finish(0);"><?= __('中断');?></button>
 			<button type="button" class="btn btn-default" onclick="finish(-1);"><?= __('戻る');?></button>
-			<?= $this->Form->create('Record', ['url' => ['action' => 'add']]);?>
+			<?= $this->Form->create(null, ['url' => ['action' => 'add']]);?>
 			<?= $this->Form->end(); ?>
 		</div>
 	</div>

@@ -88,7 +88,7 @@ class UpdateController extends Controller
             $err_update = $this->_executeSQLScript();
 
             // カスタマイズ用クエリ
-            $this->path = ROOT . DS . 'Custom' . DS . 'Config' . DS . 'custom.sql';
+            $this->path = ROOT . DS . 'config' . DS . 'custom.sql';
 
             if (file_exists($this->path)) {
                 $err_custom = $this->_executeSQLScript();

@@ -47,6 +47,14 @@ git add -A
 git commit -m "Phase 0: CakePHP 2 snapshot before migration"
 ```
 
+### 1.4 Phase 0 実行実績（2026-09-21）
+
+| 対象 | バックアップ先 | 検証結果 |
+|---|---|---|
+| git snapshot | タグ `pre-migration-0.2`（dev=9717ecd） | 作成済み |
+| DB（MySQL 5.7.44） | `/tmp/irohaboard-backup/20260921/irohaboard_before_migration.sql` | 530 行、16 テーブル、別名 DB へのリストアで整合確認（ib_users=1 等） |
+| アップロードファイル | `/tmp/irohaboard-backup/20260921/files_backup/` | コピー済み |
+
 ---
 
 ## 2. フェーズ別ロールバック手順表

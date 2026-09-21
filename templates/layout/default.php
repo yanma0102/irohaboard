@@ -1,3 +1,4 @@
+<?php use Cake\Core\Configure; ?>
 <?php
 /**
  * iroha Board Project

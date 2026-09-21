@@ -2,7 +2,8 @@
 <p class="error">
 	<br>
 	<strong><?= __d('cake', 'エラー'); ?>: </strong>
-	<?php
+	<?php use Cake\Core\Configure; ?>
+<?php
 	if($message == 'The request has been black-holed')
 	{
 		printf(__d('cake', 'トークンの有効期限が切れています。前の画面に戻り、画面を一度リフレッシュしてから再度お試しください。'));

@@ -1,3 +1,4 @@
+<?php use Cake\Core\Configure; ?>
 <?php $this->start('css-embedded'); ?>
 <?php
 $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage();

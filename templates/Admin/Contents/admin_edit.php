@@ -1,4 +1,5 @@
 <?= $this->element('admin_menu');?>
+<?php use Cake\Core\Configure; ?>
 <?php $this->start('css-embedded'); ?>
 <?= $this->Html->css('summernote.css');?>
 <?php $this->end(); ?>

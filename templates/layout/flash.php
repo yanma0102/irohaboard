@@ -4,6 +4,7 @@
 <?= $this->Html->charset(); ?>
 <title><?= $pageTitle; ?></title>
 
+<?php use Cake\Core\Configure; ?>
 <?php if (!Configure::read('debug')): ?>
 <meta http-equiv="Refresh" content="<?= $pause; ?>;url=<?= $url; ?>"/>
 <?php endif ?>

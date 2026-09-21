@@ -25,7 +25,8 @@
 				<th>受講コース・・・<?= Configure::read('import_course_count');?>列</th>
 			</tr>
 			</table>
-			<?php
+			<?php use Cake\Core\Configure; ?>
+<?php
 				// PHP8.1対応
 				$this->Form->unlockField('csvfile.full_path');
 				

@@ -4,11 +4,12 @@
 			<?= __('受講者ログイン')?>
 		</div>
 		<div class="panel-body">
-			<?php if(Configure::read('show_admin_link')) {?>
-			<div class="text-right"><a href="<?= Router::url(['action' => 'login', 'admin' => true]) ?>"><?= __('管理者ログインへ')?></a></div>
+			<?php use Cake\Core\Configure; ?>
+<?php if(Configure::read('show_admin_link')) {?>
+			<div class="text-right"><a href="<?= $this->Url->build(['action' => 'login', 'prefix' => 'Admin']) ?>"><?= __('管理者ログインへ')?></a></div>
 			<?php }?>
 			<?= $this->Flash->render('auth'); ?>
-			<?= $this->Form->create('User'); ?>
+			<?= $this->Form->create(null, ['url' => ['action' => 'login']]); ?>
 			
 			<div class="form-group">
 				<?= $this->Form->control('username', ['label' => __('ログインID'), 'class'=>'form-control', 'value' => $username]); ?>

@@ -2,7 +2,8 @@
 	<div class="panel panel-success">
 		<div class="panel-heading"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> <?= __('お知らせ'); ?></div>
 		<div class="panel-body">
-			<?php if($info != ''){?>
+			<?php use Cake\Core\Configure; ?>
+<?php if($info != ''){?>
 			<div class="well">
 			<?php
 				$target = Configure::read('open_link_same_window') ? [] : ['target' => '_blank'];

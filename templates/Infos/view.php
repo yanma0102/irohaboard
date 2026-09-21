@@ -1,6 +1,7 @@
 <div class="infos-view">
 	<div class="breadcrumb">
-	<?php
+	<?php use Cake\Core\Configure; ?>
+<?php
 	$this->Html->addCrumb(
 		'<span class="glyphicon glyphicon-home" aria-hidden="true"></span> HOME',
 		['controller' => 'users_courses','action' => 'index'],

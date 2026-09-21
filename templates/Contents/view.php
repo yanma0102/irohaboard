@@ -7,7 +7,8 @@
 	<meta name="application-name" content="<?= APP_NAME; ?>">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<?php
+	<?php use Cake\Core\Configure; ?>
+<?php
 		echo $this->Html->meta('icon');
 
 		echo $this->Html->css('jquery-ui');

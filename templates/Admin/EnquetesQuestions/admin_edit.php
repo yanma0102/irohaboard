@@ -1,5 +1,6 @@
 <?= $this->element('admin_menu');?>
 <?= $this->Html->css('summernote.css');?>
+<?php use Cake\Core\Configure; ?>
 <?php $this->start('script-embedded'); ?>
 <?= $this->Html->script('summernote.min.js');?>
 <?= $this->Html->script('lang/summernote-ja-JP.js');?>

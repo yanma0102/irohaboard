@@ -6,7 +6,8 @@
 			<?= $this->AppView->isEditPage() ? __('編集') :  __('新規コース'); ?>
 		</div>
 		<div class="panel-body">
-		<?php
+		<?php use Cake\Core\Configure; ?>
+<?php
 			echo $this->Form->create('Course', Configure::read('form_defaults'));
 			echo $this->Form->control('id');
 			echo $this->Form->control('title',	['label' => __('コース名')]);

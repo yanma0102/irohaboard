@@ -1,4 +1,5 @@
 <?= $this->element('admin_menu');?>
+<?php use Cake\Core\Configure; ?>
 <?php $this->start('script-embedded'); ?>
 <script>
 	function openRecord(course_id, user_id)

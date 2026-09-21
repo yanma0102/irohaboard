@@ -32,7 +32,8 @@ class AppView extends View
         $this->loadHelper('Html');
         $this->loadHelper('Form');
         $this->loadHelper('Flash');
-        $this->loadHelper('Pagination');
+        $this->loadHelper('Paginator');
+        $this->loadHelper('Url');
         $this->loadHelper('AppView');
     }
 }

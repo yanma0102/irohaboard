@@ -1,6 +1,7 @@
 <?= $this->element('admin_menu');?>
 <?= $this->Html->css( 'select2.min.css');?>
 <?= $this->Html->script( 'select2.min.js');?>
+<?php use Cake\Core\Configure; ?>
 <?php $this->Html->scriptStart(['inline' => false]); ?>
 	$(function (e) {
 		$('#GroupGroup').select2({placeholder:   "<?= __('選択しない場合、全てのユーザが対象となります。')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});

@@ -5,7 +5,8 @@
 			<?= __('設定')?>
 		</div>
 		<div class="panel-body">
-		<?php
+		<?php use Cake\Core\Configure; ?>
+<?php
 			echo $this->Form->create('User', Configure::read('form_defaults'));
 			echo $this->Form->control('User.new_password', [
 				'label' => __('新しいパスワード'),

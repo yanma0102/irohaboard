@@ -1,3 +1,4 @@
+<?php use Cake\Core\Configure; ?>
 <?php
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)

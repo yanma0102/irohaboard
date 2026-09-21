@@ -19,6 +19,13 @@ namespace App\Controller\Api;
 class ErrorsController extends BaseController
 {
     /**
+     * 認証不要でアクセス可能なアクション名
+     *
+     * @var array<string>
+     */
+    protected array $allowUnauthenticated = ['notFound'];
+
+    /**
      * 未定義ルートのハンドリング
      *
      * @return \Cake\Http\Response

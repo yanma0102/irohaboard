@@ -219,10 +219,10 @@ class UsersController extends AppController
                 $line = [
                     $row->username,                                             // ユーザ名
                     '',                                                         // パスワード
-                    $row->name,                                                 // 氏名
+                    $this->sanitizeCsvValue($row->name),                       // 氏名
                     Configure::read('user_role.' . $row->role),                // 権限
-                    $row->email,                                                // メールアドレス
-                    $row->comment,                                              // 備考
+                    $this->sanitizeCsvValue($row->email),                      // メールアドレス
+                    $this->sanitizeCsvValue($row->comment),                    // 備考
                 ];
 
                 // 所属グループを出力

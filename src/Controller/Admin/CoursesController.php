@@ -41,10 +41,41 @@ class CoursesController extends AppController
     public function index(): void
     {
         $coursesTable = $this->fetchTable('Courses');
-        $courses = $coursesTable->find()
-            ->order(['sort_no' => 'ASC'])
-            ->all();
-        $this->set(compact('courses'));
+
+        // 検索条件の構築
+        $conditions = [];
+        $keyword = $this->getQuery('keyword', '');
+
+        if ($keyword !== '') {
+            $keywordLike = '%' . $keyword . '%';
+            $coursesAlias = $coursesTable->getAlias();
+            $conditions[] = [
+                'OR' => [
+                    "$coursesAlias.title LIKE" => $keywordLike,
+                    "$coursesAlias.introduction LIKE" => $keywordLike,
+                    "$coursesAlias.comment LIKE" => $keywordLike,
+                ],
+            ];
+        }
+
+        // クエリの構築
+        $query = $coursesTable->find()
+            ->where($conditions)
+            ->order(['sort_no' => 'ASC']);
+
+        $this->paginate = [
+            'limit' => 20,
+        ];
+
+        try {
+            $courses = $this->paginate($query);
+        } catch (\Exception $e) {
+            // 指定したページが存在しなかった場合、1ページ目を設定
+            $this->request = $this->request->withParam('page', 1);
+            $courses = $this->paginate($query);
+        }
+
+        $this->set(compact('courses', 'keyword'));
     }
 
     /**

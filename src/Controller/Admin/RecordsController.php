@@ -155,7 +155,7 @@ class RecordsController extends AppController
         foreach ($rows as $row) {
             $line = [
                 $row->user->username ?? '',
-                $row->user->name ?? '',
+                $this->sanitizeCsvValue($row->user->name ?? ''),
                 $row->course->title ?? '',
                 $row->content->title ?? '',
                 $row->score,
@@ -261,12 +261,12 @@ class RecordsController extends AppController
 
             $line = [
                 $row->record->user->username ?? '',
-                $row->record->user->name ?? '',
+                $this->sanitizeCsvValue($row->record->user->name ?? ''),
                 $row->record->course->title ?? '',
                 $row->record->content->title ?? '',
                 $question_no,
-                $row->contents_question->title ?? '',
-                strip_tags($row->contents_question->body ?? ''),
+                $this->sanitizeCsvValue($row->contents_question->title ?? ''),
+                $this->sanitizeCsvValue(strip_tags($row->contents_question->body ?? '')),
                 $answer,
                 $result,
                 \Utils::getYMDHN($row->record->created ?? ''),

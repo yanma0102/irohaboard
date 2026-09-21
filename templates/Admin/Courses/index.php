@@ -52,6 +52,14 @@
 	<div class="buttons_container">
 		<button type="button" class="btn btn-primary btn-add" onclick="location.href='<?= $this->Url->build(['action' => 'add']) ?>'">+ 追加</button>
 	</div>
+	<div class="ib-horizontal">
+	<?php
+		echo $this->Form->create(null);
+		echo $this->Form->searchField('keyword', ['label' => __('キーワード')]);
+		echo $this->Form->submit(__('検索'), ['class' => 'btn btn-info btn-add']);
+		echo $this->Form->end();
+	?>
+	</div>
 
 	<div class="alert alert-warning"><?= __('ドラッグアンドドロップでコースの並び順が変更できます。'); ?></div>
 	<table id='sortable-table'>
@@ -85,6 +93,5 @@
 	<?php endforeach; ?>
 	</tbody>
 	</table>
-	<?= $this->Form->create(null);?>
-	<?= $this->Form->end(); ?>
+	<?= $this->element('paging');?>
 </div>

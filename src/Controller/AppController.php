@@ -394,6 +394,24 @@ class AppController extends Controller
     }
 
     /**
+     * CSV 出力時の数式インジェクションを防止する
+     *
+     * Excel 等でセルが数式として解釈される先頭文字（= + - @）に
+     * シングルクォートを付与して無害化する。
+     *
+     * @param string|null $value 対象の値
+     * @return string 無害化後の値
+     */
+    protected function sanitizeCsvValue(?string $value): string
+    {
+        $value = (string)$value;
+        if (preg_match('/^\s*[=\+\-@]/', $value)) {
+            return "'" . $value;
+        }
+        return $value;
+    }
+
+    /**
      * ログの保存
      *
      * @param string $log_type ログの種類

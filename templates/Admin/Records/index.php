@@ -38,7 +38,6 @@
 	
 	function downloadCSVDetail()
 	{
-		var url = '<?= $this->Url->build(['action' => 'csv']) ?>/' + $('#MembersEventEventId').val() + '/' + $('#MembersEventStatus').val() + '/' + $('#MembersEventUsername').val();
 		$("#RecordCmd").val("csv_detail");
 		$("#RecordAdminIndexForm").submit();
 		$("#RecordCmd").val("");

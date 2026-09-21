@@ -16,7 +16,7 @@ namespace App\Controller\Api;
  *
  * 未定義の API ルートに対する JSON 404 応答
  */
-class ApiErrorsController extends ApiBaseController
+class ErrorsController extends BaseController
 {
     /**
      * 未定義ルートのハンドリング

@@ -21,7 +21,10 @@
 				<?= $this->Form->unlockField('remember_me'); ?>
 				<?php }?>
 			</div>
-			<?= $this->Form->end(['label' => __('ログイン'), 'class'=>'btn btn-lg btn-primary btn-block']); ?>
+			<div class="form-group">
+				<?= $this->Form->button(__('ログイン'), ['class' => 'btn btn-lg btn-primary btn-block', 'type' => 'submit']); ?>
+			</div>
+			<?= $this->Form->end(); ?>
 		</div>
 	</div>
 </div>

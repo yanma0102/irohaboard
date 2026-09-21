@@ -40,7 +40,8 @@ class AppViewHelper extends Helper
      */
     public function readSession(string $key): mixed
     {
-        return $this->_View->request->getSession()->read($key);
+        $request = $this->_View->getRequest();
+        return $request->getSession()->read($key);
     }
 
     /**
@@ -51,7 +52,7 @@ class AppViewHelper extends Helper
      */
     public function deleteSession(string $key): void
     {
-        $this->_View->request->getSession()->delete($key);
+        $this->_View->getRequest()->getSession()->delete($key);
     }
 
     /**
@@ -62,7 +63,7 @@ class AppViewHelper extends Helper
      */
     public function hasSession(string $key): bool
     {
-        return $this->_View->request->getSession()->check($key);
+        return $this->_View->getRequest()->getSession()->check($key);
     }
 
     /**
@@ -74,7 +75,7 @@ class AppViewHelper extends Helper
      */
     public function writeSession(string $key, mixed $value): void
     {
-        $this->_View->request->getSession()->write($key, $value);
+        $this->_View->getRequest()->getSession()->write($key, $value);
     }
 
     /**
@@ -85,7 +86,7 @@ class AppViewHelper extends Helper
      */
     public function readAuthUser(?string $key = null): mixed
     {
-        $identity = $this->_View->request->getAttribute('identity');
+        $identity = $this->_View->getRequest()->getAttribute('identity');
 
         if (!$identity) {
             return null;
@@ -117,7 +118,7 @@ class AppViewHelper extends Helper
      */
     public function isAdminPage(): bool
     {
-        return $this->_View->request->getParam('prefix') === 'Admin';
+        return $this->_View->getRequest()->getParam('prefix') === 'Admin';
     }
 
     /**
@@ -127,7 +128,7 @@ class AppViewHelper extends Helper
      */
     public function isEditPage(): bool
     {
-        $action = $this->_View->request->getParam('action');
+        $action = $this->_View->getRequest()->getParam('action');
 
         return $action === 'edit';
     }
@@ -139,7 +140,7 @@ class AppViewHelper extends Helper
      */
     public function isRecordPage(): bool
     {
-        $action = $this->_View->request->getParam('action');
+        $action = $this->_View->getRequest()->getParam('action');
 
         return $action === 'record';
     }
@@ -151,7 +152,7 @@ class AppViewHelper extends Helper
      */
     public function isLoginPage(): bool
     {
-        $action = $this->_View->request->getParam('action');
+        $action = $this->_View->getRequest()->getParam('action');
 
         return $action === 'login';
     }
@@ -163,7 +164,7 @@ class AppViewHelper extends Helper
      */
     public function isHTTPS(): bool
     {
-        return $this->_View->request->is('https');
+        return $this->_View->getRequest()->is('https');
     }
 
     /**
@@ -173,7 +174,7 @@ class AppViewHelper extends Helper
      */
     public function isLocalIP(): bool
     {
-        $ip = $this->_View->request->clientIp();
+        $ip = $this->_View->getRequest()->clientIp();
 
         if ($ip === '::1') {
             return true;

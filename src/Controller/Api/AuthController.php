@@ -23,7 +23,7 @@ use Cake\Utility\Security;
 /**
  * ApiAuth Controller
  */
-class ApiAuthController extends ApiBaseController
+class AuthController extends BaseController
 {
     /**
      * 認証不要でアクセス可能なアクション名

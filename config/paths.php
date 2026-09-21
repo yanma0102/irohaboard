@@ -118,3 +118,4 @@ if (!defined('CORE_PATH')) {
 if (!defined('CAKE')) {
     define('CAKE', CORE_PATH . 'src' . DS);
 }
+if (!defined('APP_NAME')) { define('APP_NAME', 'iroha Board'); }

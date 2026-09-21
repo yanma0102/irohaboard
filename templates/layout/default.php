@@ -114,6 +114,6 @@
 	</div>
 	<?php }?>
 	
-	<?= $this->element('sql_dump'); ?>
+	<?php /* <?= $this->element('sql_dump'); ?> */ ?>
 </body>
 </html>

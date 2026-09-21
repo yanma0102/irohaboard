@@ -18,7 +18,7 @@ namespace App\Controller\Api;
  * ApiContents Controller
  * コンテンツの一覧・詳細を提供する
  */
-class ApiContentsController extends ApiBaseController
+class ContentsController extends BaseController
 {
     /**
      * コンテンツ一覧を取得する

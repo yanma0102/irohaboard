@@ -18,7 +18,7 @@ namespace App\Controller\Api;
  * ApiRecords Controller
  * 学習記録の一覧・詳細を提供する
  */
-class ApiRecordsController extends ApiBaseController
+class RecordsController extends BaseController
 {
     /**
      * 学習記録一覧を取得する

@@ -18,7 +18,7 @@ namespace App\Controller\Api;
  * ApiUsers Controller
  * ユーザの一覧・詳細・追加・更新・削除・コース割当を提供する
  */
-class ApiUsersController extends ApiBaseController
+class UsersController extends BaseController
 {
     /**
      * ユーザ一覧を取得する

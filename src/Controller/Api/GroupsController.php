@@ -18,7 +18,7 @@ namespace App\Controller\Api;
  * ApiGroups Controller
  * グループの一覧・詳細・ユーザ割当を提供する
  */
-class ApiGroupsController extends ApiBaseController
+class GroupsController extends BaseController
 {
     /**
      * グループ一覧を取得する

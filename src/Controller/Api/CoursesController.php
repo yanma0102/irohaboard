@@ -18,7 +18,7 @@ namespace App\Controller\Api;
  * ApiCourses Controller
  * コースの一覧・詳細・追加・削除を提供する
  */
-class ApiCoursesController extends ApiBaseController
+class CoursesController extends BaseController
 {
     /**
      * コース一覧を取得する

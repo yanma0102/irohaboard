@@ -23,7 +23,7 @@ use Cake\Http\Exception\HttpException;
 /**
  * ApiBase Controller
  */
-class ApiBaseController extends AppController
+class BaseController extends AppController
 {
     /**
      * API では不要なコンポーネントをロードしない

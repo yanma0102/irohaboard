@@ -46,164 +46,165 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/pages/*', 'Pages::display');
 
         // REST API v1
-        $builder->scope('/api/v1', function (RouteBuilder $builder): void {
+        $builder->scope('/api/v1', ['namespace' => 'App\Controller\Api'], function (RouteBuilder $builder): void {
+
             // 認証（トークン発行・失効）
             $builder->connect('/auth/token', [
-                'controller' => 'Api/Auth',
+                'controller' => 'Auth',
                 'action' => 'issueToken',
                 '_method' => 'POST',
             ]);
             $builder->connect('/auth/token', [
-                'controller' => 'Api/Auth',
+                'controller' => 'Auth',
                 'action' => 'revokeToken',
                 '_method' => 'DELETE',
             ]);
 
             // ユーザ
             $builder->connect('/users', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'index',
                 '_method' => 'GET',
             ]);
             $builder->connect('/users', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'add',
                 '_method' => 'POST',
             ]);
             $builder->connect('/users/{id}', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'view',
                 '_method' => 'GET',
             ], ['id' => '[0-9]+']);
             $builder->connect('/users/{id}', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'edit',
                 '_method' => 'PUT',
             ], ['id' => '[0-9]+']);
             $builder->connect('/users/{id}', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'edit',
                 '_method' => 'PATCH',
             ], ['id' => '[0-9]+']);
             $builder->connect('/users/{id}', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'delete',
                 '_method' => 'DELETE',
             ], ['id' => '[0-9]+']);
 
             // ユーザのパスワード変更
             $builder->connect('/users/{id}/password', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'changePassword',
                 '_method' => 'PUT',
             ], ['id' => '[0-9]+']);
             $builder->connect('/users/{id}/password', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'changePassword',
                 '_method' => 'PATCH',
             ], ['id' => '[0-9]+']);
 
             // ユーザのコース割当
             $builder->connect('/users/{id}/courses', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'courses',
                 '_method' => 'GET',
             ], ['id' => '[0-9]+']);
             $builder->connect('/users/{id}/courses', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'assignCourse',
                 '_method' => 'POST',
             ], ['id' => '[0-9]+']);
             $builder->connect('/users/{id}/courses/{course_id}', [
-                'controller' => 'Api/Users',
+                'controller' => 'Users',
                 'action' => 'unassignCourse',
                 '_method' => 'DELETE',
             ], ['id' => '[0-9]+', 'course_id' => '[0-9]+']);
 
             // コース
             $builder->connect('/courses', [
-                'controller' => 'Api/Courses',
+                'controller' => 'Courses',
                 'action' => 'index',
                 '_method' => 'GET',
             ]);
             $builder->connect('/courses', [
-                'controller' => 'Api/Courses',
+                'controller' => 'Courses',
                 'action' => 'add',
                 '_method' => 'POST',
             ]);
             $builder->connect('/courses/{id}', [
-                'controller' => 'Api/Courses',
+                'controller' => 'Courses',
                 'action' => 'view',
                 '_method' => 'GET',
             ], ['id' => '[0-9]+']);
             $builder->connect('/courses/{id}', [
-                'controller' => 'Api/Courses',
+                'controller' => 'Courses',
                 'action' => 'delete',
                 '_method' => 'DELETE',
             ], ['id' => '[0-9]+']);
 
             // コンテンツ
             $builder->connect('/contents', [
-                'controller' => 'Api/Contents',
+                'controller' => 'Contents',
                 'action' => 'index',
                 '_method' => 'GET',
             ]);
             $builder->connect('/contents/{id}', [
-                'controller' => 'Api/Contents',
+                'controller' => 'Contents',
                 'action' => 'view',
                 '_method' => 'GET',
             ], ['id' => '[0-9]+']);
 
             // 学習履歴
             $builder->connect('/records', [
-                'controller' => 'Api/Records',
+                'controller' => 'Records',
                 'action' => 'index',
                 '_method' => 'GET',
             ]);
             $builder->connect('/records/{id}', [
-                'controller' => 'Api/Records',
+                'controller' => 'Records',
                 'action' => 'view',
                 '_method' => 'GET',
             ], ['id' => '[0-9]+']);
 
             // グループ
             $builder->connect('/groups', [
-                'controller' => 'Api/Groups',
+                'controller' => 'Groups',
                 'action' => 'index',
                 '_method' => 'GET',
             ]);
             $builder->connect('/groups/{id}', [
-                'controller' => 'Api/Groups',
+                'controller' => 'Groups',
                 'action' => 'view',
                 '_method' => 'GET',
             ], ['id' => '[0-9]+']);
 
             // グループのユーザ割当
             $builder->connect('/groups/{id}/users', [
-                'controller' => 'Api/Groups',
+                'controller' => 'Groups',
                 'action' => 'users',
                 '_method' => 'GET',
             ], ['id' => '[0-9]+']);
             $builder->connect('/groups/{id}/users', [
-                'controller' => 'Api/Groups',
+                'controller' => 'Groups',
                 'action' => 'assignUser',
                 '_method' => 'POST',
             ], ['id' => '[0-9]+']);
             $builder->connect('/groups/{id}/users/{user_id}', [
-                'controller' => 'Api/Groups',
+                'controller' => 'Groups',
                 'action' => 'unassignUser',
                 '_method' => 'DELETE',
             ], ['id' => '[0-9]+', 'user_id' => '[0-9]+']);
         });
 
         // 未定義の /api/* は Api/Errors::notFound（JSON 404）
-        $builder->scope('/api', function (RouteBuilder $builder): void {
+        $builder->scope('/api', ['namespace' => 'App\Controller\Api'], function (RouteBuilder $builder): void {
             $builder->connect('*', [
-                'controller' => 'Api/Errors',
+                'controller' => 'Errors',
                 'action' => 'notFound',
             ]);
             $builder->connect('/', [
-                'controller' => 'Api/Errors',
+                'controller' => 'Errors',
                 'action' => 'notFound',
             ]);
         });

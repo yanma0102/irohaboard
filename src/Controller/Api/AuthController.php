@@ -17,8 +17,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use Cake\Core\Configure;
 use Cake\I18n\Time;
-use Cake\Utility\Security;
 
 /**
  * ApiAuth Controller
@@ -88,7 +88,8 @@ class AuthController extends BaseController
         if (substr($hash, 0, 1) === '$') {
             $verified = password_verify($password, $hash);
         } else {
-            $verified = ($hash === Security::hash($password, null, true));
+            $legacySalt = (string)Configure::read('legacy_security_salt');
+            $verified = ($hash === sha1($legacySalt . $password) || $hash === sha1($password));
         }
 
         if (!$verified) {

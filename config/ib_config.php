@@ -8,6 +8,9 @@
  * @license       https://www.gnu.org/licenses/gpl-3.0.en.html GPL License
  */
 
+// CakePHP 2 時代の Security.salt（旧 SHA1 パスワードの検証に使用）
+$config['legacy_security_salt'] = '397110e45242a23e5802e78f4eec95a7bd39e0f0';
+
 $config['group_status']		= ['1' => '公開', '0' => '非公開'];
 $config['course_status']	= ['1' => '有効', '0' => '無効'];
 $config['content_status']	= ['1' => '公開', '0' => '非公開'];

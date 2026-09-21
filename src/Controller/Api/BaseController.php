@@ -18,7 +18,6 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AppController;
-use Cake\Http\Exception\HttpException;
 
 /**
  * ApiBase Controller
@@ -76,9 +75,14 @@ class BaseController extends AppController
     {
         parent::beforeFilter($event);
 
+        // API コントローラでは全アクションをセッション認証コンポーネントに許可する
+        // （API は独自の Bearer トークン認証を行うため、セッション認証は不要）
+        $action = $this->request->getParam('action');
+        $allActions = array_merge($this->allowUnauthenticated, [$action]);
+        $this->Authentication->allowUnauthenticated($allActions);
+
         $this->response = $this->response->withType('application/json');
 
-        $action = $this->request->getParam('action');
         if (in_array($action, $this->allowUnauthenticated, true)) {
             return null;
         }
@@ -244,25 +248,16 @@ class BaseController extends AppController
     }
 
     /**
-     * エラーレスポンスを送信して終了する
+     * API エラー例外をスローする（実行を停止する）
      *
      * @param int $status HTTPステータスコード
      * @param string $message エラーメッセージ
      * @param mixed $errors 詳細（バリデーションエラー等）
-     * @return \Cake\Http\Response
+     * @return never
      */
-    protected function fail(int $status, string $message, $errors = null): \Cake\Http\Response
+    protected function fail(int $status, string $message, $errors = null): never
     {
-        $error = [
-            'code' => (int)$status,
-            'message' => (string)$message,
-        ];
-
-        if ($errors !== null && $errors !== []) {
-            $error['errors'] = $errors;
-        }
-
-        return $this->respond(['error' => $error], $status);
+        throw new ApiException($status, $message, $errors);
     }
 
     /**

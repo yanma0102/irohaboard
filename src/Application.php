@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Middleware\HostHeaderMiddleware;
+use App\Middleware\ApiErrorMiddleware;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
@@ -79,6 +80,12 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // and make an error page/response
             ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
 
+            // API ルート用エラーハンドリング（ApiException → JSON レスポンス）
+            ->insertAfter(
+                ErrorHandlerMiddleware::class,
+                new ApiErrorMiddleware()
+            )
+
             // Validate Host header to prevent Host Header Injection attacks.
             // In production, ensures App.fullBaseUrl is configured and validates
             // the incoming Host header against it.
@@ -109,8 +116,12 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                 (new CsrfProtectionMiddleware([
                     'httponly' => true,
                 ]))->skipCheckCallback(function ($request) {
-                    // ログイン/ログアウト POST は CSRF チェックをスキップ
                     $uri = $request->getUri()->getPath();
+                    // REST API は Bearer トークン認証のため CSRF スキップ
+                    if (str_starts_with($uri, '/api/')) {
+                        return true;
+                    }
+                    // ログイン/ログアウト POST は CSRF チェックをスキップ
                     if (str_starts_with($uri, '/users/login') || str_starts_with($uri, '/users/logout')) {
                         return true;
                     }
@@ -135,8 +146,12 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             ? '/admin/users/login'
             : '/users/login';
 
+        // REST API はセッション認証リダイレクト不要（Bearer トークン認証）
+        $isApi = str_starts_with($request->getUri()->getPath(), '/api/');
+        $redirectUrl = $isApi ? null : $loginUrl;
+
         $service = new AuthenticationService([
-            'unauthenticatedRedirect' => $loginUrl,
+            'unauthenticatedRedirect' => $redirectUrl,
             'queryParam' => 'redirect',
         ]);
 

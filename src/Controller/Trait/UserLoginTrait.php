@@ -196,8 +196,9 @@ trait UserLoginTrait
             return true;
         }
 
-        // 既存 SHA1 での認証
-        if (sha1($password) !== $hash) {
+        // 既存 SHA1 での認証（CakePHP 2 の Security::hash($password, null, true) 互換）
+        $legacySalt = (string)Configure::read('legacy_security_salt');
+        if ($hash !== sha1($legacySalt . $password) && $hash !== sha1($password)) {
             return false;
         }
 

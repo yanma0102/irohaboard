@@ -23,8 +23,8 @@ class ErrorsController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function notFound(): \Cake\Http\Response
+    public function notFound(): never
     {
-        return $this->fail(404, 'Endpoint not found');
+        $this->fail(404, 'Endpoint not found');
     }
 }

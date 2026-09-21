@@ -364,7 +364,7 @@ class BaseController extends AppController
             $query->select($findOptions['fields']);
         }
         if (isset($findOptions['order'])) {
-            $query->order($findOptions['order']);
+            $query->orderBy($findOptions['order']);
         }
 
         $rows = [];

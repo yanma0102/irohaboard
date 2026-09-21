@@ -260,6 +260,9 @@ class ContentsController extends AppController
                 if (!in_array('.' . $ext, $upload_extensions)) {
                     $mode = 'error';
                     $this->Flash->error('アップロードされたファイルの形式は許可されていません');
+                } elseif ($file->getSize() > $upload_maxsize) {
+                    $mode = 'error';
+                    $this->Flash->error('ファイルサイズが上限を超えています');
                 } else {
                     $str = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
                     $new_name = date('YmdHis') . $str . '.' . $ext;
@@ -306,14 +309,21 @@ class ContentsController extends AppController
 
                 $original_name = $file->getClientFilename();
                 $ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
-                $str = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
-                $new_name = date('YmdHis') . $str . '.' . $ext;
 
-                $dest = $file_path . DS . $new_name;
-                $result = $file->moveTo($dest);
+                if (!in_array('.' . $ext, (array)Configure::read('upload_image_extensions'), true)) {
+                    $response = [false];
+                } elseif ($file->getSize() > Configure::read('upload_image_maxsize')) {
+                    $response = [false];
+                } else {
+                    $str = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+                    $new_name = date('YmdHis') . $str . '.' . $ext;
 
-                $file_url = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/contents/file_image/' . $new_name;
-                $response = $result ? [$file_url] : [false];
+                    $dest = $file_path . DS . $new_name;
+                    $result = $file->moveTo($dest);
+
+                    $file_url = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/contents/file_image/' . $new_name;
+                    $response = $result ? [$file_url] : [false];
+                }
             } else {
                 $response = [false];
             }

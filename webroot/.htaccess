@@ -26,9 +26,9 @@ RewriteRule ^ - [F,L]
 RewriteCond %{REQUEST_URI} (wp-admin|wp-includes|wp-content) [NC]
 RewriteRule ^ - [F,L]
 
-# Deny access to all .php files except index.php and test_pi.php
+# Deny access to all .php files except index.php
 RewriteCond %{REQUEST_URI} \.php$ [NC]
-RewriteCond %{REQUEST_URI} !/(index|test_pi)\.php$ [NC]
+RewriteCond %{REQUEST_URI} !/index\.php$ [NC]
 RewriteRule ^ - [F,L]
 
 # Deny access to well-known files

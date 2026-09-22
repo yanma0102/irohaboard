@@ -289,4 +289,157 @@ class UsersControllerTest extends TestCase
         $this->get('/admin/users/edit/99999');
         $this->assertResponseCode(404);
     }
+
+    /**
+     * 学習履歴クリア(clear) テスト — Records テーブルが空になることを確認
+     */
+    public function testClearLearningHistory(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('clearhistuser');
+
+        // テスト用の Course / Content / Record を raw SQL で作成
+        $connection = $this->getTableLocator()->get('Users')->getConnection();
+        $connection->execute(
+            'INSERT INTO ib_courses (title, sort_no, user_id, created, modified) VALUES (:title, 0, :user_id, NOW(), NOW())',
+            ['title' => 'テストコース', 'user_id' => (int)$user->id]
+        );
+        $courseId = (int)$connection->execute('SELECT LAST_INSERT_ID()')->fetch()[0];
+
+        $connection->execute(
+            'INSERT INTO ib_contents (course_id, user_id, title, kind, body, sort_no, comment, created, modified) VALUES (:course_id, :user_id, :title, :kind, :body, 0, :comment, NOW(), NOW())',
+            ['course_id' => $courseId, 'user_id' => (int)$user->id, 'title' => 'テストコンテンツ', 'kind' => 'text', 'body' => 'テスト内容', 'comment' => '']
+        );
+        $contentId = (int)$connection->execute('SELECT LAST_INSERT_ID()')->fetch()[0];
+
+        $recordsTable = $this->getTableLocator()->get('Records');
+        $connection->execute(
+            'INSERT INTO ib_records (user_id, course_id, content_id, created) VALUES (:user_id, :course_id, :content_id, NOW())',
+            ['user_id' => (int)$user->id, 'course_id' => $courseId, 'content_id' => $contentId]
+        );
+        $this->assertTrue($recordsTable->exists(['user_id' => $user->id]), '学習履歴が存在する');
+
+        // clear を実行
+        $this->post("/admin/users/clear/{$user->id}");
+        $this->assertRedirect();
+
+        // Records が削除されていることを確認
+        $this->assertFalse(
+            $recordsTable->exists(['user_id' => $user->id]),
+            '学習履歴がクリアされていない'
+        );
+    }
+
+    /**
+     * clear の GET メソッドは許可されないこと（405）
+     */
+    public function testClearGetNotAllowed(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('cleargetuser');
+
+        $this->get("/admin/users/clear/{$user->id}");
+        $this->assertResponseCode(405);
+    }
+
+    /**
+     * 重複ユーザー名で追加 → バリデーションエラー（フォーム再表示 200）
+     */
+    public function testAddDuplicateUsername(): void
+    {
+        $this->loginAsAdmin();
+        $this->createUser('dupuser');
+
+        $this->post('/admin/users/add', [
+            'User' => [
+                'username' => 'dupuser',
+                'new_password' => 'newpass',
+                'name' => '重複テスト',
+                'role' => 'user',
+                'email' => 'dup@example.com',
+                'Group' => [],
+                'Course' => [],
+                'comment' => '',
+            ],
+        ]);
+        $this->assertResponseOk();
+    }
+
+    /**
+     * role を空で追加 → バリデーションエラー（フォーム再表示 200）
+     */
+    public function testAddInvalidRole(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->post('/admin/users/add', [
+            'User' => [
+                'username' => 'noroleuser',
+                'new_password' => 'newpass',
+                'name' => 'ロール空テスト',
+                'role' => '',
+                'email' => 'norole@example.com',
+                'Group' => [],
+                'Course' => [],
+                'comment' => '',
+            ],
+        ]);
+        $this->assertResponseOk();
+    }
+
+    /**
+     * 編集(edit) POST — パスワードを空のまま変更なしで更新
+     */
+    public function testEditPasswordUnchanged(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('pwdunchanged');
+
+        $usersTable = $this->getTableLocator()->get('Users');
+        $before = $usersTable->get((int)$user->id);
+        $originalPassword = $before->password;
+
+        $this->post("/admin/users/edit/{$user->id}", [
+            'User' => [
+                'id' => $user->id,
+                'username' => 'pwdunchanged',
+                'name' => 'パスワード未変更テスト',
+                'role' => 'user',
+                'email' => 'pwdunchanged@example.com',
+                'Group' => [],
+                'Course' => [],
+                'comment' => '',
+                // new_password を送信しない（パスワード変更なし）
+            ],
+        ]);
+        $this->assertRedirect();
+
+        $after = $usersTable->get((int)$user->id);
+        $this->assertSame($originalPassword, $after->password, 'パスワードが変更されている');
+    }
+
+    /**
+     * setting ページでパスワード変更 → パスワードが更新されること
+     *
+     * UsersController::setting() は保存成功時に null を返すため 200 レスポンス。
+     */
+    public function testSettingChangePassword(): void
+    {
+        $admin = $this->loginAsAdmin();
+
+        $this->post('/admin/users/setting', [
+            'User' => [
+                'new_password' => 'newadminpass',
+                'new_password2' => 'newadminpass',
+            ],
+        ]);
+        $this->assertResponseOk();
+
+        $usersTable = $this->getTableLocator()->get('Users');
+        $updated = $usersTable->get((int)$admin->id);
+        $this->assertTrue(
+            password_verify('newadminpass', $updated->password),
+            'パスワードが更新されていない'
+        );
+    }
 }

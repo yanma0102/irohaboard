@@ -347,4 +347,151 @@ class GroupsControllerTest extends TestCase
         $body = json_decode((string)$this->_response->getBody(), true);
         $this->assertSame(403, $body['error']['code']);
     }
+
+    // ----------------------------------------------------------------
+    // GET /api/v1/groups/{id} (view)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: admin でグループ詳細取得 → 200 + JSON に id, title が含まれる
+     */
+    public function testView(): void
+    {
+        $this->createUser('admin10', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin10', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('詳細テストグループ');
+
+        $this->get('/api/v1/groups/' . $group->id);
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertArrayHasKey('id', $body['data']);
+        $this->assertArrayHasKey('title', $body['data']);
+        $this->assertSame($group->id, $body['data']['id']);
+        $this->assertSame('詳細テストグループ', $body['data']['title']);
+    }
+
+    /**
+     * 異常系: 存在しない ID → 404
+     */
+    public function testViewNotFound(): void
+    {
+        $this->createUser('admin11', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin11', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $this->get('/api/v1/groups/99999');
+
+        $this->assertResponseCode(404);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('error', $body);
+        $this->assertSame('Group not found', $body['error']['message']);
+    }
+
+    // ----------------------------------------------------------------
+    // GET /api/v1/groups/{id}/users (users)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: グループ所属ユーザ一覧取得 → 200 + JSON が配列
+     */
+    public function testUsers(): void
+    {
+        $this->createUser('admin12', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin12', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('ユーザ一覧テストグループ');
+
+        $this->get('/api/v1/groups/' . $group->id . '/users');
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertIsArray($body['data']);
+    }
+
+    // ----------------------------------------------------------------
+    // POST /api/v1/groups/{id}/users (assignUser)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: グループにユーザを割り当て → 200 + DB にレコード作成
+     */
+    public function testAssignUser(): void
+    {
+        $this->createUser('admin13', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin13', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('割当テストグループ');
+        $user = $this->createUser('assignuser01');
+
+        $this->post('/api/v1/groups/' . $group->id . '/users', [
+            'user_id' => $user->id,
+        ]);
+
+        $this->assertResponseCode(201);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertTrue($body['data']['assigned']);
+        $this->assertTrue($body['data']['created']);
+
+        // DB にレコードが作成されたことを確認
+        $usersGroupsTable = $this->getTableLocator()->get('UsersGroups');
+        $this->assertTrue(
+            $usersGroupsTable->exists(['user_id' => $user->id, 'group_id' => $group->id]),
+            'ib_users_groups にレコードが作成されている'
+        );
+    }
+
+    // ----------------------------------------------------------------
+    // DELETE /api/v1/groups/{id}/users/{user_id} (unassignUser)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: グループからユーザを解除 → 200 + DB からレコード削除
+     */
+    public function testUnassignUser(): void
+    {
+        $this->createUser('admin14', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin14', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('解除テストグループ');
+        $user = $this->createUser('unassignuser01');
+
+        // 事前にユーザを割り当て
+        $usersGroupsTable = $this->getTableLocator()->get('UsersGroups');
+        $ugEntity = $usersGroupsTable->newEntity([
+            'user_id' => $user->id,
+            'group_id' => $group->id,
+        ]);
+        $usersGroupsTable->save($ugEntity);
+        $this->assertTrue(
+            $usersGroupsTable->exists(['user_id' => $user->id, 'group_id' => $group->id]),
+            '事前確認: ib_users_groups にレコードが存在する'
+        );
+
+        $this->delete('/api/v1/groups/' . $group->id . '/users/' . $user->id);
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertTrue($body['data']['deleted']);
+
+        // DB からレコードが削除されたことを確認
+        $this->assertFalse(
+            $usersGroupsTable->exists(['user_id' => $user->id, 'group_id' => $group->id]),
+            'ib_users_groups の該当行が削除されている'
+        );
+    }
 }

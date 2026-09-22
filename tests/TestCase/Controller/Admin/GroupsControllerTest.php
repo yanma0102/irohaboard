@@ -232,4 +232,47 @@ class GroupsControllerTest extends TestCase
         $this->get('/admin/groups/edit/99999');
         $this->assertResponseCode(404);
     }
+
+    /**
+     * 存在しないグループの削除 → 404
+     */
+    public function testDeleteNotFound(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->post('/admin/groups/delete/99999');
+        $this->assertResponseCode(404);
+    }
+
+    /**
+     * 追加(add) POST — タイトル空でバリデーションエラー（フォーム再表示 200）
+     */
+    public function testAddValidationErrors(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->post('/admin/groups/add', [
+            'title' => '',
+            'Course' => [],
+            'comment' => '',
+        ]);
+        $this->assertResponseOk();
+    }
+
+    /**
+     * 編集(edit) POST — タイトル空でバリデーションエラー（フォーム再表示 200）
+     */
+    public function testEditValidationErrors(): void
+    {
+        $this->loginAsAdmin();
+        $group = $this->createGroup('バリデーションテスト');
+
+        $this->post("/admin/groups/edit/{$group->id}", [
+            'id' => $group->id,
+            'title' => '',
+            'Course' => [],
+            'comment' => '',
+        ]);
+        $this->assertResponseOk();
+    }
 }

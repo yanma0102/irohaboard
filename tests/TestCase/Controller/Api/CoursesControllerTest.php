@@ -259,4 +259,159 @@ class CoursesControllerTest extends TestCase
         $this->get('/api/v1/courses/' . $courseId);
         $this->assertResponseCode(404);
     }
+
+    // ----------------------------------------------------------------
+    // GET /api/v1/courses (index)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: admin でコース一覧取得 → 200 + JSON が配列
+     */
+    public function testIndexAsAdmin(): void
+    {
+        $this->createUser('admin10', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin10', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $adminUser = $this->getTableLocator()->get('Users')->find()->firstOrFail();
+        $this->createCourse('一覧テストコース', (int)$adminUser->id);
+
+        $this->get('/api/v1/courses');
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertIsArray($body['data']);
+        $this->assertNotEmpty($body['data']);
+    }
+
+    /**
+     * 正常系: 一般ユーザでコース一覧取得 → 200 + JSON が配列
+     */
+    public function testIndexAsUser(): void
+    {
+        $this->createUser('user10', ['role' => 'user']);
+        $tokenData = $this->issueToken('user10', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $this->get('/api/v1/courses');
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertIsArray($body['data']);
+    }
+
+    // ----------------------------------------------------------------
+    // GET /api/v1/courses/{id} (view)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: admin でコース詳細取得 → 200 + JSON に id, title が含まれる
+     */
+    public function testView(): void
+    {
+        $this->createUser('admin11', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin11', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $adminUser = $this->getTableLocator()->get('Users')->find()->firstOrFail();
+        $course = $this->createCourse('詳細テストコース', (int)$adminUser->id);
+
+        $this->get('/api/v1/courses/' . $course->id);
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertArrayHasKey('id', $body['data']);
+        $this->assertArrayHasKey('title', $body['data']);
+        $this->assertSame($course->id, $body['data']['id']);
+        $this->assertSame('詳細テストコース', $body['data']['title']);
+    }
+
+    /**
+     * 異常系: 存在しない ID → 404
+     */
+    public function testViewNotFound(): void
+    {
+        $this->createUser('admin12', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin12', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $this->get('/api/v1/courses/99999');
+
+        $this->assertResponseCode(404);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('error', $body);
+        $this->assertSame('Course not found', $body['error']['message']);
+    }
+
+    // ----------------------------------------------------------------
+    // POST /api/v1/courses (add)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: admin でコース作成 → 201 + DB にレコード作成
+     */
+    public function testAdd(): void
+    {
+        $this->createUser('admin13', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin13', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $this->post('/api/v1/courses', [
+            'title' => '新規テストコース',
+            'comment' => '作成テスト',
+        ]);
+
+        $this->assertResponseCode(201);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertSame('新規テストコース', $body['data']['title']);
+
+        // DB にレコードが作成されたことを確認
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $this->assertTrue(
+            $coursesTable->exists(['title' => '新規テストコース']),
+            'ib_courses にレコードが作成されている'
+        );
+    }
+
+    // ----------------------------------------------------------------
+    // DELETE /api/v1/courses/{id} (delete)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: admin でコース削除 → 200 + DB からレコード削除
+     */
+    public function testDelete(): void
+    {
+        $this->createUser('admin14', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin14', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $adminUser = $this->getTableLocator()->get('Users')->find()->firstOrFail();
+        $course = $this->createCourse('削除テストコース', (int)$adminUser->id);
+
+        $this->delete('/api/v1/courses/' . $course->id);
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertSame($course->id, $body['data']['id']);
+        $this->assertTrue($body['data']['deleted']);
+
+        // DB からレコードが削除されたことを確認
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $this->assertFalse(
+            $coursesTable->exists(['id' => $course->id]),
+            'ib_courses の該当行が削除されている'
+        );
+    }
 }

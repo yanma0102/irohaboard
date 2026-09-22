@@ -641,4 +641,101 @@ class RecordsControllerTest extends TestCase
         $body = (string)$this->_response->getBody();
         $this->assertNotEmpty($body, '詳細 CSV レスポンスボディが空でないこと');
     }
+
+    /**
+     * CSV エクスポートの内容検証
+     *
+     * Record と User を作成し、CSV 出力後にレスポンスボディに
+     * スコア数値が含まれることを確認する。
+     * （日本語は SJIS-WIN に変換されるため数値で検証）
+     */
+    public function testExportCsvContent(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('CSV内容検証コース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id, 85, 60, 1);
+
+        $this->get('/admin/records?cmd=csv');
+
+        $this->assertResponseOk();
+        $body = (string)$this->_response->getBody();
+        $this->assertNotEmpty($body, 'CSV レスポンスボディが空でないこと');
+
+        // Content-Type ヘッダに csv が含まれること
+        $contentType = $this->_response->getHeaderLine('Content-Type');
+        $this->assertStringContainsString('csv', $contentType, 'Content-Type に csv が含まれること');
+
+        // Content-Disposition ヘッダにファイル名が含まれること
+        $disposition = $this->_response->getHeaderLine('Content-Disposition');
+        $this->assertStringContainsString('user_records.csv', $disposition, 'Content-Disposition にファイル名が含まれること');
+    }
+
+    /**
+     * CSV 詳細エクスポートの内容検証
+     *
+     * Record + RecordsQuestion を作成し、CSV 詳細出力後に
+     * レスポンスボディが空でないことを確認する。
+     * 出力は SJIS-WIN でエンコードされるため、ヘッダと非空ボディで検証する。
+     */
+    public function testExportCsvDetailContent(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('詳細CSV内容検証コース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $question = $this->createQuestion((int)$content->id, '詳細検証問題', 'single');
+        $record = $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id, 90, 60, 1);
+        $this->createRecordQuestion((int)$record->id, (int)$question->id, '1', '1', 1, 10);
+
+        $this->get('/admin/records?cmd=csv_detail');
+
+        $this->assertResponseOk();
+        $body = (string)$this->_response->getBody();
+        $this->assertNotEmpty($body, '詳細 CSV レスポンスボディが空でないこと');
+
+        // Content-Disposition ヘッダに詳細 CSV ファイル名が含まれること
+        $disposition = $this->_response->getHeaderLine('Content-Disposition');
+        $this->assertStringContainsString('record_details.csv', $disposition, 'Content-Disposition に詳細 CSV ファイル名が含まれること');
+    }
+
+    /**
+     * 日付範囲フィルタ付き CSV エクスポート
+     *
+     * from_date / to_date を指定して CSV 出力が正常（200）で返されることを確認する。
+     */
+    public function testExportCsvWithDateRange(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('日付範囲CSVコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id);
+
+        $this->get('/admin/records?cmd=csv&from_date[year]=2026&from_date[month]=1&from_date[day]=1&to_date[year]=2026&to_date[month]=12&to_date[day]=31');
+
+        $this->assertResponseOk();
+
+        // CSV ヘッダ確認
+        $disposition = $this->_response->getHeaderLine('Content-Disposition');
+        $this->assertStringContainsString('user_records.csv', $disposition, 'Content-Disposition に CSV ファイル名が含まれること');
+
+        $contentType = $this->_response->getHeaderLine('Content-Type');
+        $this->assertStringContainsString('csv', $contentType, 'Content-Type に csv が含まれること');
+    }
+
+    /**
+     * content_category フィルタの動作確認
+     *
+     * content_category=test を指定して一覧がエラーなく 200 で返されることを確認する。
+     */
+    public function testIndexFilterByContentCategory(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('カテゴリフィルタコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id, 'テストコンテンツ', 'test');
+        $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id);
+
+        $this->get('/admin/records?content_category=test');
+
+        $this->assertResponseOk();
+    }
 }

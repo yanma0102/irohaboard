@@ -367,4 +367,82 @@ class ContentsQuestionsControllerTest extends TestCase
         ]);
         $this->assertResponseOk();
     }
+
+    /**
+     * record アクション — テスト結果を表示できること
+     */
+    public function testRecord(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('結果表示コース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $question = $this->createQuestion((int)$content->id, '結果表示問題');
+
+        $recordsTable = $this->getTableLocator()->get('Records');
+        $record = $recordsTable->newEntity([
+            'course_id' => (int)$course->id,
+            'user_id' => (int)$admin->id,
+            'content_id' => (int)$content->id,
+            'full_score' => 100,
+            'score' => 80,
+            'created' => date('Y-m-d H:i:s'),
+        ]);
+        $savedRecord = $recordsTable->save($record);
+        $this->assertNotFalse($savedRecord, 'レコードの保存に失敗');
+
+        $recordsQuestionsTable = $this->getTableLocator()->get('RecordsQuestions');
+        $rq = $recordsQuestionsTable->newEntity([
+            'record_id' => (int)$savedRecord->id,
+            'question_id' => (int)$question->id,
+            'answer' => '1',
+            'correct' => '1',
+            'is_correct' => 1,
+            'score' => 10,
+            'created' => date('Y-m-d H:i:s'),
+        ]);
+        $savedRq = $recordsQuestionsTable->save($rq);
+        $this->assertNotFalse($savedRq, 'RecordsQuestions の保存に失敗');
+
+        $this->get("/admin/contents-questions/record/{$content->id}/{$savedRecord->id}");
+        $this->assertResponseOk();
+    }
+
+    /**
+     * record アクション — 存在しない content_id で 404
+     */
+    public function testRecordNotFound(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('結果404コース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $question = $this->createQuestion((int)$content->id, '結果404問題');
+
+        $recordsTable = $this->getTableLocator()->get('Records');
+        $record = $recordsTable->newEntity([
+            'course_id' => (int)$course->id,
+            'user_id' => (int)$admin->id,
+            'content_id' => (int)$content->id,
+            'full_score' => 100,
+            'score' => 80,
+            'created' => date('Y-m-d H:i:s'),
+        ]);
+        $savedRecord = $recordsTable->save($record);
+        $this->assertNotFalse($savedRecord, 'レコードの保存に失敗');
+
+        $recordsQuestionsTable = $this->getTableLocator()->get('RecordsQuestions');
+        $rq = $recordsQuestionsTable->newEntity([
+            'record_id' => (int)$savedRecord->id,
+            'question_id' => (int)$question->id,
+            'answer' => '1',
+            'correct' => '1',
+            'is_correct' => 1,
+            'score' => 10,
+            'created' => date('Y-m-d H:i:s'),
+        ]);
+        $savedRq = $recordsQuestionsTable->save($rq);
+        $this->assertNotFalse($savedRq, 'RecordsQuestions の保存に失敗');
+
+        $this->get("/admin/contents-questions/record/99999/{$savedRecord->id}");
+        $this->assertResponseCode(404);
+    }
 }

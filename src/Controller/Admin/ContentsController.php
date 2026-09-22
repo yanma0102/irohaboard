@@ -28,7 +28,7 @@ class ContentsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
-        $this->FormProtection->unlockActions(['order', 'preview', 'uploadImage']);
+        $this->FormProtection->unlockActions(['order', 'preview', 'uploadImage', 'copy']);
     }
 
     /**
@@ -417,12 +417,9 @@ class ContentsController extends AppController
 
         // コンテンツのコピー
         $content = $contentsTable->get((int)$content_id);
-        $maxRow = $contentsTable->find()->select(['max_id' => $contentsTable->find()->func()->max('id')])->first();
-        $new_content_id = ($maxRow->max_id ?? 0) + 1;
 
         $newContent = $contentsTable->newEmptyEntity();
         $newContent = $contentsTable->patchEntity($newContent, [
-            'id' => $new_content_id,
             'title' => $content->title . 'の複製',
             'kind' => $content->kind,
             'url' => $content->url,
@@ -434,6 +431,7 @@ class ContentsController extends AppController
         ]);
 
         $contentsTable->saveOrFail($newContent);
+        $new_content_id = (int)$newContent->id;
 
         // テスト問題のコピー
         $questions = $contentsQuestionsTable->find()
@@ -444,22 +442,19 @@ class ContentsController extends AppController
         $sort_no = 1;
 
         foreach ($questions as $question) {
-            $maxRow = $contentsQuestionsTable->find()
-                ->select(['max_id' => $contentsQuestionsTable->find()->func()->max('id')])
-                ->first();
-
-            $new_question_id = ($maxRow->max_id ?? 0) + 1;
-
             $newQuestion = $contentsQuestionsTable->newEmptyEntity();
             $newQuestion = $contentsQuestionsTable->patchEntity($newQuestion, [
-                'id' => $new_question_id,
                 'content_id' => $new_content_id,
                 'sort_no' => $sort_no,
-                'question' => $question->question,
-                'kind' => $question->kind,
-                'answer' => $question->answer,
-                'commentary' => $question->commentary,
-                'select_count' => $question->select_count,
+                'question_type' => $question->question_type,
+                'title' => $question->title,
+                'body' => $question->body,
+                'image' => $question->image,
+                'options' => $question->options,
+                'correct' => $question->correct,
+                'score' => $question->score,
+                'explain' => $question->explain,
+                'comment' => $question->comment,
             ]);
 
             $contentsQuestionsTable->saveOrFail($newQuestion);

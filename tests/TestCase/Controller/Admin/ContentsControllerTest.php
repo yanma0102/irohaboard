@@ -436,4 +436,199 @@ class ContentsControllerTest extends TestCase
         // 保存されたファイルのクリーンアップ
         $this->cleanupUploadedFile($decoded[0], $tmpFile);
     }
+
+    /**
+     * 学習履歴表示テスト
+     *
+     * GET /admin/contents/record/{course_id}/{user_id} → 200
+     */
+    public function testRecord(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('履歴テストコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id, '履歴テストコンテンツ');
+
+        // Record 作成
+        $recordsTable = $this->getTableLocator()->get('Records');
+        $record = $recordsTable->newEntity([
+            'course_id' => (int)$course->id,
+            'user_id' => (int)$admin->id,
+            'content_id' => (int)$content->id,
+        ]);
+        $recordsTable->save($record);
+
+        // ContentsQuestion 作成
+        $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
+        $question = $contentsQuestionsTable->newEntity([
+            'content_id' => (int)$content->id,
+            'question_type' => 'text',
+            'body' => 'テスト問題',
+            'sort_no' => 1,
+        ]);
+        $contentsQuestionsTable->save($question);
+
+        // RecordsQuestion 作成
+        $recordsQuestionsTable = $this->getTableLocator()->get('RecordsQuestions');
+        $recordsQuestion = $recordsQuestionsTable->newEntity([
+            'record_id' => (int)$record->id,
+            'question_id' => (int)$question->id,
+            'score' => 10,
+        ]);
+        $recordsQuestionsTable->save($recordsQuestion);
+
+        $this->get("/admin/contents/record/{$course->id}/{$admin->id}");
+        $this->assertResponseOk();
+    }
+
+    /**
+     * 存在しないコースで学習履歴アクセステスト
+     *
+     * 存在しない course_id → 404
+     */
+    public function testRecordNotFound(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->get('/admin/contents/record/99999/1');
+        $this->assertResponseCode(404);
+    }
+
+    /**
+     * コンテンツコピー POST テスト
+     *
+     * POST /admin/contents/copy/{course_id}/{content_id} → リダイレクト ＋
+     * DB にタイトルに「の複製」を含む新コンテンツが作成され、
+     * kind/url/body/file_name が元と同一、course_id = コピー先、status = 0 であること。
+     * また、テスト問題もコピーされること。
+     */
+    public function testCopyPost(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('コピーテストコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id, 'コピーソースコンテンツ');
+        $contentId = (int)$content->id;
+
+        // テスト問題作成
+        $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
+        $question = $contentsQuestionsTable->newEntity([
+            'content_id' => $contentId,
+            'question_type' => 'text',
+            'body' => 'テスト問題文',
+            'title' => 'テスト問題タイトル',
+            'sort_no' => 1,
+        ]);
+        $contentsQuestionsTable->save($question);
+
+        $this->post("/admin/contents/copy/{$course->id}/{$contentId}");
+        $this->assertRedirect();
+
+        // DB 確認: コピーされたコンテンツ
+        $contentsTable = $this->getTableLocator()->get('Contents');
+        $copiedContent = $contentsTable->find()
+            ->where(['title LIKE' => '%の複製'])
+            ->order(['id' => 'DESC'])
+            ->first();
+
+        $this->assertNotNull($copiedContent, 'コピーされたコンテンツが見つからない');
+        $this->assertStringContainsString('の複製', $copiedContent->title);
+        $this->assertSame($content->kind, $copiedContent->kind);
+        $this->assertSame($content->url, $copiedContent->url);
+        $this->assertSame($content->body, $copiedContent->body);
+        $this->assertSame($content->file_name, $copiedContent->file_name);
+        $this->assertSame((int)$course->id, (int)$copiedContent->course_id);
+        $this->assertSame(0, (int)$copiedContent->status);
+
+        // DB 確認: テスト問題がコピーされている
+        $copiedQuestion = $contentsQuestionsTable->find()
+            ->where(['content_id' => (int)$copiedContent->id])
+            ->first();
+
+        $this->assertNotNull($copiedQuestion, 'コピーされたテスト問題が見つからない');
+    }
+
+    /**
+     * コピー GET メソッド拒否テスト
+     *
+     * copy() は POST のみ受け付ける → 405
+     */
+    public function testCopyGetNotAllowed(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('メソッドテストコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+
+        $this->get("/admin/contents/copy/{$course->id}/{$content->id}");
+        $this->assertResponseCode(405);
+    }
+
+    /**
+     * 並び替え AJAX テスト
+     *
+     * AJAX リクエストで order → 200 + レスポンスボディに "OK"
+     */
+    public function testOrderAjax(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('並び替えテストコース', (int)$admin->id);
+        $content1 = $this->createContent((int)$course->id, (int)$admin->id, 'コンテンツ１');
+        $content2 = $this->createContent((int)$course->id, (int)$admin->id, 'コンテンツ２');
+
+        $this->configRequest([
+            'headers' => ['X-Requested-With' => 'XMLHttpRequest'],
+        ]);
+
+        $this->post('/admin/contents/order', [
+            'id_list' => [(int)$content1->id, (int)$content2->id],
+        ]);
+        $this->assertResponseOk();
+        $this->assertResponseContains('OK');
+    }
+
+    /**
+     * 並び替え 非 AJAX テスト
+     *
+     * 非 AJAX リクエストで order → 200 + ボディが空
+     */
+    public function testOrderNonAjax(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('非AJAX並び替えコース', (int)$admin->id);
+        $content1 = $this->createContent((int)$course->id, (int)$admin->id, 'コンテンツ１');
+        $content2 = $this->createContent((int)$course->id, (int)$admin->id, 'コンテンツ２');
+
+        $this->post('/admin/contents/order', [
+            'id_list' => [(int)$content1->id, (int)$content2->id],
+        ]);
+        $this->assertResponseOk();
+    }
+
+    /**
+     * 削除 GET メソッド拒否テスト
+     *
+     * delete() は POST/DELETE のみ受け付ける → 405
+     */
+    public function testDeleteGetNotAllowed(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('削除メソッドコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+
+        $this->get("/admin/contents/delete/{$content->id}");
+        $this->assertResponseCode(405);
+    }
+
+    /**
+     * 編集フォーム表示テスト
+     *
+     * GET /admin/contents/edit/{course_id}/{content_id} → 200
+     */
+    public function testEditGet(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('編集フォームコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id, '編集対象コンテンツ');
+
+        $this->get("/admin/contents/edit/{$course->id}/{$content->id}");
+        $this->assertResponseOk();
+    }
 }

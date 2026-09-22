@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `ib_users_groups` (
   `comment` text,
   PRIMARY KEY (`id`),
   KEY `idx_user_group_id` (`user_id`,`group_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_users_courses`
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `ib_users_courses` (
   `comment` text,
   PRIMARY KEY (`id`),
   KEY `idx_user_course_id` (`user_id`,`course_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_users`
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `ib_users` (
   `deleted` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `login_id` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_settings`
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `ib_settings` (
   `setting_name` varchar(100) NOT NULL,
   `setting_value` varchar(1000) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_records_questions`
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS `ib_records_questions` (
   `score` int(8) NOT NULL DEFAULT '0',
   `created` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_records`
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS `ib_records` (
   PRIMARY KEY (`id`),
   KEY `idx_course_user_content_id` (`course_id`,`user_id`,`content_id`),
   KEY `idx_created` (`created`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_infos`
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `ib_infos` (
   `modified` datetime NOT NULL,
   `user_id` int(8) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- ----------------------------
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS `ib_infos_groups` (
   `modified` datetime DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- ----------------------------
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS `ib_groups` (
   `copyright` varchar(200) DEFAULT NULL,
   `module` varchar(50) DEFAULT '00000000',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_groups_courses`
@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS `ib_groups_courses` (
   `modified` datetime DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_courses`
@@ -175,7 +175,7 @@ CREATE TABLE IF NOT EXISTS `ib_courses` (
   `comment` text,
   `user_id` int(8) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_contents_questions`
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `ib_contents_questions` (
   `modified` datetime DEFAULT NULL,
   `sort_no` int(8) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_logs`
@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS `ib_logs` (
   `user_agent` varchar(1000) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- ----------------------------
@@ -237,7 +237,7 @@ CREATE TABLE IF NOT EXISTS `ib_contents` (
   `sort_no` int(8) NOT NULL DEFAULT '0',
   `comment` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_user_tokens`
@@ -259,7 +259,7 @@ CREATE TABLE IF NOT EXISTS `ib_user_tokens` (
   UNIQUE KEY `uk_token_selector` (`token_selector`),
   KEY `idx_user_type` (`user_id`, `token_type`),
   KEY `idx_expired` (`expired`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for `ib_cake_sessions`
@@ -269,7 +269,7 @@ CREATE TABLE IF NOT EXISTS `ib_cake_sessions` (
   `data` text NOT NULL,
   `expires` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO `ib_settings` VALUES ('1', 'title', 'システム名', 'eラーニングシステム');
 INSERT INTO `ib_settings` VALUES ('2', 'copyright', 'コピーライト', 'Copyright (C) 2016-2026 XXX Co.,Ltd. All rights reserved.');

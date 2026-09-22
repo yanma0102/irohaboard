@@ -88,7 +88,7 @@ class ContentsQuestionsController extends AppController
                     'content_id' => $content_id,
                     $contentsQuestionsTable->aliasField('id') . ' IN' => $question_id_list,
                 ])
-                ->order($contentsQuestionsTable->find()->newExpr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
+                ->orderBy($contentsQuestionsTable->find()->expr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
                 ->all();
         } elseif ($this->readSession('Iroha.RondomQuestions.' . $content_id . '.id_list') !== '') {
             // セッションにランダム出題情報がある場合
@@ -99,14 +99,14 @@ class ContentsQuestionsController extends AppController
                     'content_id' => $content_id,
                     $contentsQuestionsTable->aliasField('id') . ' IN' => $question_id_list,
                 ])
-                ->order($contentsQuestionsTable->find()->newExpr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
+                ->orderBy($contentsQuestionsTable->find()->expr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
                 ->all();
         } elseif ($content->question_count > 0) {
             // ランダム出題の場合
             $contentsQuestions = $contentsQuestionsTable->find()
                 ->where(['content_id' => $content_id])
                 ->limit((int)$content->question_count)
-                ->order($contentsQuestionsTable->find()->newExpr()->add('RAND()'))
+                ->orderBy($contentsQuestionsTable->find()->expr()->add('RAND()'))
                 ->all();
 
             $question_id_list = [];
@@ -119,7 +119,7 @@ class ContentsQuestionsController extends AppController
             // 通常の出題
             $contentsQuestions = $contentsQuestionsTable->find()
                 ->where(['content_id' => $content_id])
-                ->order([$contentsQuestionsTable->aliasField('sort_no') => 'ASC'])
+                ->orderBy([$contentsQuestionsTable->aliasField('sort_no') => 'ASC'])
                 ->all();
         }
 

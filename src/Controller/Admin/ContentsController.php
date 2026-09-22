@@ -438,7 +438,7 @@ class ContentsController extends AppController
         // テスト問題のコピー
         $questions = $contentsQuestionsTable->find()
             ->where(['content_id' => $content_id])
-            ->order(['sort_no' => 'ASC'])
+            ->orderBy(['sort_no' => 'ASC'])
             ->all();
 
         $sort_no = 1;

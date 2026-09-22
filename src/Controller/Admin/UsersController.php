@@ -651,7 +651,7 @@ class UsersController extends AppController
     protected function _csvFputcsv(array $fields): string
     {
         $fp = fopen('php://memory', 'r+');
-        fputcsv($fp, $fields);
+        fputcsv($fp, $fields, ',', '"', '\\');
         rewind($fp);
         $csv = stream_get_contents($fp);
         fclose($fp);

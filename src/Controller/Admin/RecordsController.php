@@ -92,7 +92,7 @@ class RecordsController extends AppController
         $query = $recordsTable->find()
             ->contain(['Users', 'Courses', 'Contents'])
             ->where($conditions)
-            ->order([$recordsTable->aliasField('created') => 'DESC']);
+            ->orderBy([$recordsTable->aliasField('created') => 'DESC']);
 
         $this->paginate = [
             'limit' => 20,
@@ -131,7 +131,7 @@ class RecordsController extends AppController
         $rows = $recordsTable->find()
             ->contain(['Users', 'Courses', 'Contents'])
             ->where($conditions)
-            ->order([$recordsTable->aliasField('created') => 'DESC'])
+            ->orderBy([$recordsTable->aliasField('created') => 'DESC'])
             ->all();
 
         $header = [
@@ -197,7 +197,7 @@ class RecordsController extends AppController
         $query = $recordsQuestionsTable->find()
             ->contain(['Records.Users', 'Records.Courses', 'Records.Contents', 'ContentsQuestions'])
             ->where($conditions)
-            ->order([
+            ->orderBy([
                 'Users.name' => 'ASC',
                 'Courses.sort_no' => 'ASC',
                 'Contents.sort_no' => 'ASC',
@@ -292,7 +292,7 @@ class RecordsController extends AppController
     protected function _csvFputcsv(array $fields): string
     {
         $fp = fopen('php://memory', 'r+');
-        fputcsv($fp, $fields);
+        fputcsv($fp, $fields, ',', '"', '\\');
         rewind($fp);
         $csv = stream_get_contents($fp);
         fclose($fp);

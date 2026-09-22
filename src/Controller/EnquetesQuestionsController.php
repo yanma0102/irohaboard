@@ -82,12 +82,12 @@ class EnquetesQuestionsController extends AppController
                     'content_id' => $content_id,
                     $contentsQuestionsTable->aliasField('id') . ' IN' => $question_id_list,
                 ])
-                ->order($contentsQuestionsTable->find()->newExpr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
+                ->orderBy($contentsQuestionsTable->find()->expr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
                 ->all();
         } else {
             $contentsQuestions = $contentsQuestionsTable->find()
                 ->where(['content_id' => $content_id])
-                ->order([$contentsQuestionsTable->aliasField('sort_no') => 'ASC'])
+                ->orderBy([$contentsQuestionsTable->aliasField('sort_no') => 'ASC'])
                 ->all();
         }
 

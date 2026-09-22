@@ -50,7 +50,7 @@ class InfosController extends AppController
                     "(SELECT GROUP_CONCAT(g.title ORDER BY g.id SEPARATOR ', ') AS group_title FROM ib_infos_groups ug INNER JOIN ib_groups g ON g.id = ug.group_id WHERE ug.info_id = Infos.id GROUP BY ug.info_id)"
                 ),
             ])
-            ->order([$infosTable->aliasField('created') => 'DESC']);
+            ->orderBy([$infosTable->aliasField('created') => 'DESC']);
 
         $this->paginate = [
             'limit' => 20,

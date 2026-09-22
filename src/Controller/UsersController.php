@@ -180,7 +180,7 @@ class UsersController extends AppController
 
         // ヘッダー行をCSV出力
         mb_convert_variables('SJIS-WIN', 'UTF-8', $header);
-        fputcsv($fp, $header);
+        fputcsv($fp, $header, ',', '"', '\\');
 
         // ページ単位でユーザを取得
         for ($page = 1; $page <= $page_size; $page++) {
@@ -237,7 +237,7 @@ class UsersController extends AppController
 
                 // CSV出力
                 mb_convert_variables('SJIS-WIN', 'UTF-8', $line);
-                fputcsv($fp, $line);
+                fputcsv($fp, $line, ',', '"', '\\');
             }
         }
 

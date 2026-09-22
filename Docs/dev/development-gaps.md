@@ -47,7 +47,7 @@
 | D-2 | API 認可の一時回避 | `08-rest-api.md`、`BaseController` | `BaseController::beforeFilter()` が毎回 `allowUnauthenticated` に現在のアクションを追加する実装 | 低 | 未対応 |
 | D-3 | `friendsofcake/bootstrap-ui` 未導入 | `09-views.md` §3（導入予定） | `composer.json` に未追加。`webroot/css/bootstrap.min.css` 等の生 Bootstrap 3 と `ib_config.php` の `form_defaults` で代替。**導入には全テンプレートの CSS クラス書き換えが必要（Bootstrap 3→5）のため現状維持** | 中 | ↩対応不要（現状維持） |
 | D-4 | セッション保存先 | `11-config-bootstrap.md`、`10-database-migration.md` | `config/app.php` の Session は `defaults => 'php'`（ファイル保存）。`ib_cake_sessions` テーブルは未使用のまま存在 | 低 | 未対応 |
-| D-5 | i18n 翻訳ファイル | CakePHP 5 標準、`09-views.md` | `resources/` は `.gitkeep` のみ。`__()` は 100 箇所以上で使用されるが翻訳リソースなし。キー文字列がそのまま表示される | 中 | 未対応 |
+| D-5 | i18n 翻訳ファイル | CakePHP 5 標準、`09-views.md` | `resources/` は `.gitkeep` のみ。`__()` は 100 箇所以上で使用されるが翻訳リソースなし。キー文字列がそのまま表示される | 中 | ✅対応済 |
 | D-6 | API ルートの設計差分 | `08-rest-api.md` A1〜A24 | 実装のみ存在: `PUT\|PATCH /users/:id/password`、`GET /users/:id/courses`、`DELETE /users/:id/courses/:course_id`、`DELETE /groups/:id/users/:user_id`。G-2〜G-5 追加により設計 28 ルートと実装が一致。設計書への追記推奨 | 低 | 未対応（設計書追記） |
 | D-7 | `Api/ErrorsController::notFound` のメッセージ | `Docs/test/03-api.md` API-081 期待値 | `$allowUnauthenticated = ['notFound']` を追加し、未定義ルートが未認証でも 404 `{"error":{"code":404,"message":"Endpoint not found"}}` を返すよう修正済み（回帰テストあり） | 低 | ✅対応済 |
 
@@ -69,8 +69,8 @@
 | T-1 | Controller/API 自動テスト | Admin CRUD（Users/Courses/Groups）・API（Auth/Errors/Groups/Courses）・フロント（Infos/Users/UsersCourses）のテストを追加。**全体 128 tests / 492 assertions**。未カバー: Admin の Contents/ContentsQuestions/EnquetesQuestions/Infos/Records/Settings | 高 | 一部対応済 |
 | T-2 | Fixture クラス | `tests/Fixture/` は `.gitkeep` のみ。`tests/schema.sql` + SchemaLoader で代替 | 中 | 未対応 |
 | T-3 | `config/Migrations/` | `bake migration_snapshot` で `InitialSchema`（16テーブル）を生成済み。`migrations status` で up を確認。以降のスキーマ変更は Migrations を正とする | 中 | ✅対応済 |
-| T-4 | 統合/E2E テスト | 0 件。回帰検知は手動試験に依存（CakePHP 5 では Dusk 等の環境構築が必要） | 高 | 未対応 |
-| T-5 | `tests/schema.sql` の文字コード | 全 16 テーブルが `CHARSET=utf8`（旧 utf8mb3）。本番は utf8mb4 済み。`config/schema/app.sql`・Migrations も同様のため、アプリ全体の文字コード方針変更として対応要 | 中 | 未対応 |
+| T-4 | 統合/E2E テスト | 0 件。回帰検知は手動試験に依存（CakePHP 5 では Dusk 等の環境構築が必要） | 高 | ✅対応済（ワークフロー統合テスト 8件追加） |
+| T-5 | `tests/schema.sql` の文字コード | 全 16 テーブルが `CHARSET=utf8`（旧 utf8mb3）。本番は utf8mb4 済み。`config/schema/app.sql`・Migrations も同様のため、アプリ全体の文字コード方針変更として対応要 | 中 | ✅対応済 |
 
 ## 6. データ整合性（DB 移行の申し送り）
 
@@ -83,13 +83,13 @@
 
 ## 7. 対応優先順位（推奨）
 
-> **2026-09-23 進捗**: S-3（PSR-4移行）完了。BUG-1（Infos 追加バグ）、BUG-4（記述式保存失敗）を修正。C-5（uploads/files 統一）完了。D-3 は Bootstrap 3.3.5 確認済み（bootstrap-ui 導入はテンプレート全面書き換えが必要のため現状維持方針）。残るは D-5・T-2・T-4・T-5・B-3・B-4 と、T-1 の未カバーコントローラ。
+> **2026-09-23 進捗**: S-3（PSR-4移行）完了。BUG-1（Infos 追加バグ）、BUG-4（記述式保存失敗）を修正。C-5（uploads/files 統一）完了。D-3 は Bootstrap 3.3.5 確認済み（現状維持方針）。D-5（i18n）、T-4（統合テスト）、T-5（utf8mb4）も完了。残るは D-1, D-2, D-4, D-6, T-2, B-1〜B-4。
 
 1. ~~**S-1**（画像アップロード無検証）・**S-4**（`test_pi.php` 許可）~~ — ✅対応済。
 2. ~~**G-1**（コース検索）~~ ✅対応済。**B-3**（本番データ突合） — 機能・移行成立に直結。**未対応**。
 3. ~~**G-2〜G-5**（グループ/コース API の CRUD 欠落）~~ ✅対応済（実装）。G-6〜G-8 は設計に要求なしと判断し対応不要。
 4. ~~**S-2**（CSV 数式インジェクション）・**T-1**（Controller/API テスト）~~ ✅対応済（T-1 は主要コントローラをカバー、未カバー分は残）。**T-4**（統合テスト）は未対応。
-5. ~~**S-3**（`Vendor/Utils.php` PSR-4 移行）~~ ✅対応済。~~**D-3**（bootstrap-ui）~~ ↩対応不要（現状維持）。**D-5** — 保守性（優先度中）。**未対応**。
+5. ~~**S-3**（`Vendor/Utils.php` PSR-4 移行）~~ ✅対応済。~~**D-3**（bootstrap-ui）~~ ↩対応不要（現状維持）。~~**D-5**（i18n 翻訳）~~ ✅対応済。
 6. **D-1・D-2・D-4・D-6・T-2・T-5・B-1・B-2・B-4・T-1未カバー** — 整理・運用改善。
 
 ### 残課題サマリ（2026-09-22 時点）
@@ -98,8 +98,8 @@
 |---|---|---|
 | 機能欠落 (G) | G-1, G-2, G-3, G-4, G-5, G-9 | — （G-6〜G-8 は対応不要） |
 | セキュリティ (S) | S-1, S-2, S-3, S-4 | — |
-| 設計未準拠 (D) | D-3, D-7 | D-1, D-2, D-4, D-5, D-6 |
+| 設計未準拠 (D) | D-3, D-5, D-7 | D-1, D-2, D-4, D-6 |
 | コード整理 (C) | C-1, C-2, C-3, C-4, C-5, C-6 | — |
-| テスト基盤 (T) | T-1（主要）, T-3 | T-1（一部）, T-2, T-4, T-5 |
+| テスト基盤 (T) | T-1（主要）, T-3, T-4, T-5 | T-1（一部）, T-2 |
 | データ整合性 (B) | — | B-1〜B-4（B-1/B-2 は実害なし確認済み） |
 `

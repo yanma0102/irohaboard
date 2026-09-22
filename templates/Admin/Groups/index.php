@@ -19,8 +19,8 @@
 	<tr>
 		<td><?= h($group->title); ?></td>
 		<td><div class="reader" title="<?= h($group->course_title); ?>"><p><?= h($group->course_title); ?>&nbsp;</p></div></td>
-		<td class="ib-col-date"><?= h(Utils::getYMDHN($group->created)); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= h(Utils::getYMDHN($group->modified)); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= h(\App\Utility\Utils::getYMDHN($group->created)); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= h(\App\Utility\Utils::getYMDHN($group->modified)); ?>&nbsp;</td>
 		<td class="ib-col-action">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $group->id]) ?>'"><?= __('編集')?></button>
 			<?= $this->Form->postLink(__('削除'), ['action' => 'delete', $group->id], ['class'=>'btn btn-danger'], 

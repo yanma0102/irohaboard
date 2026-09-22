@@ -84,8 +84,8 @@
 		<td class="td-reader"><?= h(strip_tags($contentsQuestion['body'])); ?>&nbsp;</td>
 		<td><?php echo h(Configure::read('question_type.'.$contentsQuestion['question_type'])); ?>&nbsp;</td>
 		<td class="td-reader"><?= h($contentsQuestion['options']); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($contentsQuestion['created']); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($contentsQuestion['modified']); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($contentsQuestion['created']); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($contentsQuestion['modified']); ?>&nbsp;</td>
 		<td class="actions text-center">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $contentsQuestion['content_id'], $contentsQuestion['id']]) ?>'">編集</button>
 			<?php if($loginedUser['role'] == 'admin') {?>

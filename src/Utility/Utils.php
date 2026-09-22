@@ -1,8 +1,16 @@
 <?php
+declare(strict_types=1);
+
 /**
  * @author        Kotaro Miura
  * @copyright     2015-2021 iroha Soft, Inc. (https://irohasoft.jp)
  */
+
+namespace App\Utility;
+
+use Cake\Utility\Configure;
+use DateTime;
+use SplFileObject;
 
 // ユーティリティクラス
 class Utils
@@ -18,7 +26,7 @@ class Utils
 		if(!$str)
 			return '';
 		
-		$day = new DateTime($str);
+		$day = new DateTime((string)$str);
 		$ret = $day->format('Y/m/d');
 		
 		return $ret;
@@ -35,7 +43,7 @@ class Utils
 		if(!$str)
 			return '';
 		
-		$day = new DateTime($str);
+		$day = new DateTime((string)$str);
 		$ret =  $day->format('d/m/Y');
 		return $ret;
 	}
@@ -51,7 +59,7 @@ class Utils
 		if(!$str)
 			return '';
 		
-		$day = new DateTime($str);
+		$day = new DateTime((string)$str);
 		$ret =  $day->format('m/d/Y');
 		return $ret;
 	}
@@ -67,7 +75,7 @@ class Utils
 		if(!$str)
 			return '';
 		
-		$day = new DateTime($str);
+		$day = new DateTime((string)$str);
 		$ret = $day->format('Y-m-d H:i');
 		
 		return $ret;
@@ -123,12 +131,6 @@ class Utils
 		
 		return $csv;
 	}
-	/*
-	public static function isAllowed($user, $roles)
-	{
-		return (array_search($user['role'], $roles) > -1);
-	}
-	*/
 	
 	/**
 	 * 設定項目の値に対応するキーを取得
@@ -190,4 +192,3 @@ class Utils
 		return (isset($check)) ? $check : $alternate;
 	}
 }
-

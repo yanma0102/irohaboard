@@ -19,8 +19,8 @@
 	<tr>
 		<td><?= h($info->title); ?>&nbsp;</td>
 		<td><div class="reader col-group" title="<?= h($info->group_title); ?>"><p><?= h($info->group_title); ?>&nbsp;</p></td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($info->created); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($info->modified); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($info->created); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($info->modified); ?>&nbsp;</td>
 		<td class="ib-col-action">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $info->id]) ?>'"><?= __('編集')?></button>
 			<?= $this->Form->postLink(__('削除'), ['action' => 'delete', $info->id], ['class'=>'btn btn-danger'], 

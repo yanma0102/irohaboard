@@ -29,10 +29,7 @@
         "psr-4": {
             "App\\": "src/",
             "App\\Custom\\": "src/Custom/"
-        },
-        "classmap": [
-            "Vendor/"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {

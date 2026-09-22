@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
+use App\Utility\Utils;
 use Cake\Core\Configure;
 use Cake\Database\Expression\BetweenExpression;
 use Cake\Database\Expression\QueryExpression;
@@ -162,8 +163,8 @@ class RecordsController extends AppController
                 $row->pass_score,
                 Configure::read('record_result.' . $row->is_passed),
                 Configure::read('record_understanding.' . $row->understanding),
-                \Utils::getHNSBySec($row->study_sec),
-                \Utils::getYMDHN($row->created),
+                Utils::getHNSBySec($row->study_sec),
+                Utils::getYMDHN($row->created),
             ];
 
             mb_convert_variables('SJIS-WIN', 'UTF-8', $line);
@@ -269,7 +270,7 @@ class RecordsController extends AppController
                 $this->sanitizeCsvValue(strip_tags($row->contents_question->body ?? '')),
                 $answer,
                 $result,
-                \Utils::getYMDHN($row->record->created ?? ''),
+                Utils::getYMDHN($row->record->created ?? ''),
             ];
 
             mb_convert_variables('SJIS-WIN', 'UTF-8', $line);

@@ -177,9 +177,9 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 		<tr>
 			<td><span class="<?= $icon; ?>"></span>&nbsp;<?= $title_link; ?>&nbsp;</td>
 			<td class="ib-col-center" nowrap><?= h($kind); ?>&nbsp;</td>
-			<td class="ib-col-date"><?= Utils::getYMD($content['first_date']); ?>&nbsp;</td>
-			<td class="ib-col-date"><?= Utils::getYMD($content['last_date']); ?>&nbsp;</td>
-			<td class="ib-col-center"><?= str_replace('00:00:00', '', Utils::getHNSBySec($content['study_sec'])); ?>&nbsp;</td>
+			<td class="ib-col-date"><?= \App\Utility\Utils::getYMD($content['first_date']); ?>&nbsp;</td>
+			<td class="ib-col-date"><?= \App\Utility\Utils::getYMD($content['last_date']); ?>&nbsp;</td>
+			<td class="ib-col-center"><?= str_replace('00:00:00', '', \App\Utility\Utils::getHNSBySec($content['study_sec'])); ?>&nbsp;</td>
 			<td class="ib-col-center"><?= h($content['study_count']); ?>&nbsp;</td>
 			<td nowrap class="ib-col-center"><?= $understanding; ?></td>
 			<td class="ib-col-center"><?= ($content['is_complete'] == 1) ? '<span class="glyphicon glyphicon-ok text-muted"></span>' : ''; ?></td>

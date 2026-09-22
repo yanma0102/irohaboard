@@ -105,8 +105,8 @@
 		<td nowrap class="ib-col-center"><a href="javascript:openTestRecord(<?= h($record->content->id); ?>, <?= h($record->id); ?>);"><?= Configure::read('record_result.'.$record->is_passed); ?></a></td>
 		<?php }?>
 		<td nowrap class="ib-col-center"><?= h(Configure::read('record_understanding.'.$record->understanding)); ?>&nbsp;</td>
-		<td class="ib-col-center"><?= h(Utils::getHNSBySec($record->study_sec)); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= h(Utils::getYMDHN($record->created)); ?>&nbsp;</td>
+		<td class="ib-col-center"><?= h(\App\Utility\Utils::getHNSBySec($record->study_sec)); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= h(\App\Utility\Utils::getYMDHN($record->created)); ?>&nbsp;</td>
 	</tr>
 	<?php endforeach; ?>
 	</tbody>

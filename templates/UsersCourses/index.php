@@ -19,7 +19,7 @@
 			<tbody>
 			<?php foreach ($infos as $info): ?>
 			<tr>
-				<td width="100" valign="top"><?= h(Utils::getYMD($info->created)); ?></td>
+				<td width="100" valign="top"><?= h(\App\Utility\Utils::getYMD($info->created)); ?></td>
 				<td><?= $this->Html->link($info->title, ['controller' => 'infos', 'action' => 'view', $info->id]); ?></td>
 			</tr>
 			<?php endforeach; ?>
@@ -42,8 +42,8 @@
 				<?php }?>
 				<h4 class="list-group-item-heading"><?= h($course['title']);?></h4>
 				<p class="list-group-item-text">
-					<span class="first-date"><?= __('学習開始日').': '.Utils::getYMD($course['first_date']); ?></span>
-					<span class="last-date"><?= __('前回学習日').': '.Utils::getYMD($course['last_date']); ?></span>
+					<span class="first-date"><?= __('学習開始日').': '.\App\Utility\Utils::getYMD($course['first_date']); ?></span>
+					<span class="last-date"><?= __('前回学習日').': '.\App\Utility\Utils::getYMD($course['last_date']); ?></span>
 				</p>
 			</a>
 		<?php endforeach; ?>

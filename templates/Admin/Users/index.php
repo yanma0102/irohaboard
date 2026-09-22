@@ -59,8 +59,8 @@
 		<td nowrap><?= h(Configure::read('user_role.'.$user['role'])); ?>&nbsp;</td>
 		<td><div class="reader" title="<?= h($user['group_title']); ?>"><p><?= h($user['group_title']); ?>&nbsp;</p></div></td>
 		<td><div class="reader" title="<?= h($user['course_title']); ?>"><p><?= h($user['course_title']); ?>&nbsp;</p></div></td>
-		<td class="ib-col-datetime"><?= h(Utils::getYMDHN($user['last_logined'])); ?>&nbsp;</td>
-		<td class="ib-col-datetime"><?= h(Utils::getYMDHN($user['created'])); ?>&nbsp;</td>
+		<td class="ib-col-datetime"><?= h(\App\Utility\Utils::getYMDHN($user['last_logined'])); ?>&nbsp;</td>
+		<td class="ib-col-datetime"><?= h(\App\Utility\Utils::getYMDHN($user['created'])); ?>&nbsp;</td>
 		<?php if($loginedUser['role'] == 'admin') {?>
 		<td class="ib-col-action">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $user['id']]) ?>'"><?= __('編集')?></button>

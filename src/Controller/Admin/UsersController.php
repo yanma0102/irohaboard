@@ -14,6 +14,7 @@ namespace App\Controller\Admin;
 
 use App\Controller\AppController;
 use App\Controller\Trait\UserLoginTrait;
+use App\Utility\Utils;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 
@@ -380,7 +381,7 @@ class UsersController extends AppController
             }
 
             // CSVファイルの読み込み
-            $csv = \Utils::getCsvData($csvfile['tmp_name']);
+            $csv = Utils::getCsvData($csvfile['tmp_name']);
 
             $i = 0;
 
@@ -429,9 +430,9 @@ class UsersController extends AppController
                     }
 
                     $saveData['name']    = $row[COL_NAME];                                     // 氏名
-                    $saveData['role']    = \Utils::getKeyByValue('user_role', $row[COL_ROLE]); // 権限
+                    $saveData['role']    = Utils::getKeyByValue('user_role', $row[COL_ROLE]); // 権限
                     $saveData['email']   = $row[COL_EMAIL];                                    // メールアドレス
-                    $saveData['comment'] = \Utils::issetOr($row[COL_COMMENT]);                 // 備考
+                    $saveData['comment'] = Utils::issetOr($row[COL_COMMENT]);                 // 備考
 
                     //----------------------------------//
                     //	所属グループ・受講コースの割当	//
@@ -441,13 +442,13 @@ class UsersController extends AppController
 
                     // 所属グループの割当
                     for ($n = 0; $n < $group_count; $n++) {
-                        $title = \Utils::issetOr($row[COL_GROUP + $n], '');
+                        $title = Utils::issetOr($row[COL_GROUP + $n], '');
 
                         if ($title === '') {
                             continue;
                         }
 
-                        $group = \Utils::getIdByTitle($group_list, $title);
+                        $group = Utils::getIdByTitle($group_list, $title);
 
                         if ($group === null) {
                             continue;
@@ -458,13 +459,13 @@ class UsersController extends AppController
 
                     // 受講コースの割当
                     for ($n = 0; $n < $course_count; $n++) {
-                        $title = \Utils::issetOr($row[COL_COURSE + $n], '');
+                        $title = Utils::issetOr($row[COL_COURSE + $n], '');
 
                         if ($title === '') {
                             continue;
                         }
 
-                        $course = \Utils::getIdByTitle($course_list, $title);
+                        $course = Utils::getIdByTitle($course_list, $title);
 
                         if ($course === null) {
                             continue;

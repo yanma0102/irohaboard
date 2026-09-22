@@ -22,7 +22,7 @@
 			<tbody>
 		<?php foreach ($infos as $info): ?>
 		<tr>
-			<td width="100" valign="top"><?= h(Utils::getYMD($info->created)); ?>&nbsp;</td>
+			<td width="100" valign="top"><?= h(\App\Utility\Utils::getYMD($info->created)); ?>&nbsp;</td>
 			<td><?= $this->Html->link($info->title, ['action' => 'view', $info->id]); ?>&nbsp;</td>
 		</tr>
 		<?php endforeach; ?>

@@ -93,8 +93,8 @@
 		<td><?= $title; ?></td>
 		<td><?= h(Configure::read('content_kind.'.$content['kind'])); ?>&nbsp;</td>
 		<td class="text-center"><?= h(Configure::read('content_status.'.$content['status'])); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($content['created']); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= Utils::getYMDHN($content['modified']); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($content['created']); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($content['modified']); ?>&nbsp;</td>
 		<td class="ib-col-action">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $course['id'], $content['id']]) ?>'"><?= __('編集')?></button>
 			<?= $this->Form->postLink(__('複製'), ['action' => 'copy', $content['course_id'], $content['id']], ['class'=>'btn btn-info']);?>

@@ -80,8 +80,8 @@
 		echo $this->Form->hidden('id', ['id'=>'', 'class'=>'course_id', 'value'=>$course->id]);
 		?>
 		</td>
-		<td class="ib-col-date"><?= h(Utils::getYMDHN($course->created)); ?>&nbsp;</td>
-		<td class="ib-col-date"><?= h(Utils::getYMDHN($course->modified)); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= h(\App\Utility\Utils::getYMDHN($course->created)); ?>&nbsp;</td>
+		<td class="ib-col-date"><?= h(\App\Utility\Utils::getYMDHN($course->modified)); ?>&nbsp;</td>
 		<td class="ib-col-action">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $course->id]) ?>'"><?= __('編集')?></button>
 			<?php if($loginedUser['role'] == 'admin') {?>

@@ -3,68 +3,74 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-09-21 |
+| 最終更新 | 2026-09-22 |
 | 対象 | CakePHP 2.10 → 5.4 移行後の iroha Board |
 | 基準 | `Docs/design/*`・`Docs/API.md` の設計に対し、`src/`・`config/`・`templates/`・`tests/` の実装が不足または相違する箇所 |
 | 根拠 | `Docs/test/traceability.md` §4 Migration Gap List、各試験ファイルの「設計参照」列、および 2026-09-21 時点の実コード確認 |
 | 重大度 | **高** = 機能欠落・セキュリティ欠陥 / **中** = 設計未準拠（動作はする） / **低** = 保守性・整理 |
+| 状態 | **✅対応済** / **↩対応不要（誤起票・設計に求める記載なし）** / **未対応** |
+
+> **2026-09-22 更新</b>: 対応済み項目には「状態」列に ✅ を付与。G-6〜G-8 は調査の結果、設計書・レガシーいずれにも該当要求がないことが判明したため「↩対応不要」と判断（下記 §1 の注記参照）。
 
 ---
 
 ## 1. 機能欠落（設計・レガシーにあるが実装がない）
 
-| # | 漏れ内容 | 根拠（設計/レガシー） | 実装の現状 | 影響 | 重大度 |
-|---|---|---|---|---|---|
-| G-1 | コース検索機能（管理画面） | `Docs/design/12-implementation-test-plan.md` T2-3「コース検索（管理者）」、レガシーは `Plugin/Search`（PrgComponent/SearchableBehavior） | `src/Controller/Admin/CoursesController.php` に検索アクションなし（index/add/edit/delete/order のみ）。`src/` に Search 相当の実装なし | 管理画面でコースを絞り込めない。運用で多数のコースを扱う場合に影響 | 高 |
-| G-2 | グループ作成 API | `Docs/design/08-rest-api.md` A10 `POST /api/v1/groups` | `config/routes.php` にルートなし。`Api/GroupsController` に add アクションなし | API からグループを作成できない | 中 |
-| G-3 | グループ更新 API | `08-rest-api.md` A12 `PUT /api/v1/groups/:id` | ルートなし・アクションなし | API からグループを更新できない | 中 |
-| G-4 | グループ削除 API | `08-rest-api.md` A13 `DELETE /api/v1/groups/:id` | ルートなし・アクションなし（catch-all で 404） | API からグループを削除できない | 中 |
-| G-5 | コース更新 API | `08-rest-api.md` A18 `PUT /api/v1/courses/:id` | ルートなし。`Api/CoursesController` は index/view/add/delete のみ | API からコースを更新できない | 中 |
-| G-6 | フロント `CoursesController` | `Docs/design/07-controllers.md` §2.2（受講者用コース操作） | `src/Controller/CoursesController.php` は `initialize()` のみでアクション未実装 | 設計上の受講者向けコース操作が提供されない | 中 |
-| G-7 | フロント `GroupsController` | `07-controllers.md` §2.4 | `initialize()` のみでアクション未実装 | 受講者向けグループ表示が提供されない | 中 |
-| G-8 | フロント `SettingsController` | `07-controllers.md` §2.6 | クラス定義のみでアクション未実装 | 受講者向け設定表示が提供されない | 中 |
-| G-9 | `Plugin/Search` 相当の検索基盤 | `06-routing.md`・レガシー `Plugin/Search` | 代替プラグイン未導入。`Admin/RecordsController` のみ手書きクエリで代替（46行目コメント「Search.Prg に代わり…」） | 設計で規定された検索機構が存在しない（G-1 以外の一覧画面も同様の手書き対応が必要） | 中 |
+| # | 漏れ内容 | 根拠（設計/レガシー） | 実装の現状 | 影響 | 重大度 | 状態 |
+|---|---|---|---|---|---|---|
+| G-1 | コース検索機能（管理画面） | `Docs/design/12-implementation-test-plan.md` T2-3「コース検索（管理者）」、レガシーは `Plugin/Search`（PrgComponent/SearchableBehavior） | `Admin/CoursesController::index()` に keyword による title/introduction/comment の OR LIKE 検索を実装済み | 解消 | 高 | ✅対応済 |
+| G-2 | グループ作成 API | `Docs/design/12-implementation-test-plan.md` A10 `POST /api/v1/groups`（※旧記載の `08-rest-api.md` に A 番号の定義はない） | `Api/GroupsController::add()` + ルート実装済み（`requireManager()`、201 応答） | 解消 | 中 | ✅対応済 |
+| G-3 | グループ更新 API | `12-implementation-test-plan.md` A12 `PUT/PATCH /api/v1/groups/:id` | `Api/GroupsController::edit()` + ルート実装済み（PUT/PATCH 両対応） | 解消 | 中 | ✅対応済 |
+| G-4 | グループ削除 API | `12-implementation-test-plan.md` A13 `DELETE /api/v1/groups/:id` | `Api/GroupsController::delete()` + ルート実装済み。`GroupsTable::deleteGroup()` で中間テーブルを cascade 削除 | 解消 | 中 | ✅対応済 |
+| G-5 | コース更新 API | `12-implementation-test-plan.md` A18 `PUT/PATCH /api/v1/courses/:id` | `Api/CoursesController::edit()` + ルート実装済み（PUT/PATCH 両対応） | 解消 | 中 | ✅対応済 |
+| G-6 | フロント `CoursesController` | `Docs/design/07-controllers.md` §2.2 | `initialize()` のみ。**※ §2.2 は admin アクションの定義であり、フロント要求の記載はない。`09-views.md` にもフロント用テンプレートなし。レガシーにもフロント Courses 画面は存在しなかった。受講者向けコース一覧は `UsersCoursesController::index()` が提供済み** | 実害なし（誤起票） | 中 | ↩対応不要 |
+| G-7 | フロント `GroupsController` | `07-controllers.md` §2.4 | `initialize()` のみ。**※ §2.4 も admin アクションの定義。設計書・レガシーいずれにもフロント Groups 画面の要求なし。グループは管理概念** | 実害なし（誤起票） | 中 | ↩対応不要 |
+| G-8 | フロント `SettingsController` | `07-controllers.md` §2.6 | クラス定義のみ。**※ §2.6 も admin アクションの定義。受講者向け設定は `UsersController::setting()`（パスワード変更）が提供済み** | 実害なし（誤起票） | 中 | ↩対応不要 |
+| G-9 | `Plugin/Search` 相当の検索基盤 | `06-routing.md`・レガシー `Plugin/Search` | 汎用プラグインは未導入だが、G-1 で確立した**手書きクエリ方式**で管理画面検索（Courses/Records/Users）をカバー済み。Search.Prg は CakePHP 5 で動作しないため手書きが正式方針（`07-controllers.md` §5.4） | 解消（手書き方式で代替） | 中 | ✅対応済 |
+
+> **G-6〜G-8 の判断根拠（2026-09-22 調査）</b>: `development-gaps.md` は `07-controllers.md` §2.2/§2.4/§2.6 を根拠にフロント画面の欠落としていたが、これらセクションは **admin アクションの移行表**であり、フロント側アクションを要求していない。加えて (1) `09-views.md` のテンプレート一覧にフロント Courses/Groups/Settings が含まれない、(2) レガシー CakePHP 2 にも該当フロント画面が存在しなかった、(3) 受講者向け機能は `UsersCoursesController`・`ContentsController`・`UsersController::setting()` で充足済み、という3点から「設計・レガシーいずれも要求していない新規要求」と判断。実装は行わず、本一覧では対応不要として記録する。
 
 ## 2. セキュリティ上の欠落（設計 `05-security.md` との乖離）
 
-| # | 漏れ内容 | 根拠 | 実装の現状 | 影響 | 重大度 |
-|---|---|---|---|---|---|
-| S-1 | 画像アップロードの拡張子検証 | `05-security.md`（アップロード制限）、`09-views.md`（Summernote 画像アップロード） | `src/Controller/Admin/ContentsController.php::uploadImage()` に拡張子・サイズ検証が一切ない（`upload()` は22種を検証）。任意拡張子を `ROOT/files/` に `moveTo` し、`/contents/file_image/{name}` で配信 | 任意ファイル配置・コンテンツ種別偽装のリスク | 高 |
-| S-2 | ユーザー CSV の数式インジェクション対策 | 一般的なCSV 出力要件、内部実装の非対称 | 対策は `Admin/RecordsController.php:242` の詳細CSVのみ。`Admin/UsersController.php:574-631`・`src/Controller/UsersController.php:182-239` には対策なし | CSV を Excel で開いた際に数式が実行されるリスク | 中 |
-| S-3 | `Vendor/Utils.php` の未移行依存（サプライチェーン汚染） | `03-orm-migration.md`・`12-implementation-test-plan.md`（レガシー排除） | グローバルクラス `Utils` を `composer.json` の `classmap: ["Vendor/"]` で autoload し、`src/Controller/Admin/UsersController.php`・`Admin/RecordsController.php` の**10箇所**で使用 | 名前空間なしレガシーコードが残存。将来の改修・脆弱性対応が困難 | 中 |
-| S-4 | `.htaccess` の `test_pi.php` 許可 | `webroot/.htaccess` セキュリティ規則 | 本番用として `test_pi.php` が許可拡張子・ファイルに含まれる（開発用残骸の疑い） | 情報漏えいリスク | 中 |
+| # | 漏れ内容 | 根拠 | 実装の現状 | 影響 | 重大度 | 状態 |
+|---|---|---|---|---|---|---|
+| S-1 | 画像アップロードの拡張子検証 | `05-security.md`（アップロード制限）、`09-views.md`（Summernote 画像アップロード） | `Admin/ContentsController::uploadImage()` に拡張子（`upload_image_extensions`）・サイズ（`upload_image_maxsize`）検証を追加。`upload()` にもサイズ上限検証を追加 | 解消 | 高 | ✅対応済 |
+| S-2 | ユーザー CSV の数式インジェクション対策 | 一般的なCSV 出力要件、内部実装の非対称 | `AppController::sanitizeCsvValue()` を新設し、Admin/Records・Admin/Users・フロント Users の CSV 出力の自由入力項目に適用済み | 解消 | 中 | ✅対応済 |
+| S-3 | `Vendor/Utils.php` の未移行依存（サプライチェーン汚染） | `03-orm-migration.md`・`12-implementation-test-plan.md`（レガシー排除） | グローバルクラス `Utils` を `composer.json` の `classmap: ["Vendor/"]` で autoload し、`src/Controller/Admin/UsersController.php`・`Admin/RecordsController.php` の**10箇所**で使用 | 名前空間なしレガシーコードが残存。将来の改修・脆弱性対応が困難 | 中 | 未対応 |
+| S-4 | `.htaccess` の `test_pi.php` 許可 | `webroot/.htaccess` セキュリティ規則 | `webroot/.htaccess` の許可を `!/index\.php$` に限定し `test_pi.php` を除外済み | 解消 | 中 | ✅対応済 |
 
 ## 3. 設計未準拠（動作はするが設計と異なる）
 
-| # | 内容 | 根拠 | 実装の現状 | 重大度 |
-|---|---|---|---|---|
-| D-1 | API エラーハンドリング方式 | `08-rest-api.md`（`fail()` が Response を返す方式） | `ApiException` + `ApiErrorMiddleware` + `fail(): never` 方式を採用（Phase 5 で実装）。動作は検証済み | 低 |
-| D-2 | API 認可の一時回避 | `08-rest-api.md`、`BaseController` | `BaseController::beforeFilter()` が毎回 `allowUnauthenticated` に現在のアクションを追加する実装 | 低 |
-| D-3 | `friendsofcake/bootstrap-ui` 未導入 | `09-views.md` §3（導入予定） | `composer.json` に未追加。`webroot/css/bootstrap.min.css` 等の生 Bootstrap 3 と `ib_config.php` の `form_defaults` で代替 | 中 |
-| D-4 | セッション保存先 | `11-config-bootstrap.md`、`10-database-migration.md` | `config/app.php` の Session は `defaults => 'php'`（ファイル保存）。`ib_cake_sessions` テーブルは未使用のまま存在 | 低 |
-| D-5 | i18n 翻訳ファイル | CakePHP 5 標準、`09-views.md` | `resources/` は `.gitkeep` のみ。`__()` は 100 箇所以上で使用されるが翻訳リソースなし。キー文字列がそのまま表示される | 中 |
-| D-6 | API ルートの設計差分 | `08-rest-api.md` A1〜A24 | 実装のみ存在: `PUT\|PATCH /users/:id/password`、`GET /users/:id/courses`、`DELETE /users/:id/courses/:course_id`、`DELETE /groups/:id/users/:user_id`。設計の24に対し実装は28ルート | 低 |
-| D-7 | `Api/ErrorsController::notFound` のメッセージ | `Docs/test/03-api.md` API-081 期待値 | 期待は `{"error":{"code":404,"message":"Endpoint not found"}}`。実装のメッセージ文言は要確認 | 低 |
+| # | 内容 | 根拠 | 実装の現状 | 重大度 | 状態 |
+|---|---|---|---|---|---|
+| D-1 | API エラーハンドリング方式 | `08-rest-api.md`（`fail()` が Response を返す方式） | `ApiException` + `ApiErrorMiddleware` + `fail(): never` 方式を採用（Phase 5 で実装）。動作は検証済み | 低 | 未対応 |
+| D-2 | API 認可の一時回避 | `08-rest-api.md`、`BaseController` | `BaseController::beforeFilter()` が毎回 `allowUnauthenticated` に現在のアクションを追加する実装 | 低 | 未対応 |
+| D-3 | `friendsofcake/bootstrap-ui` 未導入 | `09-views.md` §3（導入予定） | `composer.json` に未追加。`webroot/css/bootstrap.min.css` 等の生 Bootstrap 3 と `ib_config.php` の `form_defaults` で代替 | 中 | 未対応 |
+| D-4 | セッション保存先 | `11-config-bootstrap.md`、`10-database-migration.md` | `config/app.php` の Session は `defaults => 'php'`（ファイル保存）。`ib_cake_sessions` テーブルは未使用のまま存在 | 低 | 未対応 |
+| D-5 | i18n 翻訳ファイル | CakePHP 5 標準、`09-views.md` | `resources/` は `.gitkeep` のみ。`__()` は 100 箇所以上で使用されるが翻訳リソースなし。キー文字列がそのまま表示される | 中 | 未対応 |
+| D-6 | API ルートの設計差分 | `08-rest-api.md` A1〜A24 | 実装のみ存在: `PUT\|PATCH /users/:id/password`、`GET /users/:id/courses`、`DELETE /users/:id/courses/:course_id`、`DELETE /groups/:id/users/:user_id`。G-2〜G-5 追加により設計 28 ルートと実装が一致。設計書への追記推奨 | 低 | 未対応（設計書追記） |
+| D-7 | `Api/ErrorsController::notFound` のメッセージ | `Docs/test/03-api.md` API-081 期待値 | `$allowUnauthenticated = ['notFound']` を追加し、未定義ルートが未認証でも 404 `{"error":{"code":404,"message":"Endpoint not found"}}` を返すよう修正済み（回帰テストあり） | 低 | ✅対応済 |
 
 ## 4. コード整理・残骸
 
-| # | 内容 | 現状 | 重大度 |
-|---|---|---|---|
-| C-1 | テンプレートの大小重複ディレクトリ | `templates/Error/` と `templates/error/`、`templates/element/Flash/` と `templates/element/flash/`、`templates/layout/Emails/` と `templates/layout/email/` が併存 | 低 |
-| C-2 | `templates/element/Flash/default.php` 不在 | `element/` に Flash 用ファイルがなく、`layout/flash.php` へのフォールバックに依存 | 低 |
-| C-3 | `templates/cell/` の未使用確認 | 空または未使用の可能性 | 低 |
-| C-4 | `webroot/index_cake2.php` の残置 | CakePHP 2 エントリポイント（211行）が残存。PHP 8.4 では直接アクセス時に Fatal Error | 低 |
-| C-5 | `uploads` と `files` の採用揺れ | `Admin/ContentsController` は `ROOT/files` へ保存し `docs/design` は `uploads` を前提とする箇所がある。実装と設計のディレクトリ名の不整合 | 低 |
-| C-6 | `Admin/RecordsController` の画面側 JS | `templates/Admin/Records/index.php` の `downloadCSVDetail()` が存在しない `#MembersEventEventId` を参照。実 URL は `?cmd=csv_detail` | 低 |
+| # | 内容 | 現状 | 重大度 | 状態 |
+|---|---|---|---|---|
+| C-1 | テンプレートの大小重複ディレクトリ | `templates/element/Flash/`（大文字）・`templates/layout/Emails/`（大文字）を削除。`templates/Error/`（`ErrorController::setTemplatePath('Error')` で使用中）と `templates/error/`（日本語カスタム）は用途が異なるため両方残置 | 低 | ✅対応済 |
+| C-2 | `templates/element/Flash/default.php` 不在 | `element/Flash/`（大文字）を削除。実使用は小文字 `templates/element/flash/`（カスタム版）のため問題なし | 低 | ✅対応済 |
+| C-3 | `templates/cell/` の未使用確認 | 空ディレクトリ（`.gitkeep` のみ）を削除。`cell()` の使用箇所なし | 低 | ✅対応済 |
+| C-4 | `webroot/index_cake2.php` の残置 | CakePHP 2 エントリポイント（211行）を削除。参照箇所なし | 低 | ✅対応済 |
+| C-5 | `uploads` と `files` の採用揺れ | 設計は `files/` を正式格納先とするが、実装は `ROOT/files/` と `ROOT/webroot/uploads/` をフォールバック参照。方針統一は設計判断が必要 | 低 | 未対応 |
+| C-6 | `Admin/RecordsController` の画面側 JS | `templates/Admin/Records/index.php` の `downloadCSVDetail()` 内のデッドコード（存在しない `#MembersEventEventId` を参照する未使用 `var url`）を削除済み | 低 | ✅対応済 |
 
 ## 5. テスト・運用基盤の欠落
 
-| # | 内容 | 現状 | 重大度 |
-|---|---|---|---|
-| T-1 | Controller/API 自動テスト | `tests/TestCase/Controller/` は `PagesControllerTest` のみ。Admin 9・API 7・フロント 5 コントローラは 0 件 | 高 |
-| T-2 | Fixture クラス | `tests/Fixture/` は `.gitkeep` のみ。`tests/schema.sql` + SchemaLoader で代替 | 中 |
-| T-3 | `config/Migrations/` | ディレクトリ自体が存在しない。`bin/cake migrations` でのスキーマ管理不可 | 中 |
-| T-4 | 統合/E2E テスト | 0 件。回帰検知は手動試験に依存 | 高 |
-| T-5 | `tests/schema.sql` の文字コード | 全 16 テーブルが `CHARSET=utf8`（旧 utf8mb3）。本番は utf8mb4 済み | 中 |
+| # | 内容 | 現状 | 重大度 | 状態 |
+|---|---|---|---|---|
+| T-1 | Controller/API 自動テスト | Admin CRUD（Users/Courses/Groups）・API（Auth/Errors/Groups/Courses）・フロント（Infos/Users/UsersCourses）のテストを追加。**全体 128 tests / 492 assertions**。未カバー: Admin の Contents/ContentsQuestions/EnquetesQuestions/Infos/Records/Settings | 高 | 一部対応済 |
+| T-2 | Fixture クラス | `tests/Fixture/` は `.gitkeep` のみ。`tests/schema.sql` + SchemaLoader で代替 | 中 | 未対応 |
+| T-3 | `config/Migrations/` | `bake migration_snapshot` で `InitialSchema`（16テーブル）を生成済み。`migrations status` で up を確認。以降のスキーマ変更は Migrations を正とする | 中 | ✅対応済 |
+| T-4 | 統合/E2E テスト | 0 件。回帰検知は手動試験に依存（CakePHP 5 では Dusk 等の環境構築が必要） | 高 | 未対応 |
+| T-5 | `tests/schema.sql` の文字コード | 全 16 テーブルが `CHARSET=utf8`（旧 utf8mb3）。本番は utf8mb4 済み。`config/schema/app.sql`・Migrations も同様のため、アプリ全体の文字コード方針変更として対応要 | 中 | 未対応 |
 
 ## 6. データ整合性（DB 移行の申し送り）
 
@@ -77,10 +83,23 @@
 
 ## 7. 対応優先順位（推奨）
 
-1. **S-1**（画像アップロード無検証）・**S-4**（`test_pi.php` 許可） — セキュリティ。即時。
-2. **G-1**（コース検索）・**B-3**（本番データ突合） — 機能・移行成立に直結。
-3. **G-2〜G-5**（グループ/コース API の CRUD 欠落） — 設計契約違反。実装 or 設計側の改訂の決定が必要。
-4. **S-2**（CSV 数式インジェクション）・**T-1/T-4**（Controller/API/統合テスト） — 品質基盤。
-5. **S-3・D-3・D-5・G-6〜G-9** — 設計準拠と保守性（優先度中）。
-6. **C-1〜C-6・D-1・D-2・D-4・D-6・D-7・T-2・T-3・T-5・B-1・B-2** — 整理・運用改善。
+> **2026-09-22 進捗**: 優先度 1〜4 の主要項目は対応済み。残るは S-3・D-3・D-5・C-5・T-2・T-4・T-5・B-3・B-4 と、T-1 の未カバーコントローラ。
+
+1. ~~**S-1**（画像アップロード無検証）・**S-4**（`test_pi.php` 許可）~~ — ✅対応済。
+2. ~~**G-1**（コース検索）~~ ✅対応済。**B-3**（本番データ突合） — 機能・移行成立に直結。**未対応**。
+3. ~~**G-2〜G-5**（グループ/コース API の CRUD 欠落）~~ ✅対応済（実装）。G-6〜G-8 は設計に要求なしと判断し対応不要。
+4. ~~**S-2**（CSV 数式インジェクション）・**T-1**（Controller/API テスト）~~ ✅対応済（T-1 は主要コントローラをカバー、未カバー分は残）。**T-4**（統合テスト）は未対応。
+5. **S-3・D-3・D-5** — 設計準拠と保守性（優先度中）。**未対応**。
+6. **C-5・D-1・D-2・D-4・D-6・T-2・T-5・B-1・B-2・B-4・T-1未カバー** — 整理・運用改善。
+
+### 残課題サマリ（2026-09-22 時点）
+
+| 分類 | 対応済 | 未対応 |
+|---|---|---|
+| 機能欠落 (G) | G-1, G-2, G-3, G-4, G-5, G-9 | — （G-6〜G-8 は対応不要） |
+| セキュリティ (S) | S-1, S-2, S-4 | S-3 |
+| 設計未準拠 (D) | D-7 | D-1, D-2, D-3, D-4, D-5, D-6 |
+| コード整理 (C) | C-1, C-2, C-3, C-4, C-6 | C-5 |
+| テスト基盤 (T) | T-1（主要）, T-3 | T-1（一部）, T-2, T-4, T-5 |
+| データ整合性 (B) | — | B-1〜B-4（B-1/B-2 は実害なし確認済み） |
 `

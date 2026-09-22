@@ -50,7 +50,7 @@ class GroupsController extends AppController
                 ),
             ])
             ->where([$groupsTable->aliasField('deleted IS NULL')])
-            ->order([$groupsTable->aliasField('created') => 'DESC']);
+            ->orderBy([$groupsTable->aliasField('created') => 'DESC']);
 
         $this->paginate = [
             'limit' => 20,

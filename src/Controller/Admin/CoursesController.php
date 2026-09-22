@@ -61,7 +61,7 @@ class CoursesController extends AppController
         // クエリの構築
         $query = $coursesTable->find()
             ->where($conditions)
-            ->order(['sort_no' => 'ASC']);
+            ->orderBy(['sort_no' => 'ASC']);
 
         $this->paginate = [
             'limit' => 20,

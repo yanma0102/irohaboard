@@ -77,20 +77,20 @@ class UsersController extends AppController
         // クエリの構築
         $query = $usersTable->find()
             ->where($conditions)
-            ->order([$usersTable->aliasField('created') => 'DESC']);
+            ->orderBy([$usersTable->aliasField('created') => 'DESC']);
 
         $query->select($usersTable);
 
         // 所属グループ一覧 ※パフォーマンス改善
         $query->select([
-            'group_title' => $query->newExpr(
+            'group_title' => $query->expr(
                 "(SELECT group_concat(g.title ORDER BY g.id SEPARATOR ', ') FROM ib_users_groups ug INNER JOIN ib_groups g ON g.id = ug.group_id WHERE ug.user_id = Users.id)"
             ),
         ]);
 
         // 受講コース一覧 ※パフォーマンス改善
         $query->select([
-            'course_title' => $query->newExpr(
+            'course_title' => $query->expr(
                 "(SELECT group_concat(c.title ORDER BY c.id SEPARATOR ', ') FROM ib_users_courses uc INNER JOIN ib_courses c ON c.id = uc.course_id WHERE uc.user_id = Users.id)"
             ),
         ]);

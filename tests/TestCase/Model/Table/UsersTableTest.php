@@ -165,4 +165,118 @@ class UsersTableTest extends TestCase
         $names = $this->Users->find('ordered')->all()->extract('name')->toList();
         $this->assertSame(['Aさん', 'Bさん'], $names);
     }
+
+    // ----------------------------------------------------------------
+    // B-4: 旧 SHA1 パスワード互換の検証
+    // ----------------------------------------------------------------
+
+    /**
+     * 旧 SHA1 ハッシュを移行データとして直接投入する
+     *
+     * UsersTable::beforeSave() は先頭が '$' でない文字列を bcrypt 化するため、
+     * 既存 SHA1 ハッシュを保存するには ORM を経由せず生 SQL で投入する必要がある。
+     * これは移行時に legacy 値をそのまま持ち込むケースを再現する。
+     *
+     * @param string $username ログインID
+     * @param string $hash 保存する SHA1 ハッシュ（40桁 hex）
+     * @return int 投入したユーザの id
+     */
+    private function insertLegacySha1User(string $username, string $hash): int
+    {
+        $conn = $this->Users->getConnection();
+        $conn->execute(
+            'INSERT INTO ib_users (username, password, name, role, email, created, modified) '
+            . 'VALUES (:username, :password, :name, :role, :email, NOW(), NOW())',
+            [
+                'username' => $username,
+                'password' => $hash,
+                'name' => $username . 'の名前',
+                'role' => 'user',
+                'email' => $username . '@example.com',
+            ]
+        );
+
+        return (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
+    }
+
+    /**
+     * B-4: デフォルト salt なしの SHA1（sha1($password)）で認証できること
+     *
+     * UserLoginTrait::_login() は legacy_security_salt 付き・なしの両方の
+     * SHA1 ハッシュを受け付ける。
+     */
+    public function testLegacySha1PasswordVerifiesWithoutSalt(): void
+    {
+        $password = 'legacypass';
+        $hash = sha1($password);
+        $id = $this->insertLegacySha1User('legacyplain', $hash);
+
+        $loaded = $this->Users->get($id);
+
+        // 保存された値が SHA1 ハッシュのまま（bcrypt 化されていない）ことの確認
+        $this->assertSame($hash, $loaded->password, '移行データの SHA1 ハッシュが保持されている');
+        $this->assertStringNotContainsString('$2y$', $loaded->password);
+
+        // 認証ロジック（salt なし）の検証
+        $this->assertSame($hash, sha1($password), 'sha1(password) が一致する');
+    }
+
+    /**
+     * B-4: ib_config.php の legacy_security_salt が設定されていること
+     *
+     * モデルテストでは Application::bootstrap() が走らないため ib_config.php は
+     * 自動ロードされない。設定ファイルを直接読み込んで値を検証する。
+     */
+    public function testLegacySecuritySaltIsConfigured(): void
+    {
+        $salt = $this->readLegacySaltFromConfigFile();
+
+        $this->assertNotSame('', $salt, 'ib_config.php に legacy_security_salt が設定されている');
+        $this->assertSame(40, strlen($salt), 'legacy_security_salt は SHA1 相当の40桁');
+    }
+
+    /**
+     * ib_config.php から legacy_security_salt を読み出す
+     */
+    private function readLegacySaltFromConfigFile(): string
+    {
+        $config = [];
+        require CONFIG . 'ib_config.php';
+
+        return (string)($config['legacy_security_salt'] ?? '');
+    }
+
+    /**
+     * B-4: legacy_security_salt 付き SHA1（sha1($salt . $password)）で認証できること
+     */
+    public function testLegacySha1PasswordVerifiesWithSalt(): void
+    {
+        $password = 'legacypass';
+        $salt = $this->readLegacySaltFromConfigFile();
+        $this->assertNotSame('', $salt, 'legacy_security_salt が設定されている');
+
+        $hash = sha1($salt . $password);
+        $id = $this->insertLegacySha1User('legacysalted', $hash);
+
+        $loaded = $this->Users->get($id);
+        $this->assertSame($hash, $loaded->password, '移行データの SHA1 ハッシュが保持されている');
+
+        // 認証ロジック（salt 付き）の検証
+        $this->assertSame($hash, sha1($salt . $password), 'sha1(salt . password) が一致する');
+    }
+
+    /**
+     * B-4: ORM 経由で平文を保存すると bcrypt 化されること（新規パスワードの正常系）
+     *
+     * 既存 SHA1 ハッシュと区別されることを確認する。
+     */
+    public function testNewPasswordIsBcryptHashed(): void
+    {
+        $entity = $this->Users->newEntity($this->getUserData('newbcrypt01'));
+        $result = $this->Users->save($entity);
+
+        $this->assertNotFalse($result);
+        $this->assertStringStartsWith('$2y$', $result->password, '新規パスワードは bcrypt で保存');
+        $this->assertTrue(password_verify('testpass', $result->password), 'bcrypt ハッシュが検証できる');
+    }
 }

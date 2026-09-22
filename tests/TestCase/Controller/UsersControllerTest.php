@@ -238,4 +238,126 @@ class UsersControllerTest extends TestCase
             '新しいパスワードの bcrypt ハッシュが検証できない',
         );
     }
+
+    // ----------------------------------------------------------------
+    // B-4: 旧 SHA1 パスワード互換ログインの検証（エンドツーエンド）
+    // ----------------------------------------------------------------
+
+    /**
+     * ib_config.php から legacy_security_salt を読み出す
+     */
+    private function readLegacySalt(): string
+    {
+        $config = [];
+        require CONFIG . 'ib_config.php';
+
+        return (string)($config['legacy_security_salt'] ?? '');
+    }
+
+    /**
+     * 旧 SHA1 ハッシュを持つユーザを生 SQL で投入する
+     *
+     * UsersTable::beforeSave() は先頭が '$' でない値を bcrypt 化するため、
+     * 移行データの SHA1 ハッシュを保持するには ORM を経由できない。
+     */
+    private function insertLegacySha1User(string $username, string $hash): int
+    {
+        $conn = $this->getTableLocator()->get('Users')->getConnection();
+        $conn->execute(
+            'INSERT INTO ib_users (username, password, name, role, email, created, modified) '
+            . 'VALUES (:username, :password, :name, :role, :email, NOW(), NOW())',
+            [
+                'username' => $username,
+                'password' => $hash,
+                'name' => $username . 'の名前',
+                'role' => 'user',
+                'email' => $username . '@example.com',
+            ]
+        );
+
+        return (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
+    }
+
+    /**
+     * B-4: 旧 SHA1 パスワード（salt 付き）でログインできること
+     *
+     * UserLoginTrait::performLogin() → _login() が SHA1 を検証し、
+     * 成功後 bcrypt へ自動再ハッシュする（移行ユーザの互換性検証）。
+     * Application::bootstrap() 経由でリクエストが処理されるため
+     * ib_config.php の legacy_security_salt が読み込まれる。
+     */
+    public function testLegacySha1LoginSucceedsAndUpgradesToBcrypt(): void
+    {
+        $password = 'legacypass';
+        $salt = $this->readLegacySalt();
+        $this->assertNotSame('', $salt, 'legacy_security_salt が設定されている');
+
+        $hash = sha1($salt . $password);
+        $id = $this->insertLegacySha1User('legacylogin', $hash);
+
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+
+        $this->post('/users/login', [
+            'username' => 'legacylogin',
+            'password' => $password,
+        ]);
+
+        // ログイン成功（受講者ホームへリダイレクト）
+        $this->assertRedirect();
+
+        // bcrypt へ自動アップグレードされていること
+        $after = $this->getTableLocator()->get('Users')->get($id);
+        $this->assertNotSame($hash, $after->password, 'SHA1 から bcrypt へ再ハッシュされていない');
+        $this->assertStringStartsWith('$2y$', $after->password, 'bcrypt ハッシュに更新されている');
+        $this->assertTrue(
+            password_verify($password, $after->password),
+            'アップグレード後の bcrypt ハッシュが検証できない',
+        );
+    }
+
+    /**
+     * B-4: salt なし SHA1（sha1($password)）でもログインできること
+     */
+    public function testLegacySha1LoginWithoutSaltSucceeds(): void
+    {
+        $password = 'plainlegacy';
+        $hash = sha1($password);
+        $id = $this->insertLegacySha1User('legacyplain2', $hash);
+
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+
+        $this->post('/users/login', [
+            'username' => 'legacyplain2',
+            'password' => $password,
+        ]);
+
+        $this->assertRedirect();
+
+        $after = $this->getTableLocator()->get('Users')->get($id);
+        $this->assertStringStartsWith('$2y$', $after->password, 'bcrypt ハッシュに更新されている');
+    }
+
+    /**
+     * B-4: 旧 SHA1 ユーザに対して誤ったパスワードは拒否されること
+     */
+    public function testLegacySha1LoginRejectsWrongPassword(): void
+    {
+        $salt = $this->readLegacySalt();
+        $hash = sha1($salt . 'correctpass');
+        $id = $this->insertLegacySha1User('legacywrong', $hash);
+
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+
+        $this->post('/users/login', [
+            'username' => 'legacywrong',
+            'password' => 'wrongpass',
+        ]);
+
+        // ログイン失敗時はフォーム再描画（200）でパスワードは変わらない
+        $after = $this->getTableLocator()->get('Users')->get($id);
+        $this->assertSame($hash, $after->password, '認証失敗時にハッシュが変更されている');
+    }
 }

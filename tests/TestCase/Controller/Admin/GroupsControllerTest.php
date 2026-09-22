@@ -135,7 +135,9 @@ class GroupsControllerTest extends TestCase
     /**
      * 追加(add) POST テスト
      *
-     * 既知のバグ: add() → edit() → get(0) で RecordNotFoundException
+     * 新規グループが DB に保存され、一覧へリダイレクトされること。
+     * 以前は add() → edit() → get((int)null) = get(0) で 404 になるバグが
+     * あったが、edit() の POST 分岐を id の有無で分岐するよう修正済み。
      */
     public function testAddPost(): void
     {
@@ -147,12 +149,12 @@ class GroupsControllerTest extends TestCase
             'comment' => '新規グループのコメント',
         ]);
 
-        $this->assertResponseCode(404, '既知のバグ: add() → edit() → get(0) で RecordNotFoundException');
+        $this->assertResponseCode(302);
 
         $groupsTable = $this->getTableLocator()->get('Groups');
-        $this->assertFalse(
+        $this->assertTrue(
             $groupsTable->exists(['title' => '新規グループ']),
-            '既知のバグ: add でグループが DB に保存されていない'
+            'add でグループが DB に保存されること'
         );
     }
 

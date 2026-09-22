@@ -91,7 +91,9 @@ class GroupsController extends AppController
         }
 
         if ($this->request->is(['post', 'put'])) {
-            $group = $groupsTable->get((int)$group_id);
+            $group = $group_id !== null
+                ? $groupsTable->get((int)$group_id)
+                : $groupsTable->newEmptyEntity();
             $group = $groupsTable->patchEntity($group, $this->request->getData());
 
             if ($groupsTable->save($group)) {

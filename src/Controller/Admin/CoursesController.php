@@ -113,7 +113,9 @@ class CoursesController extends AppController
                 return null;
             }
 
-            $course = $coursesTable->get((int)$course_id);
+            $course = $course_id !== null
+                ? $coursesTable->get((int)$course_id)
+                : $coursesTable->newEmptyEntity();
             $course = $coursesTable->patchEntity($course, $this->request->getData());
             $course->user_id = $this->readAuthUser('id');
 

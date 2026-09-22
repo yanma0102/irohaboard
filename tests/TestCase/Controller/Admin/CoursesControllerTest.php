@@ -179,15 +179,13 @@ class CoursesControllerTest extends TestCase
     /**
      * 追加(add) POST テスト
      *
-     * 既知のバグ: CoursesController::add() は edit() に委譲するが、
-     * edit() は $course_id = null の場合に get((int)null) = get(0) を呼び出し、
-     * RecordNotFoundException (404) になる。
-     *
-     * 期待される正しい挙動: 新規コースが DB に保存され、302 リダイレクトされること。
+     * 新規コースが DB に保存され、一覧へリダイレクトされること。
+     * 以前は add() → edit() → get((int)null) = get(0) で 404 になるバグが
+     * あったが、edit() の POST 分岐を id の有無で分岐するよう修正済み。
      */
     public function testAddPost(): void
     {
-        $this->loginAsAdmin();
+        $admin = $this->loginAsAdmin();
 
         $this->post('/admin/courses/add', [
             'title' => '新規コース',
@@ -195,15 +193,12 @@ class CoursesControllerTest extends TestCase
             'comment' => '新規コースのコメント',
         ]);
 
-        // 既知のバグにより404が返される（期待値は302）
-        $this->assertResponseCode(404, '既知のバグ: add() → edit() → get(0) で RecordNotFoundException');
+        $this->assertResponseCode(302);
 
-        // DBにコースが保存されていないこと（バグの確認）
         $coursesTable = $this->getTableLocator()->get('Courses');
-        $this->assertFalse(
-            $coursesTable->exists(['title' => '新規コース']),
-            '既知のバグ: add でコースが DB に保存されていない'
-        );
+        $course = $coursesTable->find()->where(['title' => '新規コース'])->first();
+        $this->assertNotNull($course, 'add でコースが DB に保存されること');
+        $this->assertSame((int)$admin->id, (int)$course->user_id, '作成者が記録されること');
     }
 
     /**

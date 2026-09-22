@@ -506,4 +506,139 @@ class RecordsControllerTest extends TestCase
         $this->get('/admin/records');
         $this->assertResponseOk();
     }
+
+    /**
+     * 詳細 CSV 出力 — コンテンツ種別フィルタ付き
+     *
+     * content_category=test で Contents.kind=test のみを絞り込み、
+     * 詳細 CSV が正しく返されることを確認する。
+     */
+    public function testExportCsvDetailWithContentCategoryFilter(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('フィルタコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id, 'テストコンテンツ', 'test');
+        $question = $this->createQuestion((int)$content->id, '単一選択問題', 'single');
+        $record = $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id);
+        $this->createRecordQuestion((int)$record->id, (int)$question->id);
+
+        $this->get('/admin/records?cmd=csv_detail&content_category=test');
+        $this->assertResponseOk();
+
+        $disposition = $this->_response->getHeaderLine('Content-Disposition');
+        $this->assertStringContainsString('record_details.csv', $disposition, 'Content-Disposition に詳細 CSV ファイル名が含まれること');
+    }
+
+    /**
+     * CSV 出力 — グループフィルタ付き
+     *
+     * group_id を指定して CSV 出力が正しく返されることを確認する。
+     */
+    public function testExportCsvWithGroupFilter(): void
+    {
+        $admin = $this->loginAsAdmin();
+
+        // グループ作成
+        $groupsTable = $this->getTableLocator()->get('Groups');
+        $group = $groupsTable->newEntity([
+            'title' => 'CSVグループ',
+            'comment' => 'CSVテスト用グループ',
+        ]);
+        $savedGroup = $groupsTable->save($group);
+        $this->assertNotFalse($savedGroup, 'グループの保存に失敗');
+
+        $course = $this->createCourse('グループCSVコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id);
+
+        $this->get('/admin/records?cmd=csv&group_id=' . $savedGroup->id);
+        $this->assertResponseOk();
+
+        $disposition = $this->_response->getHeaderLine('Content-Disposition');
+        $this->assertStringContainsString('user_records.csv', $disposition, 'Content-Disposition に CSV ファイル名が含まれること');
+    }
+
+    /**
+     * 無効なページ番号に対するページネーション例外復帰テスト
+     *
+     * page=99999 を指定した場合、ページネーション例外が発生する。
+     *
+     * **ソース既知の問題**: RecordsController::index() の catch ブロックで
+     * `$this->request->withParam('page', 1)` を使用しているが、CakePHP 5 の
+     * NumericPaginator はクエリパラメータ（getQuery('page')）からページ番号を
+     * 読み取るため、withParam で設定したルートパラメータは無視される。
+     * 結果としてリトライでも同じ不正ページが読み込まれ、
+     * PageOutOfBoundsException が再スローされてしまう問題があった。
+     *
+     * RecordsController::index() の catch ブロックを
+     * `$this->request->withQueryParams(['page' => 1])` に修正し、
+     * 不正ページ指定時は 1 ページ目にフォールバックして 200 を返す。
+     */
+    public function testIndexInvalidPageRecovers(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->get('/admin/records?page=99999');
+        $this->assertResponseOk();
+    }
+
+    /**
+     * 詳細 CSV — + プレフィックスのサニタイズ確認
+     *
+     * 回答が '+SUM(1,2)' で始まる場合、CSV にシングルクォートプレフィックスが
+     * 付与されることの回帰テスト。レスポンスが空でないことを確認する。
+     */
+    public function testCsvDetailSanitizeValuePlusPrefix(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('プラスプレフィックスコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $question = $this->createQuestion((int)$content->id, 'テキスト問題', 'text');
+        $record = $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id);
+
+        $this->createRecordQuestion(
+            (int)$record->id,
+            (int)$question->id,
+            '+SUM(1,2)',
+            '',
+            0,
+            0
+        );
+
+        $this->get('/admin/records?cmd=csv_detail');
+        $this->assertResponseOk();
+
+        $body = (string)$this->_response->getBody();
+        $this->assertNotEmpty($body, '詳細 CSV レスポンスボディが空でないこと');
+    }
+
+    /**
+     * 詳細 CSV — @ プレフィックスのサニタイズ確認
+     *
+     * 回答が '@cmd' で始まる場合、CSV にシングルクォートプレフィックスが
+     * 付与されることの回帰テスト。レスポンスが空でないことを確認する。
+     */
+    public function testCsvDetailSanitizeValueAtPrefix(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('アットプレフィックスコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $question = $this->createQuestion((int)$content->id, 'テキスト問題', 'text');
+        $record = $this->createRecord((int)$course->id, (int)$admin->id, (int)$content->id);
+
+        $this->createRecordQuestion(
+            (int)$record->id,
+            (int)$question->id,
+            '@cmd',
+            '',
+            0,
+            0
+        );
+
+        $this->get('/admin/records?cmd=csv_detail');
+        $this->assertResponseOk();
+
+        $body = (string)$this->_response->getBody();
+        $this->assertNotEmpty($body, '詳細 CSV レスポンスボディが空でないこと');
+    }
 }

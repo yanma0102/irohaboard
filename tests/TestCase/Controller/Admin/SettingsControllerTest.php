@@ -188,6 +188,76 @@ class SettingsControllerTest extends TestCase
     }
 
     /**
+     * POST 後に Flash 成功メッセージが表示されること
+     */
+    public function testPostShowsFlashSuccessMessage(): void
+    {
+        $this->loginAsAdmin();
+        $this->enableRetainFlashMessages();
+
+        $this->post('/admin/settings', [
+            'Setting' => [
+                'title' => 'フラッシュテスト',
+                'copyright' => 'フラッシュ著作権',
+                'color' => '#112233',
+                'information' => 'フラッシュお知らせ',
+            ],
+        ]);
+
+        $this->assertResponseOk();
+        $this->assertFlashMessage('設定が保存されました');
+    }
+
+    /**
+     * POST で title のみ更新した場合、他の設定値はシード値のまま残ること
+     *
+     * setSettings() は POST されたキーのみ UPDATE するため、
+     * 未指定のキー（copyright など）は変更されない。
+     */
+    public function testPostWithPartialSettings(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->post('/admin/settings', [
+            'Setting' => [
+                'title' => '部分更新タイトル',
+            ],
+        ]);
+
+        $this->assertResponseOk();
+
+        $settingsTable = $this->getTableLocator()->get('Settings');
+        $settings = $settingsTable->getSettings();
+
+        // POST された title は更新されていること
+        $this->assertSame('部分更新タイトル', $settings['title']);
+
+        // 未指定の copyright はシード値のまま残っていること
+        $this->assertSame('Test Copyright', $settings['copyright']);
+    }
+
+    /**
+     * POST で空の Setting 配列を送信してもエラーにならず、既存値が保持されること
+     */
+    public function testPostWithEmptySettingArray(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->post('/admin/settings', [
+            'Setting' => [],
+        ]);
+
+        // 空配列でも 200 でエラーにならないこと
+        $this->assertResponseOk();
+
+        $settingsTable = $this->getTableLocator()->get('Settings');
+        $settings = $settingsTable->getSettings();
+
+        // シード値がそのまま残っていること
+        $this->assertSame('テストシステム', $settings['title']);
+    }
+
+    /**
      * demo_mode テスト — 現状の挙動を文書化
      *
      * SettingsController::index() は Configure::read('demo_mode') が true のとき

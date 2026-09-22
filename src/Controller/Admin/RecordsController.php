@@ -101,7 +101,12 @@ class RecordsController extends AppController
         try {
             $records = $this->paginate($query);
         } catch (\Exception $e) {
-            $this->request = $this->request->withParam('page', 1);
+            // 不正な page パラメータ（範囲外・非数値等）が指定された場合は 1 ページ目にリセットする。
+            // CakePHP 5 の Paginator はクエリパラメータ page を参照するため、
+            // ルートパラメータ（withParam）ではなくクエリパラメータを上書きする必要がある。
+            $this->request = $this->request->withQueryParams(
+                array_merge($this->request->getQueryParams(), ['page' => 1])
+            );
             $records = $this->paginate($query);
         }
 

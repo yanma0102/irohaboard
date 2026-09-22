@@ -43,12 +43,12 @@
 
 | # | 内容 | 根拠 | 実装の現状 | 重大度 | 状態 |
 |---|---|---|---|---|---|
-| D-1 | API エラーハンドリング方式 | `08-rest-api.md`（`fail()` が Response を返す方式） | `ApiException` + `ApiErrorMiddleware` + `fail(): never` 方式を採用（Phase 5 で実装）。動作は検証済み | 低 | 未対応 |
-| D-2 | API 認可の一時回避 | `08-rest-api.md`、`BaseController` | `BaseController::beforeFilter()` が毎回 `allowUnauthenticated` に現在のアクションを追加する実装 | 低 | 未対応 |
+| D-1 | API エラーハンドリング方式 | `08-rest-api.md`（`fail()` が Response を返す方式） | `ApiException` + `ApiErrorMiddleware` + `fail(): never` 方式を採用（Phase 5 で実装）。設計書 §7.1 に実装確定として追記済み（素案との差分表を記載） | 低 | ✅対応済 |
+| D-2 | API 認可の一時回避 | `08-rest-api.md`、`BaseController` | `BaseController::beforeFilter()` が毎回 `allowUnauthenticated` に現在のアクションを追加する実装。API は独自の Bearer トークン認証を行うためセッション認証を許可するのは正当な設計と確認 | 低 | ↩対応不要（現状維持） |
 | D-3 | `friendsofcake/bootstrap-ui` 未導入 | `09-views.md` §3（導入予定） | `composer.json` に未追加。`webroot/css/bootstrap.min.css` 等の生 Bootstrap 3 と `ib_config.php` の `form_defaults` で代替。**導入には全テンプレートの CSS クラス書き換えが必要（Bootstrap 3→5）のため現状維持** | 中 | ↩対応不要（現状維持） |
-| D-4 | セッション保存先 | `11-config-bootstrap.md`、`10-database-migration.md` | `config/app.php` の Session は `defaults => 'php'`（ファイル保存）。`ib_cake_sessions` テーブルは未使用のまま存在 | 低 | 未対応 |
+| D-4 | セッション保存先 | `11-config-bootstrap.md`、`10-database-migration.md` | `config/app.php` の Session は `defaults => 'php'`（ファイル保存）。`ib_cake_sessions` テーブルは未使用のまま存在。単一サーバー運用のため現状維持 | 低 | ↩対応不要（現状維持） |
 | D-5 | i18n 翻訳ファイル | CakePHP 5 標準、`09-views.md` | `resources/` は `.gitkeep` のみ。`__()` は 100 箇所以上で使用されるが翻訳リソースなし。キー文字列がそのまま表示される | 中 | ✅対応済 |
-| D-6 | API ルートの設計差分 | `08-rest-api.md` A1〜A24 | 実装のみ存在: `PUT\|PATCH /users/:id/password`、`GET /users/:id/courses`、`DELETE /users/:id/courses/:course_id`、`DELETE /groups/:id/users/:user_id`。G-2〜G-5 追加により設計 28 ルートと実装が一致。設計書への追記推奨 | 低 | 未対応（設計書追記） |
+| D-6 | API ルートの設計差分 | `08-rest-api.md` A1〜A24 | 実装のみ存在: `PUT\|PATCH /users/:id/password`、`GET /users/:id/courses`、`DELETE /users/:id/courses/:course_id`、`DELETE /groups/:id/users/:user_id`。G-2〜G-5 追加により設計 28 ルートと実装が一致。設計書 §7.7 に差分表を追記済み（`Docs/API.md` v1.1 を正とする） | 低 | ✅対応済 |
 | D-7 | `Api/ErrorsController::notFound` のメッセージ | `Docs/test/03-api.md` API-081 期待値 | `$allowUnauthenticated = ['notFound']` を追加し、未定義ルートが未認証でも 404 `{"error":{"code":404,"message":"Endpoint not found"}}` を返すよう修正済み（回帰テストあり） | 低 | ✅対応済 |
 
 ## 4. コード整理・残骸
@@ -83,14 +83,14 @@
 
 ## 7. 対応優先順位（推奨）
 
-> **2026-09-23 進捗**: S-3（PSR-4移行）完了。BUG-1（Infos 追加バグ）、BUG-4（記述式保存失敗）を修正。C-5（uploads/files 統一）完了。D-3 は Bootstrap 3.3.5 確認済み（現状維持方針）。D-5（i18n）、T-4（統合テスト）、T-5（utf8mb4）、T-1（Controller/API テスト全カバー）、T-2（テストスキーマ構築を Migrator に一本化）も完了。テストは 342 tests / 1590 assertions で全パス。B-1 は対応不要（update.sql の該当行は既にコメントアウト済み）。D-2/D-4 は現状維持（機能上問題なし）。残るは B-2（設定値確認）, B-3（本番データ突合）, B-4（SHA1互換検証）, D-1/D-6（整理・設計書追記）。B-2〜B-4 は本番環境の DB・データが必要なため開発環境では実行不可。
+> **2026-09-23 進捗**: S-3（PSR-4移行）完了。BUG-1（Infos 追加バグ）、BUG-4（記述式保存失敗）を修正。C-5（uploads/files 統一）完了。D-3 は Bootstrap 3.3.5 確認済み（現状維持方針）。D-5（i18n）、T-4（統合テスト）、T-5（utf8mb4）、T-1（Controller/API テスト全カバー）、T-2（テストスキーマ構築を Migrator に一本化）、D-1（API エラーハンドリングの設計書追記）、D-6（API ルート差分の設計書追記）も完了。テストは 342 tests / 1590 assertions で全パス。B-1 は対応不要（update.sql の該当行は既にコメントアウト済み）。D-2/D-4 は現状維持（機能上問題なし）。残るは B-2（設定値確認）, B-3（本番データ突合）, B-4（SHA1互換検証）。B-2〜B-4 は本番環境の DB・データが必要なため開発環境では実行不可。
 
 1. ~~**S-1**（画像アップロード無検証）・**S-4**（`test_pi.php` 許可）~~ — ✅対応済。
 2. ~~**G-1**（コース検索）~~ ✅対応済。**B-3**（本番データ突合） — 機能・移行成立に直結。**未対応**。
 3. ~~**G-2〜G-5**（グループ/コース API の CRUD 欠落）~~ ✅対応済（実装）。G-6〜G-8 は設計に要求なしと判断し対応不要。
 4. ~~**S-2**（CSV 数式インジェクション）・**T-1**（Controller/API テスト）~~ ✅対応済（T-1 は主要コントローラをカバー、未カバー分は残）。**T-4**（統合テスト）は未対応。
 5. ~~**S-3**（`Vendor/Utils.php` PSR-4 移行）~~ ✅対応済。~~**D-3**（bootstrap-ui）~~ ↩対応不要（現状維持）。~~**D-5**（i18n 翻訳）~~ ✅対応済。
-6. ~~**T-2**（Fixture 相当）~~ ✅対応済（Migrator へ一本化）。**D-1・D-2・D-4・D-6** — 整理・設計書追記。**B-2・B-3・B-4** — 本番環境での検証（開発環境では実行不可、申し送り）。
+6. ~~**T-2**（Fixture 相当）~~ ✅対応済（Migrator へ一本化）。~~**D-1**（API エラーハンドリング）・**D-6**（API ルート設計差分）~~ ✅対応済（設計書に実装確定・差分表を追記）。**D-2・D-4** — 現状維持（機能上問題なし）。**B-2・B-3・B-4** — 本番環境での検証（開発環境では実行不可、申し送り）。
 
 ### 残課題サマリ（2026-09-23 時点）
 
@@ -98,7 +98,7 @@
 |---|---|---|
 | 機能欠落 (G) | G-1, G-2, G-3, G-4, G-5, G-9 | — （G-6〜G-8 は対応不要） |
 | セキュリティ (S) | S-1, S-2, S-3, S-4 | — |
-| 設計未準拠 (D) | D-3, D-5, D-7 | D-1, D-2（現状維持）, D-4（現状維持）, D-6（設計書追記） |
+| 設計未準拠 (D) | D-1, D-3, D-5, D-6, D-7 | D-2（現状維持）, D-4（現状維持） |
 | コード整理 (C) | C-1, C-2, C-3, C-4, C-5, C-6 | — |
 | テスト基盤 (T) | T-1, T-2, T-3, T-4, T-5 | — |
 | データ整合性 (B) | B-1（実害なし確認） | B-2, B-3, B-4 |

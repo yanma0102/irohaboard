@@ -1065,9 +1065,55 @@ $existing = $table->find('all', [
 
 ## 7. 注意事項
 
-### 7.1 `_stop()` の廃止
+### 7.1 `_stop()` の廃止 → `fail(): never` + 専用例外方式（実装確定）
 
-CakePHP 5 では `Controller::_stop()` が廃止。API の `fail()` メソッドは例外を投げるか、Response を返す形に変更する。例外を投げる場合、`ErrorHandler` や `ExceptionRenderer` で JSON エラーレスポンスを返すよう設定が必要。
+CakePHP 5 では `Controller::_stop()` が廃止。本プロジェクトの API では、設計時の素案（`fail()` 内で `respond()` して `HttpException` を投げる方式）ではなく、**専用例外 `ApiException` をスローし、専用ミドルウェア `ApiErrorMiddleware` で JSON レスポンスへ変換する方式**を採用した（Phase 5 で実装・検証済み）。
+
+**実装:**
+
+```php
+// src/Controller/Api/BaseController.php:258-261
+protected function fail(int $status, string $message, $errors = null): never
+{
+    throw new ApiException($status, $message, $errors);
+}
+```
+
+```php
+// src/Controller/Api/ApiException.php
+class ApiException extends HttpException
+{
+    // getErrorPayload(): { error: { code, message [, errors] } } を返す
+}
+```
+
+```php
+// src/Middleware/ApiErrorMiddleware.php（ApiException を捕捉して JSON を返す）
+public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+{
+    try {
+        return $handler->handle($request);
+    } catch (ApiException $e) {
+        $payload = $e->getErrorPayload();
+        $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // ... 500 フォールバック ...
+        return (new \Cake\Http\Response())
+            ->withStatus($e->getCode())
+            ->withType('application/json')
+            ->withStringBody($json);
+    }
+}
+```
+
+`ApiErrorMiddleware` は `Application::middleware()` で `RoutingMiddleware` の直後に挿入する（`src/Application.php:99-103`）。これによりコントローラ層でスローされた `ApiException` を捕捉できる。
+
+| 変更点 | 設計時の素案 | 実装（確定） |
+|---|---|---|
+| `fail()` の戻り値 | `void`（内部で `respond()` + `HttpException`） | `never`（`ApiException` をスロー） |
+| エラー応答の生成 | `fail()` 内で `respond()` | `ApiErrorMiddleware` が `ApiException` から生成 |
+| エラー表現 | 汎用 `HttpException` | 専用 `ApiException`（`getErrorPayload()` で `errors` 付与） |
+
+> **出力形式は設計どおり維持**（`{ "error": { "code", "message" [, "errors"] } }`）。`ApiException` は `HttpException` を継承するため、ミドルウェアを通過しない経路（例: 未定義ルート）でも汎用の HTTP エラーハンドリングと整合する。
 
 ### 7.2 `Model` 型の廃止
 
@@ -1088,3 +1134,28 @@ API のレスポンス形式（`{ data: ... }` / `{ data: [...], meta: {...} }` 
 ### 7.6 未定義エンドポイントのフォールバック
 
 現行の `ApiErrorsController` とルーティング (`Config/routes.php:81-85`) は、未定義の `/api/v1/*` に対して JSON の 404 を返す。CakePHP 5 では `routes.php` の `$routes->scope()` 内で同等のルート定義を行い、`ApiErrorsController::notFound()` を維持する。
+
+**実装状況（確定）**: `ErrorsController::notFound()` は `$allowUnauthenticated = ['notFound']` を持ち、未認証でも未定義ルートに対して 404 `{"error":{"code":404,"message":"Endpoint not found"}}` を返す（`src/Controller/Api/ErrorsController.php:26,33`）。これにより、トークン無し・不正トークンのリクエストでも「401 ではなく 404」という設計期待値を満たす。回帰テストあり。
+
+### 7.7 設計書と実装のルート差分（追記）
+
+設計書（本ドキュメント §2）が定義するルートに加え、以下のルートが実装済みである。**設計書側を実装に合わせて追記する**（実装は変更しない）。
+
+| メソッド | パス | 概要 | ロール | 対応する gap |
+|---|---|---|---|---|
+| PUT / PATCH | `/api/v1/users/{id}/password` | パスワード変更 | admin / manager | D-6 |
+| GET | `/api/v1/users/{id}/courses` | 割当済みコース一覧 | staff: 全件 / user: 自分のみ | D-6 |
+| DELETE | `/api/v1/users/{id}/courses/{course_id}` | コース割当解除 | admin / manager | D-6 |
+| DELETE | `/api/v1/groups/{id}/users/{user_id}` | グループのユーザ割当解除 | admin / manager | D-6 |
+
+また、G-2〜G-5 の追加により、以下が実装済みとなった（設計 `12-implementation-test-plan.md` の A5/A10/A12/A13/A18 に対応）。
+
+| メソッド | パス | 概要 | ロール |
+|---|---|---|---|
+| POST | `/api/v1/courses` | コース追加 | admin / manager |
+| POST | `/api/v1/groups` | グループ追加 | admin / manager |
+| PUT / PATCH | `/api/v1/groups/{id}` | グループ更新 | admin / manager |
+| DELETE | `/api/v1/groups/{id}` | グループ削除 | admin / manager |
+| PUT / PATCH | `/api/v1/courses/{id}` | コース更新 | admin / manager |
+
+> API 全体の正は `Docs/API.md`（v1.1）とする。本節は設計書と実装の差分を記録するものであり、ルートの追加・変更時は双方を更新すること。

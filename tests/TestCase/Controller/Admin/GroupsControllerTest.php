@@ -133,6 +133,19 @@ class GroupsControllerTest extends TestCase
     }
 
     /**
+     * 追加(add) GET テスト
+     *
+     * add() は edit() に委譲し、GET 時は newEmptyEntity() を使うため 200。
+     */
+    public function testAddGet(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->get('/admin/groups/add');
+        $this->assertResponseOk();
+    }
+
+    /**
      * 追加(add) POST テスト
      *
      * 新規グループが DB に保存され、一覧へリダイレクトされること。
@@ -192,6 +205,21 @@ class GroupsControllerTest extends TestCase
 
         $exists = $this->getTableLocator()->get('Groups')->exists(['id' => $groupId]);
         $this->assertFalse($exists, 'グループが DB から削除されていない');
+    }
+
+    /**
+     * 検索テスト（Groups に.keyword 機能はないが、index が正常に返ること）
+     */
+    public function testIndexWithMultipleGroups(): void
+    {
+        $this->loginAsAdmin();
+        $this->createGroup('グループA');
+        $this->createGroup('グループB');
+
+        $this->get('/admin/groups');
+        $this->assertResponseOk();
+        $this->assertResponseContains('グループA');
+        $this->assertResponseContains('グループB');
     }
 
     /**

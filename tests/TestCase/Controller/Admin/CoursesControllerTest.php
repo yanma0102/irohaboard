@@ -177,6 +177,19 @@ class CoursesControllerTest extends TestCase
     }
 
     /**
+     * 追加(add) GET テスト
+     *
+     * add() は edit() に委譲し、GET 時は newEmptyEntity() を使うため 200。
+     */
+    public function testAddGet(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->get('/admin/courses/add');
+        $this->assertResponseOk();
+    }
+
+    /**
      * 追加(add) POST テスト
      *
      * 新規コースが DB に保存され、一覧へリダイレクトされること。

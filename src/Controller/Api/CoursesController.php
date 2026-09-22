@@ -16,7 +16,7 @@ namespace App\Controller\Api;
 
 /**
  * ApiCourses Controller
- * コースの一覧・詳細・追加・削除を提供する
+ * コースの一覧・詳細・追加・更新・削除を提供する
  */
 class CoursesController extends BaseController
 {
@@ -151,6 +151,51 @@ class CoursesController extends BaseController
         }
 
         $this->fail(400, 'Validation failed', $entity->getErrors());
+    }
+
+    /**
+     * コースを更新する
+     *
+     * @param int $id コースID
+     * @return \Cake\Http\Response
+     */
+    public function edit(int $id): \Cake\Http\Response
+    {
+        $this->requireManager();
+
+        $coursesTable = $this->fetchTable('Courses');
+
+        if (!$coursesTable->exists(['id' => $id])) {
+            $this->fail(404, 'Course not found');
+        }
+
+        $target = $coursesTable->get($id);
+        $input = $this->input();
+        $allowedFields = ['title', 'introduction', 'opened', 'comment', 'sort_no'];
+        $fields = [];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $input)) {
+                $fields[$field] = $input[$field];
+            }
+        }
+
+        if (empty($fields)) {
+            $this->fail(400, 'No updatable fields were provided');
+        }
+
+        $entity = $coursesTable->patchEntity($target, $fields);
+
+        if (!$coursesTable->save($entity)) {
+            $this->fail(400, 'Validation failed', $entity->getErrors());
+        }
+
+        $data = $entity->toArray();
+        $data['id'] = (int)$data['id'];
+        $data['user_id'] = (int)$data['user_id'];
+        $data['sort_no'] = (int)$data['sort_no'];
+
+        return $this->ok($data);
     }
 
     /**

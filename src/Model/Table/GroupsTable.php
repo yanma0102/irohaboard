@@ -71,6 +71,34 @@ class GroupsTable extends AppTable
     }
 
     /**
+     * グループの削除（中間テーブル・グループを順に削除）
+     *
+     * @param int $groupId 削除するグループのID
+     */
+    public function deleteGroup(int $groupId): void
+    {
+        $connection = $this->getConnection();
+
+        // グループコース関連の削除
+        $connection->execute(
+            'DELETE FROM ib_groups_courses WHERE group_id = :group_id',
+            ['group_id' => $groupId]
+        );
+
+        // ユーザグループ関連の削除
+        $connection->execute(
+            'DELETE FROM ib_users_groups WHERE group_id = :group_id',
+            ['group_id' => $groupId]
+        );
+
+        // グループの削除
+        $connection->execute(
+            'DELETE FROM ib_groups WHERE id = :group_id',
+            ['group_id' => $groupId]
+        );
+    }
+
+    /**
      * 指定したグループに所属するユーザ ID リストを取得
      *
      * @param int $groupId グループID

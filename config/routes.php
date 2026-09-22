@@ -277,6 +277,16 @@ return function (RouteBuilder $routes): void {
             ], ['pass' => ['id']]);
             $builder->connect('/courses/{id}', [
                 'controller' => 'Courses',
+                'action' => 'edit',
+                '_method' => 'PUT',
+            ], ['pass' => ['id']]);
+            $builder->connect('/courses/{id}', [
+                'controller' => 'Courses',
+                'action' => 'edit',
+                '_method' => 'PATCH',
+            ], ['pass' => ['id']]);
+            $builder->connect('/courses/{id}', [
+                'controller' => 'Courses',
                 'action' => 'delete',
                 '_method' => 'DELETE',
             ], ['pass' => ['id']]);
@@ -311,10 +321,30 @@ return function (RouteBuilder $routes): void {
                 'action' => 'index',
                 '_method' => 'GET',
             ]);
+            $builder->connect('/groups', [
+                'controller' => 'Groups',
+                'action' => 'add',
+                '_method' => 'POST',
+            ]);
             $builder->connect('/groups/{id}', [
                 'controller' => 'Groups',
                 'action' => 'view',
                 '_method' => 'GET',
+            ], ['pass' => ['id']]);
+            $builder->connect('/groups/{id}', [
+                'controller' => 'Groups',
+                'action' => 'edit',
+                '_method' => 'PUT',
+            ], ['pass' => ['id']]);
+            $builder->connect('/groups/{id}', [
+                'controller' => 'Groups',
+                'action' => 'edit',
+                '_method' => 'PATCH',
+            ], ['pass' => ['id']]);
+            $builder->connect('/groups/{id}', [
+                'controller' => 'Groups',
+                'action' => 'delete',
+                '_method' => 'DELETE',
             ], ['pass' => ['id']]);
 
             // グループのユーザ割当

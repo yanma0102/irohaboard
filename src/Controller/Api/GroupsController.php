@@ -16,7 +16,7 @@ namespace App\Controller\Api;
 
 /**
  * ApiGroups Controller
- * グループの一覧・詳細・ユーザ割当を提供する
+ * グループの一覧・詳細・追加・更新・削除・ユーザ割当を提供する
  */
 class GroupsController extends BaseController
 {
@@ -85,6 +85,102 @@ class GroupsController extends BaseController
         ]);
 
         return $this->okList($rows, $meta);
+    }
+
+    /**
+     * グループを追加する
+     *
+     * @return \Cake\Http\Response
+     */
+    public function add(): \Cake\Http\Response
+    {
+        $this->requireManager();
+
+        $input = $this->input();
+        $groupsTable = $this->fetchTable('Groups');
+
+        $allowedFields = ['title', 'comment', 'status', 'logo', 'copyright', 'module'];
+        $fields = [];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $input)) {
+                $fields[$field] = $input[$field];
+            }
+        }
+
+        $entity = $groupsTable->newEntity($fields);
+
+        if ($groupsTable->save($entity)) {
+            $data = $entity->toArray();
+            $data['id'] = (int)$data['id'];
+            return $this->ok($data, 201);
+        }
+
+        $this->fail(400, 'Validation failed', $entity->getErrors());
+    }
+
+    /**
+     * グループを更新する
+     *
+     * @param int $id グループID
+     * @return \Cake\Http\Response
+     */
+    public function edit(int $id): \Cake\Http\Response
+    {
+        $this->requireManager();
+
+        $groupsTable = $this->fetchTable('Groups');
+
+        if (!$groupsTable->exists(['id' => $id])) {
+            $this->fail(404, 'Group not found');
+        }
+
+        $target = $groupsTable->get($id);
+        $input = $this->input();
+        $allowedFields = ['title', 'comment', 'status', 'logo', 'copyright', 'module'];
+        $fields = [];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $input)) {
+                $fields[$field] = $input[$field];
+            }
+        }
+
+        if (empty($fields)) {
+            $this->fail(400, 'No updatable fields were provided');
+        }
+
+        $entity = $groupsTable->patchEntity($target, $fields);
+
+        if (!$groupsTable->save($entity)) {
+            $this->fail(400, 'Validation failed', $entity->getErrors());
+        }
+
+        $data = $entity->toArray();
+        $data['id'] = (int)$data['id'];
+
+        return $this->ok($data);
+    }
+
+    /**
+     * グループを削除する
+     *
+     * @param int $id グループID
+     * @return \Cake\Http\Response
+     */
+    public function delete(int $id): \Cake\Http\Response
+    {
+        $this->requireManager();
+
+        $groupsTable = $this->fetchTable('Groups');
+
+        if (!$groupsTable->exists(['id' => $id])) {
+            $this->fail(404, 'Group not found');
+        }
+
+        $groupsTable->deleteGroup($id);
+
+        return $this->ok(['id' => $id, 'deleted' => true]);
     }
 
     /**

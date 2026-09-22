@@ -66,7 +66,7 @@
 
 | # | 内容 | 現状 | 重大度 | 状態 |
 |---|---|---|---|---|
-| T-1 | Controller/API 自動テスト | Admin CRUD（Users/Courses/Groups）・API（Auth/Errors/Groups/Courses）・フロント（Infos/Users/UsersCourses）のテストを追加。**全体 128 tests / 492 assertions**。未カバー: Admin の Contents/ContentsQuestions/EnquetesQuestions/Infos/Records/Settings | 高 | 一部対応済 |
+| T-1 | Controller/API 自動テスト | Admin 全コントローラ（Users/Courses/Groups/Contents/ContentsQuestions/EnquetesQuestions/Infos/Records/Settings）・API・フロント・ワークフロー統合をカバー。**全体 342 tests / 1590 assertions**。Records の不正 page 復旧バグを発見・修正（`withQueryParams(['page' => 1])`） | 高 | ✅対応済 |
 | T-2 | Fixture クラス | `tests/Fixture/` は `.gitkeep` のみ。`tests/schema.sql` + SchemaLoader で代替 | 中 | 未対応 |
 | T-3 | `config/Migrations/` | `bake migration_snapshot` で `InitialSchema`（16テーブル）を生成済み。`migrations status` で up を確認。以降のスキーマ変更は Migrations を正とする | 中 | ✅対応済 |
 | T-4 | 統合/E2E テスト | 0 件。回帰検知は手動試験に依存（CakePHP 5 では Dusk 等の環境構築が必要） | 高 | ✅対応済（ワークフロー統合テスト 8件追加） |
@@ -83,7 +83,7 @@
 
 ## 7. 対応優先順位（推奨）
 
-> **2026-09-23 進捗**: S-3（PSR-4移行）完了。BUG-1（Infos 追加バグ）、BUG-4（記述式保存失敗）を修正。C-5（uploads/files 統一）完了。D-3 は Bootstrap 3.3.5 確認済み（現状維持方針）。D-5（i18n）、T-4（統合テスト）、T-5（utf8mb4）も完了。残るは D-1, D-2, D-4, D-6, T-2, B-1〜B-4。
+> **2026-09-23 進捗**: S-3（PSR-4移行）完了。BUG-1（Infos 追加バグ）、BUG-4（記述式保存失敗）を修正。C-5（uploads/files 統一）完了。D-3 は Bootstrap 3.3.5 確認済み（現状維持方針）。D-5（i18n）、T-4（統合テスト）、T-5（utf8mb4）、T-1（Controller/API テスト全カバー）も完了。B-1 は対応不要（update.sql の該当行は既にコメントアウト済み）。D-2/D-4 は現状維持（機能上問題なし）。残るは B-2（設定値確認）, B-3（本番データ突合）, B-4（SHA1互換検証）, D-1/D-6（整理・設計書追記）, T-2（Fixture）。
 
 1. ~~**S-1**（画像アップロード無検証）・**S-4**（`test_pi.php` 許可）~~ — ✅対応済。
 2. ~~**G-1**（コース検索）~~ ✅対応済。**B-3**（本番データ突合） — 機能・移行成立に直結。**未対応**。
@@ -92,14 +92,14 @@
 5. ~~**S-3**（`Vendor/Utils.php` PSR-4 移行）~~ ✅対応済。~~**D-3**（bootstrap-ui）~~ ↩対応不要（現状維持）。~~**D-5**（i18n 翻訳）~~ ✅対応済。
 6. **D-1・D-2・D-4・D-6・T-2・T-5・B-1・B-2・B-4・T-1未カバー** — 整理・運用改善。
 
-### 残課題サマリ（2026-09-22 時点）
+### 残課題サマリ（2026-09-23 時点）
 
 | 分類 | 対応済 | 未対応 |
 |---|---|---|
 | 機能欠落 (G) | G-1, G-2, G-3, G-4, G-5, G-9 | — （G-6〜G-8 は対応不要） |
 | セキュリティ (S) | S-1, S-2, S-3, S-4 | — |
-| 設計未準拠 (D) | D-3, D-5, D-7 | D-1, D-2, D-4, D-6 |
+| 設計未準拠 (D) | D-3, D-5, D-7 | D-1, D-2（現状維持）, D-4（現状維持）, D-6（設計書追記） |
 | コード整理 (C) | C-1, C-2, C-3, C-4, C-5, C-6 | — |
-| テスト基盤 (T) | T-1（主要）, T-3, T-4, T-5 | T-1（一部）, T-2 |
-| データ整合性 (B) | — | B-1〜B-4（B-1/B-2 は実害なし確認済み） |
+| テスト基盤 (T) | T-1, T-3, T-4, T-5 | T-2 |
+| データ整合性 (B) | B-1（実害なし確認） | B-2, B-3, B-4 |
 `

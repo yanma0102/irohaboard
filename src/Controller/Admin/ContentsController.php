@@ -235,10 +235,10 @@ class ContentsController extends AppController
      */
     public function upload($file_type): void
     {
-        $file_path = ROOT . DS . 'files';
+        $file_path = ROOT . DS . 'webroot' . DS . 'uploads';
 
         if (!is_dir($file_path)) {
-            mkdir($file_path, 0755);
+            mkdir($file_path, 0755, true);
         }
 
         $mode = '';
@@ -311,9 +311,9 @@ class ContentsController extends AppController
         if ($this->request->is('ajax')) {
             $file = $this->request->getUploadedFile('file');
             if ($file && $file->getError() === UPLOAD_ERR_OK) {
-                $file_path = ROOT . DS . 'files';
+                $file_path = ROOT . DS . 'webroot' . DS . 'uploads';
                 if (!is_dir($file_path)) {
-                    mkdir($file_path, 0755);
+                    mkdir($file_path, 0755, true);
                 }
 
                 $original_name = $file->getClientFilename();

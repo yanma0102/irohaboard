@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-09-21 |
-| 最終更新 | 2026-09-22 |
+| 最終更新 | 2026-09-23 |
 | 対象 | CakePHP 2.10 → 5.4 移行後の iroha Board |
 | 基準 | `Docs/design/*`・`Docs/API.md` の設計に対し、`src/`・`config/`・`templates/`・`tests/` の実装が不足または相違する箇所 |
 | 根拠 | `Docs/test/traceability.md` §4 Migration Gap List、各試験ファイルの「設計参照」列、および 2026-09-21 時点の実コード確認 |
@@ -36,7 +36,7 @@
 |---|---|---|---|---|---|---|
 | S-1 | 画像アップロードの拡張子検証 | `05-security.md`（アップロード制限）、`09-views.md`（Summernote 画像アップロード） | `Admin/ContentsController::uploadImage()` に拡張子（`upload_image_extensions`）・サイズ（`upload_image_maxsize`）検証を追加。`upload()` にもサイズ上限検証を追加 | 解消 | 高 | ✅対応済 |
 | S-2 | ユーザー CSV の数式インジェクション対策 | 一般的なCSV 出力要件、内部実装の非対称 | `AppController::sanitizeCsvValue()` を新設し、Admin/Records・Admin/Users・フロント Users の CSV 出力の自由入力項目に適用済み | 解消 | 中 | ✅対応済 |
-| S-3 | `Vendor/Utils.php` の未移行依存（サプライチェーン汚染） | `03-orm-migration.md`・`12-implementation-test-plan.md`（レガシー排除） | グローバルクラス `Utils` を `composer.json` の `classmap: ["Vendor/"]` で autoload し、`src/Controller/Admin/UsersController.php`・`Admin/RecordsController.php` の**10箇所**で使用 | 名前空間なしレガシーコードが残存。将来の改修・脆弱性対応が困難 | 中 | 未対応 |
+| S-3 | `Vendor/Utils.php` の未移行依存（サプライチェーン汚染） | `03-orm-migration.md`・`12-implementation-test-plan.md`（レガシー排除） | グローバルクラス `Utils` を `composer.json` の `classmap: ["Vendor/"]` で autoload し、`src/Controller/Admin/UsersController.php`・`Admin/RecordsController.php` の**10箇所**で使用 | 名前空間なしレガシーコードが残存。将来の改修・脆弱性対応が困難 | 中 | ✅対応済（`src/Utility/Utils.php` に PSR-4 移行、`Vendor/` 削除） |
 | S-4 | `.htaccess` の `test_pi.php` 許可 | `webroot/.htaccess` セキュリティ規則 | `webroot/.htaccess` の許可を `!/index\.php$` に限定し `test_pi.php` を除外済み | 解消 | 中 | ✅対応済 |
 
 ## 3. 設計未準拠（動作はするが設計と異なる）
@@ -83,13 +83,13 @@
 
 ## 7. 対応優先順位（推奨）
 
-> **2026-09-22 進捗**: 優先度 1〜4 の主要項目は対応済み。残るは S-3・D-3・D-5・C-5・T-2・T-4・T-5・B-3・B-4 と、T-1 の未カバーコントローラ。
+> **2026-09-23 進捗**: S-3（PSR-4移行）完了。BUG-1（Infos 追加バグ）、BUG-4（記述式保存失敗）を修正。残るは D-3・D-5・C-5・T-2・T-4・T-5・B-3・B-4 と、T-1 の未カバーコントローラ。
 
 1. ~~**S-1**（画像アップロード無検証）・**S-4**（`test_pi.php` 許可）~~ — ✅対応済。
 2. ~~**G-1**（コース検索）~~ ✅対応済。**B-3**（本番データ突合） — 機能・移行成立に直結。**未対応**。
 3. ~~**G-2〜G-5**（グループ/コース API の CRUD 欠落）~~ ✅対応済（実装）。G-6〜G-8 は設計に要求なしと判断し対応不要。
 4. ~~**S-2**（CSV 数式インジェクション）・**T-1**（Controller/API テスト）~~ ✅対応済（T-1 は主要コントローラをカバー、未カバー分は残）。**T-4**（統合テスト）は未対応。
-5. **S-3・D-3・D-5** — 設計準拠と保守性（優先度中）。**未対応**。
+5. ~~**S-3**（`Vendor/Utils.php` PSR-4 移行）~~ ✅対応済。**D-3**・**D-5** — 設計準拠と保守性（優先度中）。**未対応**。
 6. **C-5・D-1・D-2・D-4・D-6・T-2・T-5・B-1・B-2・B-4・T-1未カバー** — 整理・運用改善。
 
 ### 残課題サマリ（2026-09-22 時点）
@@ -97,7 +97,7 @@
 | 分類 | 対応済 | 未対応 |
 |---|---|---|
 | 機能欠落 (G) | G-1, G-2, G-3, G-4, G-5, G-9 | — （G-6〜G-8 は対応不要） |
-| セキュリティ (S) | S-1, S-2, S-4 | S-3 |
+| セキュリティ (S) | S-1, S-2, S-3, S-4 | — |
 | 設計未準拠 (D) | D-7 | D-1, D-2, D-3, D-4, D-5, D-6 |
 | コード整理 (C) | C-1, C-2, C-3, C-4, C-6 | C-5 |
 | テスト基盤 (T) | T-1（主要）, T-3 | T-1（一部）, T-2, T-4, T-5 |

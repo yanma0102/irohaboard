@@ -164,11 +164,10 @@ class InfosControllerTest extends TestCase
     /**
      * 追加(add) POST テスト
      *
-     * 既知のバグ: add() → edit($info_id=null) → POST → (int)null = 0 →
-     * $infosTable->get(0) → RecordNotFoundException (404)。
-     * 現状の挙動として 404 を期待する。
+     * add() は edit($info_id=null) に委譲するが、edit() は POST 時に
+     * $info_id が null なら newEmptyEntity() を使うため、正常に保存される。
      */
-    public function testAddPostKnownBug(): void
+    public function testAddPost(): void
     {
         $this->loginAsAdmin();
 
@@ -178,8 +177,13 @@ class InfosControllerTest extends TestCase
             'Group' => [],
         ]);
 
-        // 既知のバグ: edit() 内で get(0) が呼び出され 404 になる
-        $this->assertResponseCode(404);
+        // 保存成功時は index へリダイレクト
+        $this->assertResponseCode(302);
+
+        $table = $this->getTableLocator()->get('Infos');
+        $info = $table->find()->where(['title' => '新規お知らせ'])->first();
+        $this->assertNotNull($info, 'お知らせが保存されていること');
+        $this->assertSame('新規お知らせの本文', $info->body);
     }
 
     /**

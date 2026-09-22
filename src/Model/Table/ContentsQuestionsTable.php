@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use Cake\ORM\Query;
+use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
 
 /**
@@ -78,14 +79,29 @@ class ContentsQuestionsTable extends AppTable
         $validator
             ->numeric('sort_no');
 
-        $validator
-            ->add('correct', 'notBlank', [
-                'rule' => 'notBlank',
-                'message' => '正解を選択してください',
-                'allowEmpty' => true,
-            ]);
-
         return $validator;
+    }
+
+    /**
+     * ビジネスルール（save 前の条件判定）
+     *
+     * question_type が single（選択形式）のときだけ correct の必須チェックを適用する。
+     * text（記述式）では正解不要のため correct は空文字で正。
+     */
+    public function buildRules(RulesChecker $rules): RulesChecker
+    {
+        $rules->add(
+            function (\Cake\Datasource\EntityInterface $entity) {
+                if ($entity->get('question_type') === 'single') {
+                    return !empty($entity->get('correct'));
+                }
+                return true;
+            },
+            'correctRequired',
+            ['message' => '正解を選択してください']
+        );
+
+        return $rules;
     }
 
     /**

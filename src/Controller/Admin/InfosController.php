@@ -96,7 +96,11 @@ class InfosController extends AppController
                 return null;
             }
 
-            $info = $infosTable->get((int)$info_id);
+            if ($info_id !== null) {
+                $info = $infosTable->get((int)$info_id);
+            } else {
+                $info = $infosTable->newEmptyEntity();
+            }
             $info = $infosTable->patchEntity($info, $this->request->getData());
             $info->user_id = $this->readAuthUser('id');
 

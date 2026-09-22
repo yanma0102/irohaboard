@@ -262,9 +262,8 @@ class EnquetesQuestionsControllerTest extends TestCase
     /**
      * 追加(add) POST テスト — question_type が text の場合
      *
-     * 実装メモ: ContentsQuestionsController と同様の withData ラップ処理だが、
-     * text 型で options が空文字の場合、patchEntity → save が失敗してリダイレクトせず
-     * フォーム再表示（200）になる場合がある。ここでは現状の挙動を検証する。
+     * text 型で options が空文字でも、edit() は $question_id === null の分岐で
+     * newEmptyEntity() を使い、content_id/user_id/sort_no を補完するため正常に保存される。
      */
     public function testAddPostTextType(): void
     {
@@ -282,21 +281,14 @@ class EnquetesQuestionsControllerTest extends TestCase
             'comment' => '',
         ]);
 
-        // 現状の挙動: テキスト型の保存が成功する場合も失敗する場合もある。
-        // 成功時はリダイレクト、失敗時はフォーム再表示（200）。
-        // いずれにしてもエラーページにはならないこと。
-        $statusCode = $this->_response->getStatusCode();
-        $this->assertTrue(
-            in_array($statusCode, [200, 302], true),
-            "Expected 200 or 302, got {$statusCode}"
-        );
+        // 保存成功時は index へリダイレクト
+        $this->assertResponseCode(302);
 
         $table = $this->getTableLocator()->get('ContentsQuestions');
         $question = $table->find()->where(['title' => 'テキスト回答問題'])->first();
-        if ($statusCode === 302) {
-            $this->assertNotNull($question);
-            $this->assertSame('text', $question->question_type);
-        }
+        $this->assertNotNull($question, 'テキスト型の質問が保存されていること');
+        $this->assertSame('text', $question->question_type);
+        $this->assertSame((int)$content->id, (int)$question->content_id);
     }
 
     /**

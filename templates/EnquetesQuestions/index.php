@@ -34,7 +34,7 @@
 		$course_url = ['controller' => 'contents', 'action' => 'index', $content->course_id];
 		$this->Html->addCrumb(
 			'<span class="glyphicon glyphicon-book" aria-hidden="true"></span> コース一覧',
-			['controller' => 'users_courses','action' => 'index'],
+			['controller' => 'UsersCourses','action' => 'index'],
 			['escape' => false]
 		);
 	}

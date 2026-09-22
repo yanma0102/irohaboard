@@ -158,12 +158,19 @@ class InfosControllerTest extends TestCase
     }
 
     /**
-     * お知らせ view の成功テストは省略
+     * ユーザに権限のあるお知らせの view にアクセスすると 200 が返されること
      *
-     * 原因: templates/Infos/view.php のルートパンくずリストが
-     * 'controller' => 'users_courses'（アンダースコア）を生成するが、
-     * config/routes.php のルート定義は 'UsersCourses'（パスカルケース）のため
-     * MissingRouteException が発生する。これは既存のアプリケーションバグ。
-     * テストコードは変更しないため、view の成功ケースは省略する。
+     * InfosGroups に紐付けしないお知らせは全ユーザに公開されるため、
+     * ログインユーザは誰でも閲覧可能。
+     * （templates/Infos/view.php のルート参照が修正済み）
      */
+    public function testView(): void
+    {
+        $user = $this->loginAsUser();
+        $info = $this->createInfo((int)$user->id, '権限テストお知らせ');
+
+        $this->get("/infos/view/{$info->id}");
+        $this->assertResponseOk();
+        $this->assertResponseContains('権限テストお知らせ');
+    }
 }

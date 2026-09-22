@@ -48,7 +48,7 @@ class ContentsController extends AppController
 
         $contents = $contentsTable->find()
             ->where([$contentsTable->aliasField('course_id') => $course_id])
-            ->order([$contentsTable->aliasField('sort_no') => 'ASC'])
+            ->orderBy([$contentsTable->aliasField('sort_no') => 'ASC'])
             ->all();
 
         $this->set(compact('contents', 'course'));
@@ -268,7 +268,16 @@ class ContentsController extends AppController
                     $new_name = date('YmdHis') . $str . '.' . $ext;
 
                     $dest = $file_path . DS . $new_name;
-                    $result = $file->moveTo($dest);
+
+                    // Laminas\Diactoros\UploadedFile::moveTo() は戻り値 void で、
+                    // 失敗時は例外を投げる。戻り値判定では常に失敗扱いになるため、
+                    // 例外捕捉と保存後のファイル存在確認で成否を判定する。
+                    try {
+                        $file->moveTo($dest);
+                        $result = is_file($dest);
+                    } catch (\Throwable $e) {
+                        $result = false;
+                    }
 
                     if ($result) {
                         $mode = 'complete';
@@ -319,7 +328,15 @@ class ContentsController extends AppController
                     $new_name = date('YmdHis') . $str . '.' . $ext;
 
                     $dest = $file_path . DS . $new_name;
-                    $result = $file->moveTo($dest);
+
+                    // moveTo() は戻り値 void・失敗時例外のため、戻り値判定は不可。
+                    // 例外捕捉と保存後のファイル存在確認で成否を判定する。
+                    try {
+                        $file->moveTo($dest);
+                        $result = is_file($dest);
+                    } catch (\Throwable $e) {
+                        $result = false;
+                    }
 
                     $file_url = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/contents/file_image/' . $new_name;
                     $response = $result ? [$file_url] : [false];

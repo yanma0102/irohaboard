@@ -58,7 +58,7 @@ class SettingsControllerTest extends TestCase
     /**
      * Settings テーブルに最低限の設定行を作成
      *
-     * schema.sql の INSERT と同じ 4 件を再現する。
+     * 本番の初期設定に相当する 4 件を作成する。
      */
     private function seedSettings(): void
     {

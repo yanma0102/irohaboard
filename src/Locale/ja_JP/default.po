@@ -1,0 +1,599 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: irohaboard\n"
+"Language: ja_JP\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "<< 戻る"
+msgstr "<< 戻る"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "CSV出力"
+msgstr "CSV出力"
+
+msgid "CSV出力(詳細)"
+msgstr "CSV出力(詳細)"
+
+msgid "File not found"
+msgstr "File not found"
+
+msgid "Invalid access"
+msgstr "Invalid access"
+
+msgid "Invalid content"
+msgstr "Invalid content"
+
+msgid "Invalid contents question"
+msgstr "Invalid contents question"
+
+msgid "Invalid course"
+msgstr "Invalid course"
+
+msgid "Invalid filename"
+msgstr "Invalid filename"
+
+msgid "Invalid group"
+msgstr "Invalid group"
+
+msgid "Invalid info"
+msgstr "Invalid info"
+
+msgid "Invalid user"
+msgstr "Invalid user"
+
+msgid "The content could not be deleted. Please, try again."
+msgstr "The content could not be deleted. Please, try again."
+
+msgid "The content could not be saved. Please, try again."
+msgstr "The content could not be saved. Please, try again."
+
+msgid "The contents question could not be deleted. Please, try again."
+msgstr "The contents question could not be deleted. Please, try again."
+
+msgid "The contents question could not be saved. Please, try again."
+msgstr "The contents question could not be saved. Please, try again."
+
+msgid "The course could not be saved. Please, try again."
+msgstr "The course could not be saved. Please, try again."
+
+msgid "The group could not be deleted. Please, try again."
+msgstr "The group could not be deleted. Please, try again."
+
+msgid "The group could not be saved. Please, try again."
+msgstr "The group could not be saved. Please, try again."
+
+msgid "The info could not be deleted. Please, try again."
+msgstr "The info could not be deleted. Please, try again."
+
+msgid "The info could not be saved. Please, try again."
+msgstr "The info could not be saved. Please, try again."
+
+msgid "The record could not be saved. Please, try again."
+msgstr "The record could not be saved. Please, try again."
+
+msgid "URL"
+msgstr "URL"
+
+msgid "[非公開]と設定した場合、管理者権限でログインした場合のみ表示されます。"
+msgstr "[非公開]と設定した場合、管理者権限でログインした場合のみ表示されます。"
+
+msgid "お知らせ"
+msgstr "お知らせ"
+
+msgid "お知らせが保存されました"
+msgstr "お知らせが保存されました"
+
+msgid "お知らせが削除されました"
+msgstr "お知らせが削除されました"
+
+msgid "お知らせはありません"
+msgstr "お知らせはありません"
+
+msgid "お知らせ一覧"
+msgstr "お知らせ一覧"
+
+msgid "さん"
+msgstr "さん"
+
+msgid "ようこそ"
+msgstr "ようこそ"
+
+msgid "インポートが完了しました"
+msgstr "インポートが完了しました"
+
+msgid "インポートに失敗しました"
+msgstr "インポートに失敗しました"
+
+msgid "インポートファイルが指定されていません"
+msgstr "インポートファイルが指定されていません"
+
+msgid "キャンセル"
+msgstr "キャンセル"
+
+msgid "キーワード"
+msgstr "キーワード"
+
+msgid "グループ"
+msgstr "グループ"
+
+msgid "グループ一覧"
+msgstr "グループ一覧"
+
+msgid "グループ名"
+msgstr "グループ名"
+
+msgid "グループ情報を保存しました"
+msgstr "グループ情報を保存しました"
+
+msgid "グループ情報を削除しました"
+msgstr "グループ情報を削除しました"
+
+msgid "コピーライト"
+msgstr "コピーライト"
+
+msgid "コンテンツ"
+msgstr "コンテンツ"
+
+msgid "コンテンツが保存されました"
+msgstr "コンテンツが保存されました"
+
+msgid "コンテンツが削除されました"
+msgstr "コンテンツが削除されました"
+
+msgid "コンテンツ一覧"
+msgstr "コンテンツ一覧"
+
+msgid "コンテンツ名"
+msgstr "コンテンツ名"
+
+msgid "コンテンツ種別"
+msgstr "コンテンツ種別"
+
+msgid "コース"
+msgstr "コース"
+
+msgid "コースが保存されました"
+msgstr "コースが保存されました"
+
+msgid "コースが削除されました"
+msgstr "コースが削除されました"
+
+msgid "コース一覧"
+msgstr "コース一覧"
+
+msgid "コース名"
+msgstr "コース名"
+
+msgid "コース紹介"
+msgstr "コース紹介"
+
+msgid "システム名"
+msgstr "システム名"
+
+msgid "システム設定"
+msgstr "システム設定"
+
+msgid "ステータス"
+msgstr "ステータス"
+
+msgid "タイトル"
+msgstr "タイトル"
+
+msgid "テスト問題一覧"
+msgstr "テスト問題一覧"
+
+msgid "テスト結果"
+msgstr "テスト結果"
+
+msgid "テスト結果画面にて不正解の問題の表示方法を指定します。正解時は解説のみが表示されます。"
+msgstr "テスト結果画面にて不正解の問題の表示方法を指定します。正解時は解説のみが表示されます。"
+
+msgid "テーマカラー"
+msgstr "テーマカラー"
+
+msgid "トークンの有効期限が切れました。もう一度ログインしてください。"
+msgstr "トークンの有効期限が切れました。もう一度ログインしてください。"
+
+msgid "ドラッグアンドドロップでコンテンツの並び順が変更できます。"
+msgstr "ドラッグアンドドロップでコンテンツの並び順が変更できます。"
+
+msgid "ドラッグアンドドロップでコースの並び順が変更できます。"
+msgstr "ドラッグアンドドロップでコースの並び順が変更できます。"
+
+msgid "ドラッグアンドドロップで出題順が変更できます。"
+msgstr "ドラッグアンドドロップで出題順が変更できます。"
+
+msgid "ドラッグアンドドロップで表示順が変更できます。"
+msgstr "ドラッグアンドドロップで表示順が変更できます。"
+
+msgid "パスワード"
+msgstr "パスワード"
+
+msgid "パスワードが変更されました"
+msgstr "パスワードが変更されました"
+
+msgid "パスワードを保存できませんでした"
+msgstr "パスワードを保存できませんでした"
+
+msgid "パスワードを入力して下さい"
+msgstr "パスワードを入力して下さい"
+
+msgid "ファイル名"
+msgstr "ファイル名"
+
+msgid "ページ"
+msgstr "ページ"
+
+msgid "メールアドレス"
+msgstr "メールアドレス"
+
+msgid "ユーザ"
+msgstr "ユーザ"
+
+msgid "ユーザが削除されました"
+msgstr "ユーザが削除されました"
+
+msgid "ユーザを削除できませんでした"
+msgstr "ユーザを削除できませんでした"
+
+msgid "ユーザ一覧"
+msgstr "ユーザ一覧"
+
+msgid "ユーザ情報が保存されました"
+msgstr "ユーザ情報が保存されました"
+
+msgid "ユーザ情報が保存できませんでした"
+msgstr "ユーザ情報が保存できませんでした"
+
+msgid "ログアウト"
+msgstr "ログアウト"
+
+msgid "ログイン"
+msgstr "ログイン"
+
+msgid "ログインID"
+msgstr "ログインID"
+
+msgid "ログインID、もしくはパスワードが正しくありません"
+msgstr "ログインID、もしくはパスワードが正しくありません"
+
+msgid "ログインID、もしくはパスワードの形式が正しくありません"
+msgstr "ログインID、もしくはパスワードの形式が正しくありません"
+
+msgid "ログイン状態の保持は受講者のみ利用できます"
+msgstr "ログイン状態の保持は受講者のみ利用できます"
+
+msgid "ログイン状態を保持"
+msgstr "ログイン状態を保持"
+
+msgid "ログイン試行回数が上限に達しました。1時間後に再度お試しください。"
+msgstr "ログイン試行回数が上限に達しました。1時間後に再度お試しください。"
+
+msgid "一覧を表示"
+msgstr "一覧を表示"
+
+msgid "不合格"
+msgstr "不合格"
+
+msgid "不正解"
+msgstr "不正解"
+
+msgid "不正解時の表示"
+msgstr "不正解時の表示"
+
+msgid "中断"
+msgstr "中断"
+
+msgid "件"
+msgstr "件"
+
+msgid "作成日時"
+msgstr "作成日時"
+
+msgid "保存"
+msgstr "保存"
+
+msgid "備考"
+msgstr "備考"
+
+msgid "入力された「パスワード」と「パスワード（確認用）」が一致しません"
+msgstr "入力された「パスワード」と「パスワード（確認用）」が一致しません"
+
+msgid "全体のお知らせ"
+msgstr "全体のお知らせ"
+
+msgid "内容"
+msgstr "内容"
+
+msgid "出題数 (1-100問)"
+msgstr "出題数 (1-100問)"
+
+msgid "制限時間 (1-100分)"
+msgstr "制限時間 (1-100分)"
+
+msgid "制限時間を過ぎましたので自動採点を行います。"
+msgstr "制限時間を過ぎましたので自動採点を行います。"
+
+msgid "削除"
+msgstr "削除"
+
+msgid "前回学習日"
+msgstr "前回学習日"
+
+msgid "受講するコースを選択して下さい。(複数選択可)"
+msgstr "受講するコースを選択して下さい。(複数選択可)"
+
+msgid "受講コース"
+msgstr "受講コース"
+
+msgid "受講可能なコースはありません"
+msgstr "受講可能なコースはありません"
+
+msgid "受講者ログイン"
+msgstr "受講者ログイン"
+
+msgid "受講者ログインへ"
+msgstr "受講者ログインへ"
+
+msgid "合否"
+msgstr "合否"
+
+msgid "合格"
+msgstr "合格"
+
+msgid "合格とする得点率 (1-100%)"
+msgstr "合格とする得点率 (1-100%)"
+
+msgid "合格基準得点"
+msgstr "合格基準得点"
+
+msgid "合格点"
+msgstr "合格点"
+
+msgid "合計"
+msgstr "合計"
+
+msgid "問"
+msgstr "問"
+
+msgid "問題/質問"
+msgstr "問題/質問"
+
+msgid "問題が保存されました"
+msgstr "問題が保存されました"
+
+msgid "問題が削除されました"
+msgstr "問題が削除されました"
+
+msgid "問題文"
+msgstr "問題文"
+
+msgid "回答内容を送信しました"
+msgstr "回答内容を送信しました"
+
+msgid "回答形式"
+msgstr "回答形式"
+
+msgid "変更することで他のコースにコンテンツを移動できます。"
+msgstr "変更することで他のコースにコンテンツを移動できます。"
+
+msgid "学習"
+msgstr "学習"
+
+msgid "学習回数"
+msgstr "学習回数"
+
+msgid "学習履歴"
+msgstr "学習履歴"
+
+msgid "学習履歴を保存しました"
+msgstr "学習履歴を保存しました"
+
+msgid "学習履歴を削除"
+msgstr "学習履歴を削除"
+
+msgid "学習履歴を削除しました"
+msgstr "学習履歴を削除しました"
+
+msgid "学習履歴一覧"
+msgstr "学習履歴一覧"
+
+msgid "学習日時"
+msgstr "学習日時"
+
+msgid "学習時間"
+msgstr "学習時間"
+
+msgid "学習開始日"
+msgstr "学習開始日"
+
+msgid "完了"
+msgstr "完了"
+
+msgid "対象グループ"
+msgstr "対象グループ"
+
+msgid "対象日時"
+msgstr "対象日時"
+
+msgid "形式"
+msgstr "形式"
+
+msgid "得点"
+msgstr "得点"
+
+msgid "戻る"
+msgstr "戻る"
+
+msgid "所属するグループを選択して下さい。(複数選択可)"
+msgstr "所属するグループを選択して下さい。(複数選択可)"
+
+msgid "所属グループ"
+msgstr "所属グループ"
+
+msgid "所属コース"
+msgstr "所属コース"
+
+msgid "指定した場合、制限時間を過ぎると自動的に採点されます。"
+msgstr "指定した場合、制限時間を過ぎると自動的に採点されます。"
+
+msgid "指定した場合、合否の判定が行われ、指定しない場合は無条件に合格となります。"
+msgstr "指定した場合、合否の判定が行われ、指定しない場合は無条件に合格となります。"
+
+msgid "指定した場合、登録した問題の中からランダムに出題され、指定しない場合は問題一覧画面の並び順で全問出題されます。"
+msgstr "指定した場合、登録した問題の中からランダムに出題され、指定しない場合は問題一覧画面の並び順で全問出題されます。"
+
+msgid "採点"
+msgstr "採点"
+
+msgid "採点してよろしいですか？"
+msgstr "採点してよろしいですか？"
+
+msgid "採点確認"
+msgstr "採点確認"
+
+msgid "新しいパスワード"
+msgstr "新しいパスワード"
+
+msgid "新しいパスワード (確認用)"
+msgstr "新しいパスワード (確認用)"
+
+msgid "新規お知らせ"
+msgstr "新規お知らせ"
+
+msgid "新規グループ"
+msgstr "新規グループ"
+
+msgid "新規コンテンツ"
+msgstr "新規コンテンツ"
+
+msgid "新規コース"
+msgstr "新規コース"
+
+msgid "新規ユーザ"
+msgstr "新規ユーザ"
+
+msgid "新規問題"
+msgstr "新規問題"
+
+msgid "新規質問"
+msgstr "新規質問"
+
+msgid "日付"
+msgstr "日付"
+
+msgid "更新日時"
+msgstr "更新日時"
+
+msgid "最終ログイン日時"
+msgstr "最終ログイン日時"
+
+msgid "本文"
+msgstr "本文"
+
+msgid "検索"
+msgstr "検索"
+
+msgid "権限"
+msgstr "権限"
+
+msgid "正解"
+msgstr "正解"
+
+msgid "正誤"
+msgstr "正誤"
+
+msgid "残り"
+msgstr "残り"
+
+msgid "残り時間"
+msgstr "残り時間"
+
+msgid "氏名"
+msgstr "氏名"
+
+msgid "理解度"
+msgstr "理解度"
+
+msgid "理解度を選択して終了して下さい。"
+msgstr "理解度を選択して終了して下さい。"
+
+msgid "番号"
+msgstr "番号"
+
+msgid "種別"
+msgstr "種別"
+
+msgid "管理画面へのアクセス権限がありません"
+msgstr "管理画面へのアクセス権限がありません"
+
+msgid "管理者ログイン"
+msgstr "管理者ログイン"
+
+msgid "管理者ログインへ"
+msgstr "管理者ログインへ"
+
+msgid "経過"
+msgstr "経過"
+
+msgid "結果"
+msgstr "結果"
+
+msgid "編集"
+msgstr "編集"
+
+msgid "複製"
+msgstr "複製"
+
+msgid "解答/回答"
+msgstr "解答/回答"
+
+msgid "解説"
+msgstr "解説"
+
+msgid "設定"
+msgstr "設定"
+
+msgid "設定が保存されました"
+msgstr "設定が保存されました"
+
+msgid "設定されていません"
+msgstr "設定されていません"
+
+msgid "質問が保存されました"
+msgstr "質問が保存されました"
+
+msgid "質問が削除されました"
+msgstr "質問が削除されました"
+
+msgid "質問一覧"
+msgstr "質問一覧"
+
+msgid "質問文"
+msgstr "質問文"
+
+msgid "送信"
+msgstr "送信"
+
+msgid "送信してよろしいですか？"
+msgstr "送信してよろしいですか？"
+
+msgid "送信確認"
+msgstr "送信確認"
+
+msgid "選択しない場合、全てのユーザが対象となります。"
+msgstr "選択しない場合、全てのユーザが対象となります。"
+
+msgid "選択肢"
+msgstr "選択肢"
+
+msgid "選択肢／正解"
+msgstr "選択肢／正解"
+
+msgid "～"
+msgstr "～"
+

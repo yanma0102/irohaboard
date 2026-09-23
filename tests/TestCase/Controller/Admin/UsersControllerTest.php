@@ -145,16 +145,14 @@ class UsersControllerTest extends TestCase
         $this->loginAsAdmin();
 
         $this->post('/admin/users/add', [
-            'User' => [
-                'username' => 'newuser',
-                'new_password' => 'newpass',
-                'name' => '新規テストユーザー',
-                'role' => 'user',
-                'email' => 'newuser@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => 'テストコメント',
-            ],
+            'username' => 'newuser',
+            'new_password' => 'newpass',
+            'name' => '新規テストユーザー',
+            'role' => 'user',
+            'email' => 'newuser@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => 'テストコメント',
         ]);
         $this->assertRedirect();
 
@@ -176,16 +174,14 @@ class UsersControllerTest extends TestCase
         $this->loginAsAdmin();
 
         $this->post('/admin/users/add', [
-            'User' => [
-                'username' => 'hashuser',
-                'new_password' => 'plainpass',
-                'name' => 'ハッシュテスト',
-                'role' => 'user',
-                'email' => 'hash@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => '',
-            ],
+            'username' => 'hashuser',
+            'new_password' => 'plainpass',
+            'name' => 'ハッシュテスト',
+            'role' => 'user',
+            'email' => 'hash@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => '',
         ]);
         $this->assertRedirect();
 
@@ -204,16 +200,14 @@ class UsersControllerTest extends TestCase
         $user = $this->createUser('edituser');
 
         $this->post("/admin/users/edit/{$user->id}", [
-            'User' => [
-                'id' => $user->id,
-                'username' => 'edituser',
-                'name' => '更新後の名前',
-                'role' => 'user',
-                'email' => 'updated@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => '更新コメント',
-            ],
+            'id' => $user->id,
+            'username' => 'edituser',
+            'name' => '更新後の名前',
+            'role' => 'user',
+            'email' => 'updated@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => '更新コメント',
         ]);
         $this->assertRedirect();
 
@@ -234,16 +228,14 @@ class UsersControllerTest extends TestCase
         $originalPassword = $before->password;
 
         $this->post("/admin/users/edit/{$user->id}", [
-            'User' => [
-                'id' => $user->id,
-                'username' => 'pwduser',
-                'name' => 'パスワード変更なしテスト',
-                'role' => 'user',
-                'email' => 'pwd@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => '',
-            ],
+            'id' => $user->id,
+            'username' => 'pwduser',
+            'name' => 'パスワード変更なしテスト',
+            'role' => 'user',
+            'email' => 'pwd@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => '',
         ]);
         $this->assertRedirect();
 
@@ -351,16 +343,14 @@ class UsersControllerTest extends TestCase
         $this->createUser('dupuser');
 
         $this->post('/admin/users/add', [
-            'User' => [
-                'username' => 'dupuser',
-                'new_password' => 'newpass',
-                'name' => '重複テスト',
-                'role' => 'user',
-                'email' => 'dup@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => '',
-            ],
+            'username' => 'dupuser',
+            'new_password' => 'newpass',
+            'name' => '重複テスト',
+            'role' => 'user',
+            'email' => 'dup@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => '',
         ]);
         $this->assertResponseOk();
     }
@@ -373,16 +363,14 @@ class UsersControllerTest extends TestCase
         $this->loginAsAdmin();
 
         $this->post('/admin/users/add', [
-            'User' => [
-                'username' => 'noroleuser',
-                'new_password' => 'newpass',
-                'name' => 'ロール空テスト',
-                'role' => '',
-                'email' => 'norole@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => '',
-            ],
+            'username' => 'noroleuser',
+            'new_password' => 'newpass',
+            'name' => 'ロール空テスト',
+            'role' => '',
+            'email' => 'norole@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => '',
         ]);
         $this->assertResponseOk();
     }
@@ -400,17 +388,15 @@ class UsersControllerTest extends TestCase
         $originalPassword = $before->password;
 
         $this->post("/admin/users/edit/{$user->id}", [
-            'User' => [
-                'id' => $user->id,
-                'username' => 'pwdunchanged',
-                'name' => 'パスワード未変更テスト',
-                'role' => 'user',
-                'email' => 'pwdunchanged@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => '',
-                // new_password を送信しない（パスワード変更なし）
-            ],
+            'id' => $user->id,
+            'username' => 'pwdunchanged',
+            'name' => 'パスワード未変更テスト',
+            'role' => 'user',
+            'email' => 'pwdunchanged@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => '',
+            // new_password を送信しない（パスワード変更なし）
         ]);
         $this->assertRedirect();
 
@@ -428,10 +414,8 @@ class UsersControllerTest extends TestCase
         $admin = $this->loginAsAdmin();
 
         $this->post('/admin/users/setting', [
-            'User' => [
-                'new_password' => 'newadminpass',
-                'new_password2' => 'newadminpass',
-            ],
+            'new_password' => 'newadminpass',
+            'new_password2' => 'newadminpass',
         ]);
         $this->assertResponseOk();
 

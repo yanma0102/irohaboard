@@ -299,16 +299,14 @@ class WorkflowControllerTest extends TestCase
 
         // Step 1: 追加
         $this->post('/admin/users/add', [
-            'User' => [
-                'username' => 'wfuser',
-                'new_password' => 'wfpass',
-                'name' => 'ワークフローユーザー',
-                'role' => 'user',
-                'email' => 'wfuser@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => 'テストコメント',
-            ],
+            'username' => 'wfuser',
+            'new_password' => 'wfpass',
+            'name' => 'ワークフローユーザー',
+            'role' => 'user',
+            'email' => 'wfuser@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => 'テストコメント',
         ]);
         $this->assertResponseCode(302);
 
@@ -324,16 +322,14 @@ class WorkflowControllerTest extends TestCase
 
         // Step 3: 編集
         $this->post("/admin/users/edit/{$user->id}", [
-            'User' => [
-                'id' => $user->id,
-                'username' => 'wfuser',
-                'name' => '更新後ワークフローユーザー',
-                'role' => 'user',
-                'email' => 'wfuser_updated@example.com',
-                'Group' => [],
-                'Course' => [],
-                'comment' => '更新コメント',
-            ],
+            'id' => $user->id,
+            'username' => 'wfuser',
+            'name' => '更新後ワークフローユーザー',
+            'role' => 'user',
+            'email' => 'wfuser_updated@example.com',
+            'Group' => [],
+            'Course' => [],
+            'comment' => '更新コメント',
         ]);
         $this->assertResponseCode(302);
 

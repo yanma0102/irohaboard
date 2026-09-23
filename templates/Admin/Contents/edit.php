@@ -14,7 +14,7 @@
 
 		// アップロードボタンクリック時の処理
 		$("#btnUpload").click(function() {
-			var content_kind = $('input[name="data[Content][kind]"]:checked').val();
+			var content_kind = $('input[name="kind"]:checked').val();
 			
 			if(!content_kind)
 				return false;
@@ -32,19 +32,19 @@
 		});
 
 		// コンテンツ種別の変更時の処理
-		$('input[name="data[Content][kind]"]:radio').change( function() {
+		$('input[name="kind"]:radio').change( function() {
 			render();
 		});
 
 		// 保存時、コード表示モードの場合、解除する（編集中の内容を反映するため）
 		$('form').submit( function() {
-			var content_kind = $('input[name="data[Content][kind]"]:checked').val();
+			var content_kind = $('input[name="kind"]:checked').val();
 			
 			if(content_kind == 'html')
 			{
-				if ($('#ContentBody').summernote('codeview.isActivated'))
+				if ($('#body').summernote('codeview.isActivated'))
 				{
-					$('#ContentBody').summernote('codeview.deactivate')
+					$('#body').summernote('codeview.deactivate')
 				}
 			}
 		});
@@ -56,7 +56,7 @@
 	// コンテンツ種別によって画面の表示要素を制御
 	function render()
 	{
-		var content_kind = $('input[name="data[Content][kind]"]:checked').val();
+		var content_kind = $('input[name="kind"]:checked').val();
 		
 		$('.kind').hide();
 		$('.kind-' + content_kind).show(); // コンテンツ種別に紐づく項目のみを表示
@@ -65,15 +65,15 @@
 		switch(content_kind)
 		{
 			case 'text': // テキスト
-				$('#ContentBody').summernote('destroy');
+				$('#body').summernote('destroy');
 				// テキストが存在しない場合、空文字にする。
-				if($('<span>').html($('#ContentBody').val()).text() == '')
-					$('#ContentBody').val('');
+				if($('<span>').html($('#body').val()).text() == '')
+					$('#body').val('');
 				$('#btnPreview').show();
 				break;
 			case 'html': // リッチテキスト
 				// リッチテキストエディタを起動
-				CommonUtil.setRichTextEditor('#ContentBody', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
+				CommonUtil.setRichTextEditor('#body', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
 				$('#btnPreview').show();
 				break;
 			case 'movie': // 動画
@@ -98,9 +98,9 @@
 	// コンテンツのプレビュー
 	function preview()
 	{
-		var content_kind = $('input[name="data[Content][kind]"]:checked').val();
-		var content_key  = $('input[name="data[_Token][key]"]').val();
-		var content_url  = $('#ContentUrl').val();
+		var content_kind = $('input[name="kind"]:checked').val();
+		var content_key  = $('input[name="_csrfToken"]').val();
+		var content_url  = $('#url').val();
 
 		if((content_kind == 'movie') && (!content_url.startsWith('http')))
 		{
@@ -113,10 +113,10 @@
 			url  : '<?= $this->Url->build(['action' => 'preview']) ?>',
 			type : 'POST',
 			data : {
-				content_title : $('#ContentTitle').val(),
-				content_kind  : $('input[name="data[Content][kind]"]:checked').val(),
+				content_title : $('#title').val(),
+				content_kind  : $('input[name="kind"]:checked').val(),
 				content_url   : content_url,
-				content_body  : $('#ContentBody').val(),
+				content_body  : $('#body').val(),
 				_Token        : { key : content_key },
 			},
 			dataType: 'text',

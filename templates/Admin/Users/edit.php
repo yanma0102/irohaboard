@@ -4,10 +4,10 @@
 <?php use Cake\Core\Configure; ?>
 <?php $this->Html->scriptStart(['inline' => false]); ?>
 	$(function (e) {
-		$('#GroupGroup').select2({placeholder:   "<?= __('所属するグループを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
-		$('#CourseCourse').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
+		$('#group').select2({placeholder:   "<?= __('所属するグループを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
+		$('#course').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
 		// パスワードの自動復元を防止
-		setTimeout('$("#UserNewPassword").val("");', 500);
+		setTimeout('$("#new-password").val("");', 500);
 	});
 <?php $this->Html->scriptEnd(); ?>
 <div class="admin-users-edit">
@@ -22,20 +22,20 @@
 			
 			$password_label = $this->AppView->isEditPage() ? __('新しいパスワード') : __('パスワード');
 			
-			echo $this->Form->control('User.id');
-			echo $this->Form->control('User.username',				['label' => __('ログインID')]);
-			echo $this->Form->control('User.new_password',	['label' => $password_label, 'type' => 'password', 'autocomplete' => 'new-password']);
-			echo $this->Form->control('User.name',					['label' => __('氏名')]);
+			echo $this->Form->control('id');
+			echo $this->Form->control('username',				['label' => __('ログインID')]);
+			echo $this->Form->control('new_password',	['label' => $password_label, 'type' => 'password', 'autocomplete' => 'new-password']);
+			echo $this->Form->control('name',					['label' => __('氏名')]);
 			
 			// root アカウント、もしくは admin 権限以外の場合、権限変更を許可しない
 			$disabled = (($username == 'root') || ($loginedUser['role'] != 'admin'));
 			
-			echo $this->Form->inputRadio('User.role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
+			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
 			
-			echo $this->Form->control('User.email',				['label' => __('メールアドレス')]);
-			echo $this->Form->control('User.Group',				['label' => __('所属グループ')]);
-			echo $this->Form->control('User.Course',				['label' => __('受講コース')]);
-			echo $this->Form->control('User.comment',				['label' => __('備考')]);
+			echo $this->Form->control('email',				['label' => __('メールアドレス')]);
+			echo $this->Form->control('Group',				['label' => __('所属グループ')]);
+			echo $this->Form->control('Course',				['label' => __('受講コース')]);
+			echo $this->Form->control('comment',				['label' => __('備考')]);
 			echo Configure::read('form_submit_before')
 				.$this->Form->submit(__('保存'), Configure::read('form_submit_defaults'))
 				.Configure::read('form_submit_after');

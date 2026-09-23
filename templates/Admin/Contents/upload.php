@@ -93,7 +93,7 @@
 				<div class="drop-container alert alert-warning">
 					<p>ここにファイルをドロップするか、ファイルを選択後、アップロードボタンをクリックしてください。</p>
 					<p>ファイルが複数ある場合には、ZIP形式で圧縮してアップロードを行ってください。</p>
-					<input type="file" name="data[Content][file]" multiple="multiple" id="ContentFile" class="form-control">
+					<input type="file" name="file" multiple="multiple" id="ContentFile" class="form-control">
 				</div>
 				<input type="submit" id="btnUpload"  class="btn btn-primary" value="アップロード">　
 				<input type="button"  class="btn"  value=" 閉じる " onclick="parent.closeDialog();">

@@ -13,7 +13,7 @@
 	function add_option()
 	{
 		txt	= document.all("option");
-		opt	= document.all("data[ContentsQuestion][option_list][]").options;
+		opt	= document.all("option_list").options;
 		
 		if(txt.value == '')
 		{
@@ -43,7 +43,7 @@
 
 	function del_option()
 	{
-		var opt = document.all("data[ContentsQuestion][option_list][]").options;
+		var opt = document.all("option_list").options;
 		
 		if( opt.selectedIndex > -1 )
 		{
@@ -55,8 +55,8 @@
 
 	function update_options()
 	{
-		var opt = document.all("data[ContentsQuestion][option_list][]").options;
-		var txt = document.all("ContentsQuestionOptions");
+		var opt = document.all("option_list").options;
+		var txt = document.all("options");
 		
 		txt.value = "";
 		
@@ -76,11 +76,11 @@
 
 	function update_correct()
 	{
-		var opt = document.all("data[ContentsQuestion][option_list][]").options;
+		var opt = document.all("option_list").options;
 		
 		if( opt.selectedIndex < 0 )
 		{
-			document.all("ContentsQuestionCorrect").value = "";
+			document.all("correct").value = "";
 		}
 		else
 		{
@@ -92,28 +92,28 @@
 					corrects.push(i+1);
 			}
 			
-			document.all("ContentsQuestionCorrect").value = corrects.join(',');
+			document.all("correct").value = corrects.join(',');
 		}
 	}
 
 	function init()
 	{
 		// リッチテキストエディタを起動
-		CommonUtil.setRichTextEditor('#ContentsQuestionBody', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
-		CommonUtil.setRichTextEditor('#ContentsQuestionExplain', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
+		CommonUtil.setRichTextEditor('#body', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
+		CommonUtil.setRichTextEditor('#explain', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
 		
 		// 保存時、コード表示モードの場合、解除する（編集中の内容を反映するため）
 		$("form").submit( function() {
-			if ($('#ContentsQuestionExplain').summernote('codeview.isActivated')) {
-				$('#ContentsQuestionExplain').summernote('codeview.deactivate')
+			if ($('#explain').summernote('codeview.isActivated')) {
+				$('#explain').summernote('codeview.deactivate')
 			}
 		});
 		
-		if($("#ContentsQuestionOptions").val() == '')
+		if($("#options").val() == '')
 			return;
 		
-		var options = $("#ContentsQuestionOptions").val().split('|');
-		var corrects = $("#ContentsQuestionCorrect").val().split(',');
+		var options = $("#options").val().split('|');
+		var corrects = $("#correct").val().split(',');
 		
 		for(var i=0; i<options.length; i++)
 		{
@@ -125,7 +125,7 @@
 				.text(options[i])
 				.prop('selected', isSelected);
 			
-			$("#ContentsQuestionOptionList").append($option);
+			$("#option_list").append($option);
 		}
 	}
 </script>
@@ -152,7 +152,7 @@
 				echo $this->Form->control('body',		['label' => __('問題文')]);
 			?>
 			<div class="form-group required">
-				<label for="ContentsQuestionOptions" class="col col-sm-3 control-label">選択肢／正解</label>
+				<label for="option_list" class="col col-sm-3 control-label">選択肢／正解</label>
 				<div class="col col-sm-9 required">
 				「＋」で選択肢の追加、「−」で選択された選択肢を削除します。（※最大10個まで）<br>
 				また選択された選択肢が正解となります。Ctrlキーを押下したまま選択することで、複数の正解の設定も可能です。<br>

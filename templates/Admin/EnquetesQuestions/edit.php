@@ -13,7 +13,7 @@
 	function add_option()
 	{
 		txt	= document.all("option");
-		opt	= document.all("data[ContentsQuestion][option_list][]").options;
+		opt	= document.all("option_list").options;
 		
 		if(txt.value == '')
 		{
@@ -42,7 +42,7 @@
 
 	function del_option()
 	{
-		var opt = document.all("data[ContentsQuestion][option_list][]").options;
+		var opt = document.all("option_list").options;
 		
 		if( opt.selectedIndex > -1 )
 		{
@@ -53,8 +53,8 @@
 
 	function update_options()
 	{
-		var opt = document.all("data[ContentsQuestion][option_list][]").options;
-		var txt = document.all("ContentsQuestionOptions");
+		var opt = document.all("option_list").options;
+		var txt = document.all("options");
 		
 		txt.value = "";
 		
@@ -74,11 +74,11 @@
 
 	function update_correct()
 	{
-		var opt = document.all("data[ContentsQuestion][option_list][]").options;
+		var opt = document.all("option_list").options;
 		
 		if( opt.selectedIndex < 0 )
 		{
-			document.all("ContentsQuestionCorrect").value = "";
+			document.all("correct").value = "";
 		}
 		else
 		{
@@ -90,39 +90,39 @@
 					corrects.push(i+1);
 			}
 			
-			document.all("ContentsQuestionCorrect").value = corrects.join(',');
+			document.all("correct").value = corrects.join(',');
 		}
 	}
 
 	function init()
 	{
 		// リッチテキストエディタを起動
-		CommonUtil.setRichTextEditor('#ContentsQuestionBody', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
-		CommonUtil.setRichTextEditor('#ContentsQuestionExplain', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
+		CommonUtil.setRichTextEditor('#body', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
+		CommonUtil.setRichTextEditor('#explain', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
 		
 		// 保存時、コード表示モードの場合、解除する（編集中の内容を反映するため）
 		$("form").submit( function() {
-			if ($('#ContentsQuestionExplain').summernote('codeview.isActivated')) {
-				$('#ContentsQuestionExplain').summernote('codeview.deactivate')
+			if ($('#explain').summernote('codeview.isActivated')) {
+				$('#explain').summernote('codeview.deactivate')
 			}
 			
-			if($('#ContentsQuestionBody').val() == '')
+			if($('#body').val() == '')
 			{
 				alert('質問文が入力されていません');
 				return false;
 			}
 			
-			if($("#ContentsQuestionOptions").val() == '')
+			if($("#options").val() == '')
 			{
 				alert('選択肢が追加されていません');
 				return false;
 			}
 		});
 		
-		if($("#ContentsQuestionOptions").val() == '')
+		if($("#options").val() == '')
 			return;
 		
-		var options = $("#ContentsQuestionOptions").val().split('|');
+		var options = $("#options").val().split('|');
 		
 		for(var i=0; i<options.length; i++)
 		{
@@ -132,7 +132,7 @@
 				.text(options[i])
 				.prop('selected', isSelected);
 			
-			$("#ContentsQuestionOptionList").append($option);
+			$("#option_list").append($option);
 		}
 		
 		render();
@@ -140,15 +140,15 @@
 	
 	function render()
 	{
-		if($('input[name="data[ContentsQuestion][question_type]"]:checked').val() == 'text')
+		if($('input[name="question_type"]:checked').val() == 'text')
 		{
-			$('#ContentsQuestionOptions').val('none');
+			$('#options').val('none');
 			$('.row-options').hide();
 		}
 		else
 		{
-			if($('#ContentsQuestionOptions').val()=='none')
-				$('#ContentsQuestionOptionList').children().remove();
+			if($('#options').val()=='none')
+				$('#option_list').children().remove();
 			
 			$('.row-options').show();
 		}
@@ -184,7 +184,7 @@
 				echo $this->Form->inputRadio('question_type', ['label' => __('回答形式'), 'options' => Configure::read('question_type'), 'default' => 'single', 'onchange' => 'render()']);
 			?>
 			<div class="form-group row-options required">
-				<label for="ContentsQuestionOptions" class="col col-sm-3 control-label">選択肢／正解</label>
+				<label for="option_list" class="col col-sm-3 control-label">選択肢／正解</label>
 				<div class="col col-sm-9 required">
 				「＋」で選択肢の追加、「−」で選択された選択肢を削除します。（※最大10個まで）<br>
 				<input type="text" size="20" name="option" style="width: 80%;display:inline-block;">

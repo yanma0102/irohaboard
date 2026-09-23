@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\View\Helper;
 
 use Cake\Core\Configure;
+use Cake\Datasource\FactoryLocator;
+use Cake\Utility\Inflector;
 use Cake\View\Helper\FormHelper;
 
 /**
@@ -12,6 +14,58 @@ use Cake\View\Helper\FormHelper;
  */
 class AppFormHelper extends FormHelper
 {
+    /**
+     * Override create() to auto-detect entity from controller name when null is passed.
+     * CakePHP 2's FormHelper::create(null) inferred the model from the controller name
+     * and used `data[ModelName]` prefix for fields. CakePHP 5's NullContext does not.
+     * This override restores that behavior by finding the entity from view variables.
+     *
+     * @param mixed $context The form context (entity, table name, or null).
+     * @param array $options Form options.
+     * @return string
+     */
+    public function create(mixed $context = null, array $options = []): string
+    {
+        if ($context === null) {
+            $controller = $this->_View->getRequest()->getParam('controller');
+            if ($controller) {
+                $tableAlias = Inflector::camelize($controller);
+
+                // CakePHP 2's Form->create(null) inferred the model from controller name
+                // and bound the entity automatically. CakePHP 5 NullContext does not.
+                // Try multiple strategies to find the entity:
+                // 1. View variable (singularized controller name: 'content')
+                // 2. View variable (CamelCase: 'Content')
+                // 3. TableRegistry lookup + newEmptyEntity
+
+                $entityName = Inflector::singularize($controller);
+                // View vars are lowercase (set by $this->set('content', $entity))
+                // but Inflector::singularize may return CamelCase in CakePHP 5
+                $underscoreName = Inflector::underscore($entityName);
+
+                $allVars = $this->_View->getVars();
+                $entity = $this->_View->get($underscoreName)
+                    ?? $this->_View->get($entityName)
+                    ?? $this->_View->get($tableAlias);
+                file_put_contents('/var/www/html/tmp/debug_form.log', date('c') . " ctrl=$controller underscore=$underscoreName vars=[" . implode(',', $allVars) . "] found=" . (is_object($entity) ? 'OBJ:' . get_class($entity) : 'NULL') . "\n", FILE_APPEND);
+
+                if (is_object($entity)) {
+                    $context = $entity;
+                } else {
+                    try {
+                        $table = \Cake\ORM\TableRegistry::getTableLocator()->get($tableAlias);
+                        $context = $table->newEmptyEntity();
+                        file_put_contents('/var/www/html/tmp/debug_form.log', date('c') . " newEmptyEntity created for $tableAlias\n", FILE_APPEND);
+                    } catch (\Exception $e) {
+                        file_put_contents('/var/www/html/tmp/debug_form.log', date('c') . " TableRegistry failed: " . $e->getMessage() . "\n", FILE_APPEND);
+                    }
+                }
+            }
+        }
+
+        return parent::create($context, $options);
+    }
+
     /**
      * Override control() to merge form_input_defaults from config.
      * This replaces CakePHP 2's FormHelper::create(inputDefaults) behavior.

@@ -19,7 +19,7 @@
 			update: function(event, ui)
 			{
 				var id_list = new Array();
-				var token  = $('input[name="data[_Token][key]"]').val();
+				var token  = $('input[name="_csrfToken"]').val();
 
 				$('.content_id').each(function(index)
 				{

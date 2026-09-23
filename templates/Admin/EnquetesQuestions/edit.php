@@ -166,7 +166,7 @@
 	<?php 
 		$this->Html->addCrumb(__('コース一覧'),  ['controller' => 'courses', 'action' => 'index']);
 		$this->Html->addCrumb($content['course']['title'],  ['controller' => 'contents', 'action' => 'index', $content['course']['id']]);
-		$this->Html->addCrumb($content['title'], ['controller' => 'enquetes_questions', 'action' => 'index', $content['id']]);
+		$this->Html->addCrumb($content['title'], ['controller' => 'EnquetesQuestions', 'action' => 'index', $content['id']]);
 		
 		echo $this->Html->getCrumbs(' / ');
 	?>

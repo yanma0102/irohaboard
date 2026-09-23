@@ -79,10 +79,10 @@
 		switch($content['kind'])
 		{
 			case 'test':
-				$title = $this->Html->link($content['title'], ['controller' => 'contents_questions', 'action' => 'index', $content['id']]);
+				$title = $this->Html->link($content['title'], ['controller' => 'ContentsQuestions', 'action' => 'index', $content['id']]);
 				break;
 			case 'enquete':
-				$title = $this->Html->link($content['title'], ['controller' => 'enquetes_questions', 'action' => 'index', $content['id']]);
+				$title = $this->Html->link($content['title'], ['controller' => 'EnquetesQuestions', 'action' => 'index', $content['id']]);
 				break;
 			default :
 				$title = h($content['title']);

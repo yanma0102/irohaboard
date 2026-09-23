@@ -14,7 +14,7 @@
 	function openTestRecord(content_id, record_id)
 	{
 		window.open(
-			'<?= $this->Url->build(['controller' => 'contents_questions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
+			'<?= $this->Url->build(['controller' => 'ContentsQuestions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
 			'irohaboard_record',
 			'width=1100, height=700, menubar=no, toolbar=no, scrollbars=yes'
 		);
@@ -23,7 +23,7 @@
 	function openRecordEnquete(content_id, record_id)
 	{
 		window.open(
-			'<?= $this->Url->build(['controller' => 'enquetes_questions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
+			'<?= $this->Url->build(['controller' => 'EnquetesQuestions', 'action' => 'record']) ?>/'+content_id+'/'+record_id,
 			'irohaboard_record',
 			'width=1100, height=700, menubar=no, toolbar=no, scrollbars=yes'
 		);

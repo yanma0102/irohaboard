@@ -83,7 +83,7 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 				$icon  = 'glyphicon glyphicon-check text-danger';
 				$title_link = $this->Html->link(
 					$content['title'], [
-					'controller' => 'contents_questions',
+					'controller' => 'ContentsQuestions',
 					'action' => 'index',
 					$content['id']
 				]);
@@ -96,7 +96,7 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 					
 					$understanding = $this->Html->link(
 						$result, [
-						'controller' => 'contents_questions',
+						'controller' => 'ContentsQuestions',
 						'action' => 'record',
 						$content['id'],
 						$content['record_id']
@@ -114,7 +114,7 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 					
 					$understanding = $this->Html->link(
 						$result, [
-						'controller' => 'enquetes_questions',
+						'controller' => 'EnquetesQuestions',
 						'action' => 'record',
 						$content['id'],
 						$content['record_id']
@@ -123,7 +123,7 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 				
 				$title_link = $this->Html->link(
 					$content['title'], [
-					'controller' => 'enquetes_questions',
+					'controller' => 'EnquetesQuestions',
 					'action' => 'index',
 					$content['id']
 				]);

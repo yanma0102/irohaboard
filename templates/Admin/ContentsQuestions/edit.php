@@ -146,7 +146,7 @@
 		</div>
 		<div class="panel-body">
 			<?php
-				echo $this->Form->create(null, Configure::read('form_defaults'));;
+				echo $this->Form->create($question, Configure::read('form_defaults'));;
 				echo $this->Form->control('id');
 				echo $this->Form->control('title',	['label' => __('タイトル')]);
 				echo $this->Form->control('body',		['label' => __('問題文')]);
@@ -156,7 +156,7 @@
 				<div class="col col-sm-9 required">
 				「＋」で選択肢の追加、「−」で選択された選択肢を削除します。（※最大10個まで）<br>
 				また選択された選択肢が正解となります。Ctrlキーを押下したまま選択することで、複数の正解の設定も可能です。<br>
-				<input type="text" size="20" name="option" style="width: 80%;display:inline-block;">
+				<input type="text" size="20" name="option" id="option" style="width: 80%;display:inline-block;">
 				<button class="btn" onclick="add_option();return false;">＋</button>
 				<button class="btn" onclick="del_option();return false;">−</button><br>
 			<?php
@@ -165,9 +165,10 @@
 					'label' => false,
 					'multiple' => true,
 					'size' => 5,
-					'onchange' => 'update_correct()'
+					'onchange' => 'update_correct()',
+					'id' => 'option_list'
 				]);
-				echo $this->Form->hidden('options',		['label' => __('選択肢')]);
+				echo $this->Form->hidden('options',		['label' => __('選択肢'), 'id' => 'options']);
 			?>
 				</div>
 			</div>

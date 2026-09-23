@@ -177,12 +177,26 @@ class AppFormHelper extends FormHelper
             }
         }
 
-        // Remove CakePHP 2 keys that CakePHP 5 does not recognize.
-        // 'separator' is not used by RadioWidget; 'div' leaks as HTML attribute.
-        // 'before'/'after' are handled by control() as raw HTML.
+        // CakePHP 5 RadioWidget uses 'radioWrapper' template, not 'separator'.
+        // Convert the CakePHP 2 separator option into a template override.
+        // Note: CakePHP 2 placed separators BETWEEN options (not after the last).
+        // RadioWrapper applies to EVERY option, so we must trim the trailing separator.
+        $separator = $options['separator'] ?? "\n";
         unset($options['separator'], $options['div']);
+        $options['templates'] = array_merge(
+            $options['templates'] ?? [],
+            ['radioWrapper' => '{{input}}{{label}}' . $separator]
+        );
 
-        return $this->control($fieldName, $options);
+        $result = $this->control($fieldName, $options);
+
+        // Remove trailing separator (CakePHP 2 placed separators between items, not after last).
+        // The separator appears inside a wrapping <div>, so remove the last <br> before </div>.
+        if ($separator !== '' && $separator !== "\n") {
+            $result = preg_replace('/' . preg_quote($separator, '/') . '(\s*)<\/div>/', '$1</div>', $result);
+        }
+
+        return $result;
     }
 
     /**
@@ -200,18 +214,26 @@ class AppFormHelper extends FormHelper
             'required' => false,
         ];
 
-        // Set label with " : " suffix if not explicitly set
+        // Set label with " : " suffix — always append to match CakePHP 2 behavior
         if (!array_key_exists('label', $additional_options)) {
             $label = $this->_getElementId($fieldName);
             // Convert dot notation to human-readable: "foo.bar" → "Bar"
             $labelText = array_slice(explode('.', $label), -1)[0];
             $additional_options['label'] = $labelText . ' : ';
+        } else {
+            $additional_options['label'] = rtrim($additional_options['label'] . ' : ');
         }
 
         $options = array_merge($defaults, $additional_options);
 
+        // When 'options' is provided, let CakePHP 5 auto-detect as 'select'.
+        // Otherwise default to 'text'.
+        if (!isset($options['options'])) {
+            $options['type'] = 'text';
+        }
+
         // Cake2 input() → Cake5 control()
-        return $this->control($fieldName, ['type' => 'text'] + $options);
+        return $this->control($fieldName, $options);
     }
 
     /**
@@ -234,11 +256,13 @@ class AppFormHelper extends FormHelper
             'style'     => 'width:initial; display: inline;',
         ];
 
-        // Set label with " : " suffix if not explicitly set
+        // Set label with " : " suffix — always append to match CakePHP 2 behavior
         if (!array_key_exists('label', $additional_options)) {
             $label = $this->_getElementId($fieldName);
             $labelText = array_slice(explode('.', $label), -1)[0];
             $additional_options['label'] = $labelText . ' : ';
+        } else {
+            $additional_options['label'] = rtrim($additional_options['label'] . ' : ');
         }
 
         $options = array_merge($defaults, $additional_options);

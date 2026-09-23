@@ -15,10 +15,10 @@ CommonUtility.prototype.setRichTextEditor = function (selector, upload_image_max
 			onImageUpload: function(files)
 			{
 				var data = new FormData();
-				var image_key= $('input[name="data[_Token][key]"]').val();
+				var image_key= $('input[name="_csrfToken"]').val();
 				
 				data.append('file', files[0]);
-				data.append('data[_Token][key]', image_key);
+				data.append('_csrfToken', image_key);
 				
 				$.ajax({
 					data: data,

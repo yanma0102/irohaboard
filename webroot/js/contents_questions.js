@@ -68,7 +68,7 @@ function setStudySec()
 		}
 	}
 	
-	$("#ContentsQuestionStudySec").val(_studySec);
+	$("#contents-question-study-sec").val(_studySec);
 	_studySec++;
 }
 

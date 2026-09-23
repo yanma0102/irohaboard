@@ -102,7 +102,7 @@
 							$is_checked = ($answer_list[0] == $option_index) ? 'checked' : '';
 
 						// 選択肢ラジオボタン
-						$option_tag .= sprintf('<input type="radio" value="%s" name="data[answer_%s]" %s %s> %s<br>',
+						$option_tag .= sprintf('<input type="radio" value="%s" name="answer_%s" %s %s> %s<br>',
 								$option_index, $question_id, $is_checked, $is_disabled, h($option));
 						
 						$option_index++;

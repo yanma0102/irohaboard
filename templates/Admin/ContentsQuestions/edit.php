@@ -12,8 +12,8 @@
 
 	function add_option()
 	{
-		txt	= document.all("option");
-		opt	= document.all("option_list").options;
+		txt	= document.getElementById("option");
+		opt	= document.getElementById("option_list").options;
 		
 		if(txt.value == '')
 		{
@@ -43,7 +43,7 @@
 
 	function del_option()
 	{
-		var opt = document.all("option_list").options;
+		var opt = document.getElementById("option_list").options;
 		
 		if( opt.selectedIndex > -1 )
 		{
@@ -55,8 +55,8 @@
 
 	function update_options()
 	{
-		var opt = document.all("option_list").options;
-		var txt = document.all("options");
+		var opt = document.getElementById("option_list").options;
+		var txt = document.getElementById("options");
 		
 		txt.value = "";
 		
@@ -76,11 +76,11 @@
 
 	function update_correct()
 	{
-		var opt = document.all("option_list").options;
+		var opt = document.getElementById("option_list").options;
 		
 		if( opt.selectedIndex < 0 )
 		{
-			document.all("correct").value = "";
+			document.getElementById("correct").value = "";
 		}
 		else
 		{
@@ -92,7 +92,7 @@
 					corrects.push(i+1);
 			}
 			
-			document.all("correct").value = corrects.join(',');
+			document.getElementById("correct").value = corrects.join(',');
 		}
 	}
 

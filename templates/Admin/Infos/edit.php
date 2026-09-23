@@ -4,7 +4,7 @@
 <?php use Cake\Core\Configure; ?>
 <?php $this->Html->scriptStart(['inline' => false]); ?>
 	$(function (e) {
-		$('#GroupGroup').select2({placeholder:   "<?= __('選択しない場合、全てのユーザが対象となります。')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
+		$('#group').select2({placeholder:   "<?= __('選択しない場合、全てのユーザが対象となります。')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
 	});
 <?php $this->Html->scriptEnd(); ?>
 

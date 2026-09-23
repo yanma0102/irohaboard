@@ -29,7 +29,7 @@
 				$.ajax({
 					url: "<?= $this->Url->build(['action' => 'order']) ?>",
 					type: "POST",
-					data: { id_list : id_list, _Token : { key : token } },
+					data: { id_list : id_list, _csrfToken : token },
 					dataType: "text",
 					success : function(response){
 						//通信成功時の処理

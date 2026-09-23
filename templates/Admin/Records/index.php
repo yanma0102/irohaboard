@@ -31,16 +31,16 @@
 	
 	function downloadCSV()
 	{
-		$("#RecordCmd").val("csv");
-		$("#RecordAdminIndexForm").submit();
-		$("#RecordCmd").val("");
+		$("#cmd").val("csv");
+		$("form").submit();
+		$("#cmd").val("");
 	}
 	
 	function downloadCSVDetail()
 	{
-		$("#RecordCmd").val("csv_detail");
-		$("#RecordAdminIndexForm").submit();
-		$("#RecordCmd").val("");
+		$("#cmd").val("csv_detail");
+		$("form").submit();
+		$("#cmd").val("");
 	}
 </script>
 <?php $this->end(); ?>

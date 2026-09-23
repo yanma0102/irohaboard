@@ -117,7 +117,7 @@
 				content_kind  : $('input[name="kind"]:checked').val(),
 				content_url   : content_url,
 				content_body  : $('#body').val(),
-				_Token        : { key : content_key },
+				_csrfToken    : content_key,
 			},
 			dataType: 'text',
 			success : function(response) {

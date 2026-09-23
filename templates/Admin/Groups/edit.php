@@ -4,7 +4,7 @@
 <?php use Cake\Core\Configure; ?>
 <?php $this->Html->scriptStart(['inline' => false]); ?>
 	$(function (e) {
-		$('#CourseCourse').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
+		$('#course').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
 	});
 <?php $this->Html->scriptEnd(); ?>
 <div class="admin-groups-edit">

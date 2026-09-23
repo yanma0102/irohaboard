@@ -4,9 +4,9 @@
 <script>
 	function downloadCSV()
 	{
-		$('#UserCmd').val('export');
-		$('#UserAdminIndexForm').submit();
-		$('#UserCmd').val('');
+		$('#cmd').val('export');
+		$('form').submit();
+		$('#cmd').val('');
 	}
 </script>
 <?php $this->end(); ?>

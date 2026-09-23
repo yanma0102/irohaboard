@@ -48,7 +48,7 @@ class AppController extends Controller
         // FormProtection（CakePHP 5 の Security / AppSecurityComponent 代替）
         // ログイン画面のみトークンチェックエラーのハンドリング
         $this->loadComponent('FormProtection', [
-            'validationFailureCallback' => function (EventInterface $event) {
+            'validationFailureCallback' => function (\Cake\Controller\Exception\FormProtectionException $exception) {
                 return $this->blackHole();
             },
         ]);

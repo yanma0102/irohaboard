@@ -143,7 +143,7 @@ $config['remember_token_expired_days'] = 14;
 $config['form_defaults'] = [
 	'class' => 'form-horizontal',
 	'templates' => [
-		'inputContainer' => '<div class="form-group {{required}}">{{content}}</div>',
+		'inputContainer' => '<div class="form-group {{required}}">{{content}}{{after}}</div>',
 		'formGroup' => '{{label}}<div class="col col-sm-9">{{input}}</div>',
 	]
 ];

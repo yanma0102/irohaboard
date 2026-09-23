@@ -97,10 +97,20 @@ class AppFormHelper extends FormHelper
         unset($options['wrapInput'], $options['div']);
 
         // CakePHP 2 'before'/'after' rendered content before/after the control.
-        // CakePHP 5 does not consume these, so we extract and render them manually.
+        // CakePHP 5's _inputContainerTemplate() supports {{after}} via templateVars,
+        // placing it INSIDE the inputContainer (form-group) div — not outside where
+        // floated divs (e.g. col-sm-4) would leak and break subsequent form rows.
         $beforeHtml = $options['before'] ?? '';
         $afterHtml = $options['after'] ?? '';
         unset($options['before'], $options['after']);
+
+        // Inject after into the inputContainer template via templateVars
+        if ($afterHtml !== '') {
+            $options['templateVars'] = array_merge(
+                $options['templateVars'] ?? [],
+                ['after' => $afterHtml]
+            );
+        }
 
         // Auto-detect 'id' field as hidden when no explicit type is set.
         // NullContext (Form->create(null)) always returns false for isPrimaryKey(),
@@ -112,7 +122,7 @@ class AppFormHelper extends FormHelper
 
         $result = parent::control($fieldName, $options);
 
-        return $beforeHtml . $result . $afterHtml;
+        return $beforeHtml . $result;
     }
 
     /**

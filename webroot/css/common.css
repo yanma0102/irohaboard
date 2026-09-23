@@ -152,7 +152,7 @@ form .input {
 	color: #444;
 	padding: 10px;
 }
-form .required label:first-of-type:after {
+form .required label:after {
 	color: #e32;
 	content: '*';
 	display:inline;
@@ -580,7 +580,7 @@ div.buttons_container
 }
 
 
-form .required label:first-of-type:after
+form .required .control-label:after
 {
 	border-radius		: 0.25em;
 	color				: #fff;

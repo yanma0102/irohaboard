@@ -141,7 +141,11 @@ $config['remember_token_expired_days'] = 14;
 // ※ CakePHP 5 では inputDefaults は Form->create() で非対応。
 //    inputDefaults は AppFormHelper::control() 内でマージする。
 $config['form_defaults'] = [
-	'class' => 'form-horizontal'
+	'class' => 'form-horizontal',
+	'templates' => [
+		'inputContainer' => '<div class="form-group {{required}}">{{content}}</div>',
+		'formGroup' => '{{label}}<div class="col col-sm-9">{{input}}</div>',
+	]
 ];
 
 $config['form_input_defaults'] = [

@@ -82,6 +82,10 @@ class AppFormHelper extends FormHelper
             foreach ($defaults as $key => $defaultVal) {
                 if (!array_key_exists($key, $options)) {
                     $options[$key] = $defaultVal;
+                } elseif (is_array($defaultVal) && is_string($options[$key])) {
+                    // Caller passed string label, default has array config (e.g., label with class).
+                    // Merge as ['class' => ...default..., 'text' => $callerLabel]
+                    $options[$key] = array_merge($defaultVal, ['text' => $options[$key]]);
                 } elseif (is_array($defaultVal) && is_array($options[$key])) {
                     $options[$key] = array_merge($defaultVal, $options[$key]);
                 }
@@ -150,7 +154,7 @@ class AppFormHelper extends FormHelper
             'type'      => 'radio',
             'separator' => "\n",
             'legend'    => false,
-            'class'     => 'form-control',
+            'class'     => false,
             'before'    => '',
             'div'       => false,
         ];
@@ -226,6 +230,10 @@ class AppFormHelper extends FormHelper
 
         $options = array_merge($defaults, $additional_options);
 
+        // Mark inputDefaults as already applied so control() doesn't merge
+        // form_input_defaults (which would add col-sm-3 control-label to label).
+        $options['_inputDefaultsApplied'] = true;
+
         // When 'options' is provided, let CakePHP 5 auto-detect as 'select'.
         // Otherwise default to 'text'.
         if (!isset($options['options'])) {
@@ -267,6 +275,10 @@ class AppFormHelper extends FormHelper
 
         $options = array_merge($defaults, $additional_options);
 
+        // Mark inputDefaults as already applied so control() doesn't merge
+        // form_input_defaults (which would add col-sm-3 control-label to label).
+        $options['_inputDefaultsApplied'] = true;
+
         return $this->control($fieldName, ['type' => 'date'] + $options);
     }
 
@@ -302,6 +314,10 @@ class AppFormHelper extends FormHelper
         }
 
         $options = array_merge($defaults, $additional_options);
+
+        // Mark inputDefaults as already applied so control() doesn't merge
+        // form_input_defaults (which would add col-sm-3 control-label to label).
+        $options['_inputDefaultsApplied'] = true;
 
         return $this->control($fieldName, ['type' => 'date'] + $options);
     }

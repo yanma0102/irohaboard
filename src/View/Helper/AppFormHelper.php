@@ -34,7 +34,27 @@ class AppFormHelper extends FormHelper
             }
         }
 
-        return parent::control($fieldName, $options);
+        // CakePHP 2 legacy keys that CakePHP 5 does not recognize.
+        // These leak as HTML attributes on <input> via Widget::formatAttributes().
+        unset($options['wrapInput'], $options['div']);
+
+        // CakePHP 2 'before'/'after' rendered content before/after the control.
+        // CakePHP 5 does not consume these, so we extract and render them manually.
+        $beforeHtml = $options['before'] ?? '';
+        $afterHtml = $options['after'] ?? '';
+        unset($options['before'], $options['after']);
+
+        // Auto-detect 'id' field as hidden when no explicit type is set.
+        // NullContext (Form->create(null)) always returns false for isPrimaryKey(),
+        // so CakePHP 5's _inputType() incorrectly returns 'text' for the 'id' field.
+        $shortName = array_slice(explode('.', $fieldName), -1)[0];
+        if ($shortName === 'id' && empty($options['type'])) {
+            $options['type'] = 'hidden';
+        }
+
+        $result = parent::control($fieldName, $options);
+
+        return $beforeHtml . $result . $afterHtml;
     }
 
     /**
@@ -88,6 +108,12 @@ class AppFormHelper extends FormHelper
             }
         }
 
+        // HTML labels (e.g. content_kind_comment contains <span> tags).
+        // CakePHP 5 RadioWidget defaults to escape => true which escapes HTML.
+        if (!isset($options['escape'])) {
+            $options['escape'] = false;
+        }
+
         if ($exp !== '') {
             $afterHtml = '<div class="col-sm-4">' . $exp . '</div>';
             if (isset($options['after']) && $options['after'] !== '') {
@@ -96,6 +122,11 @@ class AppFormHelper extends FormHelper
                 $options['after'] = $afterHtml;
             }
         }
+
+        // Remove CakePHP 2 keys that CakePHP 5 does not recognize.
+        // 'separator' is not used by RadioWidget; 'div' leaks as HTML attribute.
+        // 'before'/'after' are handled by control() as raw HTML.
+        unset($options['separator'], $options['div']);
 
         return $this->control($fieldName, $options);
     }

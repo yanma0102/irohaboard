@@ -153,7 +153,11 @@ class UsersController extends AppController
                 return null;
             }
 
-            $userData = $this->request->getData('User', []);
+            $userData = $this->request->getData();
+            // Remove token/security fields
+            $userData = array_filter($userData, function ($key) {
+                return !str_starts_with($key, '_');
+            }, ARRAY_FILTER_USE_KEY);
 
             $password_changed = !empty($userData['new_password']);
             if ($password_changed) {
@@ -195,7 +199,7 @@ class UsersController extends AppController
                 $this->Flash->error(__('ユーザ情報が保存できませんでした'));
             }
         } else {
-            $user = $user_id !== null ? $usersTable->get((int)$user_id) : $usersTable->newEmptyEntity();
+            $user = $user_id !== null ? $usersTable->get((int)$user_id, contain: ['Groups', 'Courses']) : $usersTable->newEmptyEntity();
             $username = $user->username ?? '';
         }
 
@@ -266,7 +270,10 @@ class UsersController extends AppController
                 return null;
             }
 
-            $data = $this->getData('User');
+            $data = $this->getData();
+            $data = array_filter($data, function ($key) {
+                return !str_starts_with($key, '_');
+            }, ARRAY_FILTER_USE_KEY);
 
             if (empty($data['new_password'])) {
                 $this->Flash->error(__('パスワードを入力して下さい'));

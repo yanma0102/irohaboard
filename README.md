@@ -1,11 +1,3 @@
-iroha Board はメンテナンスフェーズに移行しました。
-
-今後は必要最小限の保守対応のみを行い、段階的にサポートを縮小してまいります。  
-2016年からの長きにわたり、iroha Board をご利用いただき誠にありがとうございました。
-
-本プロジェクトは GPL ライセンスのもと、引き続き GitHub 上で公開されており、Fork や改変、再利用も自由に行っていただけます。
-
-
 # iroha Board
 
 iroha Board は日本で生まれたオープンソースのeラーニングシステム（LMS）です。
@@ -15,10 +7,28 @@ iroha Board は日本で生まれたオープンソースのeラーニングシ�
 https://irohaboard.irohasoft.jp/
 
 ## 動作環境
-* PHP : 5.4以上
-* MySQL : 5.1以上
-* CakePHP : 2.10
+* PHP : 8.2以上
+* MySQL / MariaDB : 10.6以上
+* CakePHP : 5.4
 
-## License
+## セットアップ
+
+```bash
+git clone https://github.com/yanma0102/irohaboard.git
+cd irohaboard
+composer install
+```
+
+Config 目配下の `app_local.php` を作成し、DB接続情報を設定してください。
+初期セットアップは `/install` にアクセスして実行します。
+
+## テスト
+
+```bash
+vendor/bin/phpunit
+```
+
+## ライセンス
+
 GPLv3
 

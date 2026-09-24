@@ -1,0 +1,40 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * iroha Board Project
+ *
+ * @author        Kotaro Miura
+ * @copyright     2015-2021 iroha Soft, Inc. (https://irohasoft.jp)
+ * @license       https://www.gnu.org/licenses/gpl-3.0.en.html GPL License
+ */
+
+namespace App\View;
+
+use Cake\View\View;
+
+/**
+ * AppView - 全てのビューの基底クラス
+ *
+ * CakePHP 5 版
+ */
+class AppView extends View
+{
+    /**
+     * 初期化
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->loadHelper('Html', ['className' => \App\View\Helper\AppHtmlHelper::class]);
+        $this->loadHelper('Form', ['className' => \App\View\Helper\AppFormHelper::class]);
+        $this->loadHelper('Flash');
+        $this->loadHelper('Paginator');
+        $this->loadHelper('Url');
+        $this->loadHelper('Number', ['className' => \App\View\Helper\AppNumberHelper::class]);
+        $this->loadHelper('AppView');
+    }
+}

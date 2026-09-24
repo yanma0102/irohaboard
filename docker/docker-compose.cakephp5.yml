@@ -1,0 +1,52 @@
+name: irohaboard5
+
+services:
+  web:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.cakephp5
+    ports:
+      - "8082:80"
+    volumes:
+      # 開発時のホットリロード用にアプリケーションコードをマウント
+      - ../:/var/www/html/
+      # tmpディレクトリの永続化（コンテナ再起動時も保持）
+      - cakephp5-tmp:/var/www/html/tmp
+      # アップロードファイルの永続化
+      - cakephp5-files:/var/www/html/files
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=irohaboard
+      - DB_USER=root
+      - DB_PASS=rootpass
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 1536m
+    pids_limit: 512
+    restart: unless-stopped
+
+  db:
+    image: mariadb:11.4
+    ports:
+      - "13307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: irohaboard
+      MYSQL_USER: ib_user
+      MYSQL_PASSWORD: ib_password
+    volumes:
+      - cakephp5-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 1g
+    restart: unless-stopped
+
+volumes:
+  cakephp5-mysql-data:
+  cakephp5-tmp:
+  cakephp5-files:

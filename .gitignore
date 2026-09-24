@@ -1,0 +1,39 @@
+# CakePHP 5 specific files #
+############################
+/config/app_local.php
+/config/.env
+/logs/*
+/tmp/*
+/vendor/*
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon
+ehthumbs.db
+Thumbs.db
+.directory
+
+# Tool specific files #
+#######################
+.phpunit.cache
+tests.sqlite
+*~
+*.swp
+*.swo
+*.sublime-*
+*.stTheme.cache
+*.tmPreferences.cache
+.settings/*
+.idea/*
+nbproject/*
+.vscode
+.nova
+.sass-cache/
+/node_modules/*
+yarn-debug.log
+yarn-error.logwebroot/uploads/

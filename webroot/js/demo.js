@@ -23,15 +23,15 @@ $(function (event)
 	{
 		if(location.href.indexOf('admin') > 0)
 		{
-			$("#UserUsername").val("root");
-			$("#UserPassword").val("irohaboard");
+			$("#username").val("root");
+			$("#password").val("irohaboard");
 		}
 		else
 		{
 			var day = ((new Date()).getDay()+1);
 			
-			$("#UserUsername").val("demo00" + day);
-			$("#UserPassword").val("pass");
+			$("#username").val("demo00" + day);
+			$("#password").val("pass");
 		}
 	}
 });

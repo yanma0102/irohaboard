@@ -1,0 +1,42 @@
+FROM php:8.4-apache
+
+# PHP拡張モジュールインストール
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libicu-dev \
+    libonig-dev \
+    unzip \
+    git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    pdo_mysql \
+    mbstring \
+    gd \
+    intl \
+    opcache \
+    zip \
+    bcmath \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Apache mod_rewrite / mod_headers 有効化
+RUN a2enmod rewrite headers
+
+# Apache 設定ファイルをコピー
+COPY docker/apache-vhost.cakephp5.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/apache-app.conf /etc/apache2/conf-available/irohaboard.conf
+RUN a2enconf irohaboard \
+    && echo 'ServerName localhost' >> /etc/apache2/apache2.conf
+
+# Apache MPM(prefork) 設定をコピー（ワーカー数上限と定期再生成でメモリ肥大を防止）
+COPY docker/mpm-prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
+
+# PHP 設定ファイルをコピー
+COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]

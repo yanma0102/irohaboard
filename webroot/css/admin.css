@@ -120,7 +120,7 @@
 	font-weight		: normal;
 }
 
-.admin-contents-edit input[name="data[Content][status]"]
+.admin-contents-edit input[name="status"]
 {
 	margin-top		: 10px;
 }

@@ -1,0 +1,31 @@
+<?= $this->element('admin_menu');?>
+<?= $this->Html->css( 'select2.min.css');?>
+<?= $this->Html->script( 'select2.min.js');?>
+<?php use Cake\Core\Configure; ?>
+<?php $this->Html->scriptStart(['inline' => false]); ?>
+	$(function (e) {
+		$('#group').select2({placeholder:   "<?= __('選択しない場合、全てのユーザが対象となります。')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
+	});
+<?php $this->Html->scriptEnd(); ?>
+
+<div class="admin-infos-edit">
+<?= $this->Html->link(__('<< 戻る'), ['action' => 'index'])?>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<?= $this->AppView->isEditPage() ? __('編集') :  __('新規お知らせ'); ?>
+		</div>
+		<div class="panel-body">
+		<?php
+			echo $this->Form->create(null, Configure::read('form_defaults'));
+			echo $this->Form->control('id');
+			echo $this->Form->control('title',	['label' => __('タイトル')]);
+			echo $this->Form->control('body',		['label' => __('本文')]);
+			echo $this->Form->control('Group',	['label' => __('対象グループ'),	'size' => 20]);
+			echo Configure::read('form_submit_before')
+				.$this->Form->submit(__('保存'), Configure::read('form_submit_defaults'))
+				.Configure::read('form_submit_after');
+			echo $this->Form->end();
+		?>
+		</div>
+	</div>
+</div>

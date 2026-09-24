@@ -14,7 +14,7 @@ $(document).ready(function()
 // 学習時間の更新
 function setStudySec()
 {
-	$("#ContentsQuestionStudySec").val(_studySec);
+	$("#contents-question-study-sec").val(_studySec);
 	_studySec++;
 }
 

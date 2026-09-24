@@ -52,14 +52,14 @@ function finish(val)
 	form.action = URL_RECORDS_ADD;
 
 	// トークンを取得
-	let token = document.querySelector('input[name="data[_Token][key]"]');
+	let token = document.querySelector('input[name="_csrfToken"]');
 	
 	// トークンをhiddenで付加
 	if(token)
 	{
 		let input = document.createElement('input');
 		input.type = 'hidden';
-		input.name = 'data[_Token][key]';
+		input.name = '_csrfToken';
 		input.value = token.value;
 		form.appendChild(input);
 	}

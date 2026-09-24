@@ -36,4 +36,5 @@ nbproject/*
 .sass-cache/
 /node_modules/*
 yarn-debug.log
-yarn-error.logwebroot/uploads/
+yarn-error.log
+webroot/uploads/

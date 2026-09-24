@@ -120,7 +120,7 @@ class ContentsControllerTest extends TestCase
             'title' => $title,
             'course_id' => $courseId,
             'user_id' => $userId,
-            'kind' => 'text',
+            'kind' => 'html',
             'body' => $title . 'の本文',
             'sort_no' => 1,
         ]);
@@ -233,7 +233,7 @@ class ContentsControllerTest extends TestCase
 
         $this->post("/admin/contents/add/{$course->id}", [
             'title' => '新規コンテンツ',
-            'kind' => 'text',
+            'kind' => 'html',
             'body' => '新規コンテンツの本文',
         ]);
         $this->assertRedirect();
@@ -260,7 +260,7 @@ class ContentsControllerTest extends TestCase
 
         $this->post("/admin/contents/edit/{$course->id}/{$content->id}", [
             'title' => '更新後のコンテンツ名',
-            'kind' => 'text',
+            'kind' => 'html',
             'body' => '更新後の本文',
         ]);
         $this->assertRedirect();
@@ -630,5 +630,129 @@ class ContentsControllerTest extends TestCase
 
         $this->get("/admin/contents/edit/{$course->id}/{$content->id}");
         $this->assertResponseOk();
+    }
+
+    /**
+     * プレビュー: Markdown コンテンツが HTML に変換されること
+     *
+     * Admin preview は AJAX で Markdown→HTML 変換後セッションに書き込む（autoRender=false）。
+     * フロント側プレビューでセッションから取り出してサニタイズ済み HTML として描画されることを検証する。
+     */
+    public function testPreviewMarkdownConvertsToHtml(): void
+    {
+        $this->loginAsAdmin();
+
+        // Admin preview は AJAX のみ処理し、Markdown→HTML 変換後にセッションに書き込む
+        $this->configRequest([
+            'headers' => ['X-Requested-With' => 'XMLHttpRequest'],
+        ]);
+
+        $this->post('/admin/contents/preview', [
+            'content_body' => '# Hello',
+            'content_kind' => 'markdown',
+            'content_title' => 'テストプレビュー',
+        ]);
+        $this->assertResponseOk();
+
+        // フロント側プレビューはセッションから内容を取り出し、
+        // Markdown タイプの場合は MarkdownHelper->text() で描画する。
+        // Admin preview が書き込むセッションデータを再現して描画を検証する。
+        $this->session([
+            'Iroha.preview_content' => [
+                'id' => 0,
+                'title' => 'テストプレビュー',
+                'kind' => 'markdown',
+                'url' => '',
+                'body' => '# Hello',
+                'course_id' => 0,
+            ],
+        ]);
+
+        $this->get('/contents/preview');
+        $this->assertResponseOk();
+        $this->assertResponseContains('<h1>Hello</h1>');
+    }
+
+    /**
+     * 追加(add) POST テスト — kind=markdown
+     *
+     * POST で Markdown コンテンツ作成 → リダイレクト ＋ DB に kind=markdown で保存されること。
+     */
+    public function testAddPostMarkdown(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('Markdown追加コース', (int)$admin->id);
+
+        $this->post("/admin/contents/add/{$course->id}", [
+            'title' => 'Markdownコンテンツ',
+            'kind' => 'markdown',
+            'body' => '# Markdown本文',
+        ]);
+        $this->assertRedirect();
+
+        $contentsTable = $this->getTableLocator()->get('Contents');
+        $content = $contentsTable->find()->where(['title' => 'Markdownコンテンツ'])->first();
+        $this->assertNotNull($content, 'Markdown コンテンツが DB に保存されていない');
+        $this->assertSame('markdown', $content->kind);
+        $this->assertSame('# Markdown本文', $content->body);
+    }
+
+    /**
+     * 編集(edit) POST テスト — kind=markdown
+     *
+     * 既存の HTML コンテンツを kind=markdown に変更して保存。
+     */
+    public function testEditPostMarkdown(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('Markdown編集コース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id, '元のコンテンツ');
+
+        $this->post("/admin/contents/edit/{$course->id}/{$content->id}", [
+            'title' => 'Markdownに変更',
+            'kind' => 'markdown',
+            'body' => '# 変更後のMarkdown',
+        ]);
+        $this->assertRedirect();
+
+        $updated = $this->getTableLocator()->get('Contents')->get((int)$content->id);
+        $this->assertSame('markdown', $updated->kind);
+        $this->assertSame('# 変更後のMarkdown', $updated->body);
+    }
+
+    /**
+     * コンテンツコピー POST テスト — kind=markdown
+     *
+     * Markdown コンテンツをコピー → kind と body が元と同一であること。
+     */
+    public function testCopyPostMarkdown(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('Markdownコピーコース', (int)$admin->id);
+
+        $contentsTable = $this->getTableLocator()->get('Contents');
+        $entity = $contentsTable->newEntity([
+            'title' => 'コピーソースMarkdown',
+            'course_id' => $course->id,
+            'user_id' => $admin->id,
+            'kind' => 'markdown',
+            'body' => '# コピー元本文',
+            'sort_no' => 1,
+        ]);
+        $content = $contentsTable->save($entity);
+        $this->assertNotFalse($content, 'Markdown コンテンツの保存に失敗');
+        $contentId = (int)$content->id;
+
+        $this->post("/admin/contents/copy/{$course->id}/{$contentId}");
+        $this->assertRedirect();
+
+        $copiedContent = $contentsTable->find()
+            ->where(['title LIKE' => '%の複製'])
+            ->orderBy(['id' => 'DESC'])
+            ->first();
+
+        $this->assertNotNull($copiedContent, 'コピーされた Markdown コンテンツが見つからない');
+        $this->assertSame('markdown', $copiedContent->kind);
+        $this->assertSame('# コピー元本文', $copiedContent->body);
     }
 }

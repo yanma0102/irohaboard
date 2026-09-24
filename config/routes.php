@@ -303,6 +303,28 @@ return function (RouteBuilder $routes): void {
                 '_method' => 'GET',
             ], ['pass' => ['id']]);
 
+            // Contents Write (POST/PUT/PATCH/DELETE)
+            $builder->connect('/contents', [
+                'controller' => 'Contents',
+                'action' => 'add',
+                '_method' => 'POST',
+            ]);
+            $builder->connect('/contents/{id}', [
+                'controller' => 'Contents',
+                'action' => 'edit',
+                '_method' => 'PUT',
+            ], ['id' => '\d+', 'pass' => ['id']]);
+            $builder->connect('/contents/{id}', [
+                'controller' => 'Contents',
+                'action' => 'edit',
+                '_method' => 'PATCH',
+            ], ['id' => '\d+', 'pass' => ['id']]);
+            $builder->connect('/contents/{id}', [
+                'controller' => 'Contents',
+                'action' => 'delete',
+                '_method' => 'DELETE',
+            ], ['id' => '\d+', 'pass' => ['id']]);
+
             // 学習履歴
             $builder->connect('/records', [
                 'controller' => 'Records',

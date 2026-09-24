@@ -256,6 +256,41 @@ class ContentsControllerTest extends TestCase
         $this->assertResponseCode(404);
     }
 
+    /**
+     * Markdown コンテンツがサニタイズ済み HTML として表示されること
+     *
+     * Markdown ボディに XSS ペイロードを含め、
+     * 正しい HTML 変換とサニタイズが行われることを確認する。
+     */
+    public function testViewMarkdownContentRendersSanitizedHtml(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+
+        $contentsTable = $this->getTableLocator()->get('Contents');
+        $entity = $contentsTable->newEntity([
+            'course_id' => $course->id,
+            'user_id' => $user->id,
+            'title' => 'Markdown テスト',
+            'kind' => 'markdown',
+            'body' => "# Title\n\n**bold**\n\n<script>alert(1)</script>\n\n[xss](javascript:alert(1))",
+            'status' => 1,
+            'sort_no' => 1,
+        ]);
+        $result = $contentsTable->save($entity);
+        $this->assertNotFalse($result, 'Markdown コンテンツの保存に失敗');
+
+        $this->get("/contents/view/{$result->id}");
+        $this->assertResponseOk();
+
+        $body = (string)$this->_response->getBody();
+        $this->assertStringContainsString('<h1>Title</h1>', $body);
+        $this->assertStringContainsString('<strong>bold</strong>', $body);
+        $this->assertStringNotContainsString('<script>alert(1)</script>', $body);
+        $this->assertStringNotContainsString('javascript:', $body);
+    }
+
     // =========================================================================
     // preview アクションのテスト
     // =========================================================================

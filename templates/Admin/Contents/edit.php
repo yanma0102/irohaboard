@@ -71,11 +71,17 @@
 					$('#body').val('');
 				$('#btnPreview').show();
 				break;
-			case 'html': // リッチテキスト
-				// リッチテキストエディタを起動
-				CommonUtil.setRichTextEditor('#body', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
-				$('#btnPreview').show();
-				break;
+		case 'html': // リッチテキスト
+			// リッチテキストエディタを起動
+			CommonUtil.setRichTextEditor('#body', <?= Configure::read('upload_image_maxsize') ?>, '<?= $this->Url->webroot('/') ?>');
+			$('#btnPreview').show();
+			break;
+		case 'markdown': // Markdown
+			if ($('#body').data('summernote')) {
+				$('#body').summernote('destroy');
+			}
+			$('#btnPreview').show();
+			break;
 			case 'movie': // 動画
 				$('.form-control-upload').css('width', '80%');
 				$('#btnUpload').show();
@@ -191,7 +197,7 @@
 			echo '</div>';
 
 			// リッチテキスト
-			echo '<div class="kind kind-text kind-html">';
+			echo '<div class="kind kind-text kind-html kind-markdown">';
 			echo $this->Form->control('body',		['label' => __('内容')]);
 			echo '</div>';
 
@@ -222,7 +228,7 @@
 			}
 
 			// 備考
-			echo '<span class="kind kind-text kind-html kind-movie kind-url kind-file kind-test">';
+			echo '<span class="kind kind-text kind-html kind-markdown kind-movie kind-url kind-file kind-test">';
 			echo $this->Form->control('comment', ['label' => __('備考')]);
 			echo '</span>';
 			

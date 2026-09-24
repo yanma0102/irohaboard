@@ -175,12 +175,19 @@ class ContentsController extends AppController
         $this->autoRender = false;
 
         if ($this->request->is('ajax')) {
+            $body = $this->getData('content_body');
+            $kind = $this->getData('content_kind');
+
+            if ($kind === 'markdown') {
+                $body = \App\Utility\MarkdownRenderer::toHtml($body);
+            }
+
             $data = [
                 'id' => 0,
                 'title' => $this->getData('content_title'),
-                'kind' => $this->getData('content_kind'),
+                'kind' => $kind,
                 'url' => $this->getData('content_url'),
-                'body' => $this->getData('content_body'),
+                'body' => $body,
                 'course_id' => 0,
             ];
 

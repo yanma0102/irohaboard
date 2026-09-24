@@ -63,6 +63,9 @@
 			$body = $content['body'];
 			//$body = str_replace('src="/uploads/', 'src="'. $this->Url->build(['controller' => 'contents', 'action' => 'file_image']).'/', $body);
 			break;
+		case 'markdown': // Markdown コンテンツ
+			$body = $this->Markdown->text($content['body']);
+			break;
 		default: // test / label / enquete / file 等は直接閲覧不可
 			$body = '';
 			break;

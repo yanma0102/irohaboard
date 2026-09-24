@@ -127,7 +127,7 @@
 | 項目ID | 分類 | 対象 | 前提条件 | 手順 | 期待結果 | 設計参照 | 自動化 | 優先 | 結果 | 証跡 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | API-081 | 異常系 | GET /api/v1/does-not-exist | — | 1. GET /api/v1/does-not-exist | 404。`{"error":{"code":404,"message":"Endpoint not found"}}` | A24 | 可 | P0 | □ | |
-| API-082 | 異常系 | API スコープ外 URL / メソッド不正 | — | 1. GET /api/v1<br>2. GET /api<br>3. GET /api/v1/auth/token（POST/DELETE のみルートに GET→catch-all 到達）<br>4. POST /api/v1/contents（GET のみルートに POST）<br>5. PUT /api/v1/auth/token（未定義メソッド） | 1,2: 404（catch-all）。3,4,5: 404（catch-all 到達）または 405（CakePHP ルーティング） | A24 | 可 | P1 | □ | |
+| API-082 | 異常系 | API スコープ外 URL / メソッド不正 | — | 1. GET /api/v1<br>2. GET /api<br>3. GET /api/v1/auth/token（POST/DELETE のみルートに GET→catch-all 到達）<br>4. POST /api/v1/contents（body 未指定でバリデーションエラー）<br>5. PUT /api/v1/auth/token（未定義メソッド） | 1,2: 404（catch-all）。3: 404（catch-all 到達）または 405（CakePHP ルーティング）。4: 400（バリデーションエラー — body は text/html/markdown 種で必須）。5: 404（catch-all 到達）または 405 | A24 | 可 | P1 | □ | |
 
 ## 9. トークン仕様 / ヘッダ形式
 

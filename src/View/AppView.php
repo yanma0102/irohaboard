@@ -36,5 +36,6 @@ class AppView extends View
         $this->loadHelper('Url');
         $this->loadHelper('Number', ['className' => \App\View\Helper\AppNumberHelper::class]);
         $this->loadHelper('AppView');
+        $this->loadHelper('Markdown');
     }
 }

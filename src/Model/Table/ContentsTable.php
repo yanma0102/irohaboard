@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Core\Configure;
 use Cake\ORM\Query;
 use Cake\Validation\Validator;
 
@@ -101,6 +102,29 @@ class ContentsTable extends AppTable
 
         $validator
             ->numeric('sort_no');
+
+        $contentKind = Configure::read('content_kind');
+        if (!empty($contentKind)) {
+            $validator
+                ->inList('kind', array_keys($contentKind), 'Invalid content kind', function (array $context): bool {
+                    $kind = $context['data']['kind'] ?? '';
+
+                    return $kind !== '';
+                });
+
+            $bodyKinds = ['text', 'html', 'markdown'];
+            $validator
+                ->requirePresence('body', function (array $context) use ($bodyKinds): bool {
+                    $kind = $context['data']['kind'] ?? '';
+
+                    return in_array($kind, $bodyKinds, true);
+                })
+                ->allowEmptyString('body', null, function (array $context) use ($bodyKinds): bool {
+                    $kind = $context['data']['kind'] ?? '';
+
+                    return !in_array($kind, $bodyKinds, true);
+                });
+        }
 
         return $validator;
     }

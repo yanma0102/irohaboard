@@ -18,6 +18,7 @@
 | 10 | `10-database-migration.md` | DB 移行設計（utf8mb4変換・MariaDB 11.4・GROUP BY修正・手順・リバース） |
 | 11 | `11-config-bootstrap.md` | 設定・起動設計（config/app.php・Application.php・Custom ディレクトリ再実装） |
 | 12 | `12-implementation-test-plan.md` | 実装計画・テスト設計（フェーズ別手順・テストケース・トレーサビリティ） |
+| 13 | `13-markdown-mcp.md` | Markdown 対応 & MCP サーバ統合設計（コンテンツ Markdown 化・Contents API Write・MCP サーバ） |
 
 ## 共通設計方針
 

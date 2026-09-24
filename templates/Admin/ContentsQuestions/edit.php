@@ -147,6 +147,13 @@
 		<div class="panel-body">
 			<?php
 				echo $this->Form->create($question, Configure::read('form_defaults'));;
+				// 「option」は JS 補助入力、「options」「option_list」「correct」は
+				// JS が送信前に書き換えるため FormProtection の検証対象から除外する。
+				$this->Form->unlockField('option');
+				$this->Form->unlockField('options');
+				$this->Form->unlockField('option_list');
+				$this->Form->unlockField('correct');
+				$this->Form->unlockField('id');
 				echo $this->Form->control('id');
 				echo $this->Form->control('title',	['label' => __('タイトル')]);
 				echo $this->Form->control('body',		['label' => __('問題文')]);

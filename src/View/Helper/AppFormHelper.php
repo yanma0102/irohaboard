@@ -47,7 +47,6 @@ class AppFormHelper extends FormHelper
                 $entity = $this->_View->get($underscoreName)
                     ?? $this->_View->get($entityName)
                     ?? $this->_View->get($tableAlias);
-                file_put_contents('/var/www/html/tmp/debug_form.log', date('c') . " ctrl=$controller underscore=$underscoreName vars=[" . implode(',', $allVars) . "] found=" . (is_object($entity) ? 'OBJ:' . get_class($entity) : 'NULL') . "\n", FILE_APPEND);
 
                 if (is_object($entity)) {
                     $context = $entity;
@@ -55,9 +54,8 @@ class AppFormHelper extends FormHelper
                     try {
                         $table = \Cake\ORM\TableRegistry::getTableLocator()->get($tableAlias);
                         $context = $table->newEmptyEntity();
-                        file_put_contents('/var/www/html/tmp/debug_form.log', date('c') . " newEmptyEntity created for $tableAlias\n", FILE_APPEND);
                     } catch (\Exception $e) {
-                        file_put_contents('/var/www/html/tmp/debug_form.log', date('c') . " TableRegistry failed: " . $e->getMessage() . "\n", FILE_APPEND);
+                        // TableRegistry lookup failed; leave $context as null.
                     }
                 }
             }

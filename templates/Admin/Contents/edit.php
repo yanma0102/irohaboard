@@ -166,6 +166,16 @@
 		<div class="panel-body">
 		<?php
 			echo $this->Form->create(null, Configure::read('form_defaults'));
+			// コンテンツ種別（kind）に応じて JS で表示/非表示を切り替えるフィールドは、
+			// 選択された種別によっては POST されないため FormProtection の検証対象から除外する。
+			$this->Form->unlockField('id');
+			$this->Form->unlockField('url');
+			$this->Form->unlockField('file_name');
+			$this->Form->unlockField('body');
+			$this->Form->unlockField('timelimit');
+			$this->Form->unlockField('pass_rate');
+			$this->Form->unlockField('question_count');
+			$this->Form->unlockField('wrong_mode');
 			echo $this->Form->control('id');
 			echo $this->Form->control('title', ['label' => __('コンテンツ名')]);
 			echo $this->Form->inputRadio('kind', ['label' => __('コンテンツ種別'), 'separator'=>"<br>", 'options' => Configure::read('content_kind_comment')]);

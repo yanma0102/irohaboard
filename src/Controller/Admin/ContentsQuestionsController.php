@@ -141,6 +141,11 @@ class ContentsQuestionsController extends AppController
                 $data['user_id'] = $this->readAuthUser('id');
                 $data['content_id'] = $content_id;
                 $data['sort_no'] = $contentsQuestionsTable->getNextSortNo($content_id);
+                // テスト問題フォームには question_type フィールドが無いが、
+                // ContentsQuestionsTable のバリデーションは requirePresence('question_type') のため補完する。
+                if (empty($data['question_type'])) {
+                    $data['question_type'] = 'single';
+                }
                 $this->request = $this->request->withData('ContentsQuestions', $data);
             }
 

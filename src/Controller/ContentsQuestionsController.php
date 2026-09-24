@@ -29,6 +29,7 @@ class ContentsQuestionsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
+        $this->FormProtection->unlockActions(['index']);
     }
 
     /**

@@ -165,9 +165,9 @@ class UsersController extends AppController
             }
             unset($userData['new_password']);
 
-            // 所属グループ・受講コースの割当
-            $groupIds = $userData['Group'] ?? [];
-            $courseIds = $userData['Course'] ?? [];
+            // 所属グループ・受講コースの割当（scalarでも配列に統一）
+            $groupIds = (array)($userData['Group'] ?? []);
+            $courseIds = (array)($userData['Course'] ?? []);
             unset($userData['Group'], $userData['Course']);
 
             $userData['groups'] = ['_ids' => $groupIds];
@@ -206,7 +206,10 @@ class UsersController extends AppController
         $courses = $this->fetchTable('Courses')->find('list');
         $groups = $this->fetchTable('Groups')->find('list');
 
-        $this->set(compact('courses', 'groups', 'username', 'user'));
+        $this->set(compact('courses', 'groups', 'username'));
+        if (isset($user)) {
+            $this->set('user', $user);
+        }
 
         return null;
     }

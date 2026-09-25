@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Mcp;
 
+use App\Mcp\Tool\CreateContentTool;
 use App\Mcp\Tool\GetContentHtmlTool;
 use App\Mcp\Tool\GetContentTool;
 use App\Mcp\Tool\GetCourseTool;
@@ -17,6 +18,7 @@ use App\Mcp\Tool\GetUserProfileTool;
 use App\Mcp\Tool\ListContentsTool;
 use App\Mcp\Tool\ListCoursesTool;
 use App\Mcp\Tool\ListRecordsTool;
+use App\Mcp\Tool\UpdateContentTool;
 use App\Service\AccessControlService;
 use Mcp\Server;
 use Mcp\Server\Session\FileSessionStore;
@@ -107,7 +109,19 @@ class McpServerFactory
                 description: 'Get a user profile. Defaults to the authenticated user; '
                     . 'staff can query any user by user_id.',
             )
-            // --- Write ツール（Phase 3 で追加） ---
+            // --- Write ツール（Phase 3） ---
+            ->addTool(
+                [new CreateContentTool($accessControl), '__invoke'],
+                name: 'create_content',
+                description: 'Create a new content in a course (staff only, course membership required). '
+                    . 'kind=markdown: body is the Markdown source.',
+            )
+            ->addTool(
+                [new UpdateContentTool($accessControl), '__invoke'],
+                name: 'update_content',
+                description: 'Update fields of an existing content (staff only, course membership required). '
+                    . 'Only the provided fields are changed (partial update).',
+            )
             ->build();
     }
 }

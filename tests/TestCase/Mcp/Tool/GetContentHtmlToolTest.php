@@ -283,4 +283,83 @@ class GetContentHtmlToolTest extends TestCase
         $this->assertArrayHasKey('error', $result);
         $this->assertStringContainsString('not found', $result['error']);
     }
+
+    // ----------------------------------------------------------------
+    // html kind サニタイズ導入前のログ評価（U-5 / Phase 3 3-5）
+    // ----------------------------------------------------------------
+
+    /**
+     * html kind でサニタイズ差分がある場合、応答は生 HTML のまま返しつつ
+     * ib_logs に評価ログを 1 件だけ記録する（2 回目の呼び出しでは重複しない）
+     */
+    public function testSanitizeCandidateLoggedOnceForDirtyHtml(): void
+    {
+        $admin = $this->createUser('evaladmin', 'admin');
+        $course = $this->createCourse();
+        $content = $this->createContent((int)$course->id, [
+            'body' => '<p>ok</p><script>alert(1)</script>',
+        ]);
+
+        $result = $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
+
+        // 応答は変更されない（ログ評価フェーズのため生 HTML のまま）
+        $this->assertStringContainsString('<script>', $result['data']['html']);
+
+        $logsTable = $this->getTableLocator()->get('Logs');
+        $rows = $logsTable->find()->where([
+            'log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE,
+            'log_content' => (string)$this->lastContentId,
+        ])->all()->toList();
+        $this->assertCount(1, $rows);
+        $this->assertSame((int)$admin->id, (int)$rows[0]->user_id);
+        $this->assertNotNull($rows[0]->created);
+
+        // 2 回目は重複記録しない
+        $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
+        $count = $logsTable->find()->where([
+            'log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE,
+            'log_content' => (string)$this->lastContentId,
+        ])->count();
+        $this->assertSame(1, $count);
+    }
+
+    /**
+     * サニタイズで変化しない HTML は記録しない
+     */
+    public function testNoLogForCleanHtml(): void
+    {
+        $admin = $this->createUser('evaladmin2', 'admin');
+        $course = $this->createCourse();
+        $content = $this->createContent((int)$course->id, [
+            'body' => '<p>きれいな本文</p>',
+        ]);
+
+        $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
+
+        $count = $this->getTableLocator()->get('Logs')->find()
+            ->where(['log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE])
+            ->count();
+        $this->assertSame(0, $count);
+    }
+
+    /**
+     * markdown kind はもともとサニタイズ済みのため記録しない
+     */
+    public function testNoLogForMarkdownKind(): void
+    {
+        $admin = $this->createUser('evaladmin3', 'admin');
+        $course = $this->createCourse();
+        $content = $this->createContent((int)$course->id, [
+            'kind' => 'markdown',
+            'body' => "# 見出し\n\n<script>alert(1)</script>",
+        ]);
+
+        $result = $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
+        $this->assertStringNotContainsString('<script>', $result['data']['html']);
+
+        $count = $this->getTableLocator()->get('Logs')->find()
+            ->where(['log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE])
+            ->count();
+        $this->assertSame(0, $count);
+    }
 }

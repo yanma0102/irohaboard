@@ -152,12 +152,14 @@
 前提: API トークンを `POST /api/v1/auth/token` で取得済み（`<TOKEN>`）。Claude Desktop 等の MCP クライアントは Streamable HTTP で `/mcp` に接続する。
 
 > E2E 実施記録（2026-09-25）: MCP-001〜011, 013 は公式 MCP Inspector CLI（@modelcontextprotocol/inspector 2.8.0）+ curl で実測し ✓。E2E 中に検出・修正した不具合: ① GET /mcp がルート未定義 404 だった（→ 405 + Allow を追加、MCP-013）、② ib_logs に Timestamp 行為が無く `created` が NULL のままレート制限カウントに一致せず 429 が発火しなかった（→ 記録時に `created` 明示設定）。MCP-012 も本番（:8082）に対し公式クライアント（Inspector CLI / TS SDK）で 3 手順（Bearer 接続 → `list_courses` → `get_content`）＋権限外 Access denied を実測し ✓（2026-09-25。Claude Desktop 本体は開発環境に非搭載のため、デスクトップ実行時は下部の設定例で同一フロー）。
+>
+> E2E 実施記録（2026-09-25、Phase 3）: MCP-014/015 を Inspector CLI + ライブサーバで実測し ✓（`tools/list` は 9 件＝読み取り 7 + 書き込み 2）。管理画面エディタは Playwright ブラウザ E2E 16/16 PASS。同 E2E 中に検出・修正した不具合: ③ `Admin/ContentsController::uploadImage()` の応答 URL からポートが欠落していた（`getHost()` のみ → `getPort()` 追加）、④ EasyMDE 既定ツールバーの `image` ボタンは file input を生成しないため画像アップロードが動作せず（→ `toolbar:` に `upload-image` を明示指定）、⑤ `upload-image` が生成する `name="image"` の file input が FormProtection の検証では余分なフィールド扱いとなり、保存 POST が黒穴（blackHole）でログインへリダイレクトされていた（→ `unlockField('image')` を追加）。
 
 | 項目ID | 分類 | 対象 | 前提条件 | 手順 | 期待結果 | 設計参照 | 自動化 | 優先 | 結果 | 証跡 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | MCP-001 | 正常系 | initialize ハンドシェイク | DS-1 + API トークン | 1. `curl -X POST /mcp -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"c","version":"1"}}}'` | 200。`Content-Type: application/json`、レスポンスヘッダ `Mcp-Session-Id`（UUID）、`serverInfo.name="iroha Board MCP"` | 13 §5 | 可 | P0 | ✓ | |
 | MCP-002 | 正常系 | notifications/initialized | MCP-001 実施済 | 1. `Mcp-Session-Id` を付けて `{"jsonrpc":"2.0","id":2,"method":"notifications/initialized"}` を POST | 202（または 200） | 13 §5 | 可 | P0 | ✓ | |
-| MCP-003 | 正常系 | tools/list（読み取り 7 種） | MCP-002 実施済 | 1. session 付きで `method:"tools/list"` POST | 200。`list_courses` / `get_course` / `list_contents` / `get_content` / `get_content_html` / `list_records` / `get_user_profile` の 7 件を含む。`create_content` / `update_content` は**含まない**（Phase 3） | 13 §6 | 可 | P0 | ✓ | |
+| MCP-003 | 正常系 | tools/list（全 9 種） | MCP-002 実施済 | 1. session 付きで `method:"tools/list"` POST | 200。`list_courses` / `get_course` / `list_contents` / `get_content` / `get_content_html` / `list_records` / `get_user_profile` / `create_content` / `update_content` の 9 件を含む（Phase 2 完了時点は読み取り 7 件のみ） | 13 §6 | 可 | P0 | ✓ | E2E 実測 2026-09-25（Phase 3 時点で 9 件を確認） |
 | MCP-004 | 正常系 | list_courses（全件） | admin トークン | 1. `tools/call list_courses` | `data` に全コース（削除済み除く）。`meta.total` 一致 | 13 §6 | 可 | P0 | ✓ | |
 | MCP-005 | 権限 | list_courses（権限絞り込み） | 未登録ユーザーのトークン | 1. 登録外ユーザーで `tools/call list_courses` | `data` は自分が所属（直接/グループ）するコースのみ | 13 §5.7 | 可 | P0 | ✓ | |
 | MCP-006 | 権限 | list_contents（未公開・未所属） | 未登録ユーザーのトークン | 1. 所属外コース id で `list_contents`<br>2. 所属コースで `list_contents` | 1: `Access denied to this course.`<br>2: `status=1` の公開コンテンツのみ（非公開は meta.total に含まない） | 13 §5.7、G-9 | 可 | P0 | ✓ | |
@@ -168,6 +170,8 @@
 | MCP-011 | 正常系 | モダンera（ステートレス）対応 | admin トークン | 1. `MCP-Protocol-Version: 2026-07-28` + `Mcp-Method` ヘッダ + `params._meta`（protocolVersion/clientCapabilities クレーム）付きで `tools/list`（session 不要） | 200。ツール一覧が返る（セッション不要） | 13 §5、SDK SEP-2243 | 可 | P2 | ✓ | |
 | MCP-012 | 正常系 | Claude Desktop E2E（完了条件） | Claude Desktop + 有効トークン | 1. カスタムコネクタに URL `<BASE>/mcp` + ヘッダ `Authorization: Bearer <TOKEN>` を設定して接続<br>2. `list_courses` を実行<br>3. `get_content` を実行 | 接続成功。2: 所属コース一覧。3: 本文。権限外コースは Access denied | 13 §6（Phase 2 完了条件） | 手動 | P0 | ✓ | E2E 実測 2026-09-25（本番 :8082、Inspector CLI。tools/list 7件・list_courses total=14・get_content 本文・未所属 Access denied） |
 | MCP-013 | 整合性 | GET /mcp（SSE 非対応） | — | 1. `curl -i GET /mcp`（Accept: text/event-stream） | 405 Method Not Allowed + `Allow: POST, DELETE, OPTIONS`（ルート未定義 404 はクライアント接続フローを壊すため。PHP は SSE 接続維持不可） | MCP Streamable HTTP 仕様 | 可 | P1 | ✓ | E2E 実測 2026-09-25 |
+| MCP-014 | 正常系 | create_content / update_content（Write roundtrip） | admin トークン + 所属コース | 1. `tools/call create_content`（course_id / title / kind=markdown / body）<br>2. 返った id で `get_content`<br>3. `update_content` で title / body を更新<br>4. 非スタッフトークンで `create_content` | 1: `data.id` 付きで作成<br>2: 保存済み本文<br>3: 更新後の内容を返す<br>4: `Access denied.` | 13 §6（Phase 3 完了条件） | 可 | P0 | ✓ | E2E 実測 2026-09-25（Inspector CLI。非スタッフ拒否・`mcp_write` ログ分離も確認） |
+| MCP-015 | 異常系 | write レート制限（20 件/分・read 分離） | admin トークン | 1. 同一分で `create_content` を 20 件超送信<br>2. 同時に `list_courses` を送信 | 1: 21 件目 429 + `Retry-After: 60`<br>2: 200（read 側カウンターは分離） | 13 §5.8 | 可 | P1 | ✓ | E2E 実測 2026-09-25（JST 刻みシード 20 行 → create 429、list 200。窓復帰は PHPUnit） |
 
 Claude Desktop 接続例（Streamable HTTP / リモートコネクタ）:
 
@@ -225,11 +229,11 @@ curl -s -X POST http://localhost:8082/mcp \
 
 | 分類（MCP） | 項目数 |
 |---|---|
-| 正常系 | 7 |
-| 異常系 | 2 |
+| 正常系 | 8 |
+| 異常系 | 3 |
 | 権限 | 3 |
 | 整合性 | 1 |
-| **合計（MCP-001〜013）** | **13** |
+| **合計（MCP-001〜015）** | **15** |
 
 ### 設計書（12-implementation-test-plan.md A1〜A24）対応状況
 

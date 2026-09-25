@@ -345,7 +345,12 @@ class ContentsController extends AppController
                         $result = false;
                     }
 
-                    $file_url = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/contents/file_image/' . $new_name;
+                    // getPort() は既定ポート (80/443) で null を返すため、
+                    // 非既定ポート (:8082 等) のみ URL に含める。
+                    $uri = $this->request->getUri();
+                    $port = $uri->getPort() ? ':' . $uri->getPort() : '';
+                    $file_url = $uri->getScheme() . '://' . $uri->getHost() . $port
+                        . '/contents/file_image/' . $new_name;
                     $response = $result ? [$file_url] : [false];
                 }
             } else {

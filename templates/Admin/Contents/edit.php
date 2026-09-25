@@ -2,10 +2,12 @@
 <?php use Cake\Core\Configure; ?>
 <?php $this->start('css-embedded'); ?>
 <?= $this->Html->css('summernote.css');?>
+<?= $this->Html->css('easymde.min.css');?>
 <?php $this->end(); ?>
 <?php $this->start('script-embedded'); ?>
 <?= $this->Html->script('summernote.min.js');?>
 <?= $this->Html->script('lang/summernote-ja-JP.js');?>
+<?= $this->Html->script('easymde.min.js');?>
 <script>
 	$(document).ready(function()
 	{
@@ -47,17 +49,95 @@
 					$('#body').summernote('codeview.deactivate')
 				}
 			}
+
+			// Markdown エディタの内容を textarea に確実に同期してから送信する
+			if (markdownEditor)
+			{
+				$('#body').val(markdownEditor.value());
+			}
 		});
 
 		// 初期表示
 		render();
 	});
+
+	// Markdown 専用エディタ（EasyMDE）のインスタンス
+	var markdownEditor = null;
+
+	// Markdown エディタの破却（kind が markdown 以外に切り替わった時）
+	function destroyMarkdownEditor()
+	{
+		if (markdownEditor)
+		{
+			markdownEditor.toTextArea();
+			markdownEditor = null;
+		}
+	}
+
+	// Markdown エディタの初期化（リアルタイムプレビュー＋画像アップロード）
+	function initMarkdownEditor()
+	{
+		if (markdownEditor)
+			return;
+
+		markdownEditor = new EasyMDE({
+			element: $('#body')[0],
+			spellChecker: false,
+			autosave: { enabled: false },
+			// 既定の "image" ボタン（URL 指定挿入）は file input を生成しない。
+			// 画像アップロードは "upload-image" ボタン経由でのみ動作するため明示指定する。
+			toolbar: [
+				'bold', 'italic', 'heading', '|',
+				'quote', 'unordered-list', 'ordered-list', '|',
+				'link', 'upload-image', '|',
+				'preview', 'side-by-side', 'fullscreen', 'guide'
+			],
+			imageUpload: true,
+			imageUploadFunction: function(file, onSuccess, onError)
+			{
+				var data = new FormData();
+				data.append('file', file);
+				data.append('_csrfToken', $('input[name="_csrfToken"]').val());
+
+				$.ajax({
+					data: data,
+					type: 'POST',
+					url: '<?= $this->Url->build(['controller' => 'contents', 'action' => 'uploadImage']) ?>',
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function(response)
+					{
+						// uploadImage は JSON 配列 [url] または [false] を返す
+						var payload = (typeof response === 'string') ? JSON.parse(response) : response;
+						var url = payload ? payload[0] : false;
+						if (url)
+						{
+							onSuccess(url);
+						}
+						else
+						{
+							onError('画像のアップロードに失敗しました');
+						}
+					},
+					error: function()
+					{
+						onError('通信中にエラーが発生しました');
+					}
+				});
+			}
+		});
+	}
 	
 	// コンテンツ種別によって画面の表示要素を制御
 	function render()
 	{
 		var content_kind = $('input[name="kind"]:checked').val();
 		
+		// Markdown 以外では Markdown エディタを破却
+		if (content_kind != 'markdown')
+			destroyMarkdownEditor();
+
 		$('.kind').hide();
 		$('.kind-' + content_kind).show(); // コンテンツ種別に紐づく項目のみを表示
 		$('#btnPreview').hide();
@@ -80,6 +160,8 @@
 			if ($('#body').data('summernote')) {
 				$('#body').summernote('destroy');
 			}
+			// Markdown 専用エディタを起動（リアルタイムプレビュー付き）
+			initMarkdownEditor();
 			$('#btnPreview').show();
 			break;
 			case 'movie': // 動画
@@ -182,6 +264,9 @@
 			$this->Form->unlockField('pass_rate');
 			$this->Form->unlockField('question_count');
 			$this->Form->unlockField('wrong_mode');
+			// EasyMDE の upload-image ボタンが生成する file input（name="image"）。
+			// 保存ボタンでは使用しないため、FormProtection の検証対象から除外する。
+			$this->Form->unlockField('image');
 			echo $this->Form->control('id');
 			echo $this->Form->control('title', ['label' => __('コンテンツ名')]);
 			echo $this->Form->inputRadio('kind', ['label' => __('コンテンツ種別'), 'separator'=>"<br>", 'options' => Configure::read('content_kind_comment')]);

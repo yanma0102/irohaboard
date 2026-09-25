@@ -25,14 +25,23 @@ use Psr\Http\Server\RequestHandlerInterface;
  * MCP エンドポイント用レート制限ミドルウェア（§5.8）。
  *
  * 既存の ib_logs ベースパターン（Api\AuthController::isRateLimited）を流用し、
- * 認証済みユーザごとに 60 リクエスト/分 を上限とする。
+ * 認証済みユーザごとに計測する。
+ *
+ * - 読み取り（それ以外のリクエスト）: 60 リクエスト/分（log_type=mcp_request）
+ * - 書き込みツール（create_content / update_content の tools/call）:
+ *   20 リクエスト/分（log_type=mcp_write）
  */
 class McpRateLimitMiddleware implements MiddlewareInterface
 {
     /**
-     * 既定の上限（リクエスト数/分）
+     * 既定の上限（読み取りリクエスト数/分）
      */
     public const DEFAULT_MAX_REQUESTS = 60;
+
+    /**
+     * 書き込みツールの上限（リクエスト数/分）
+     */
+    public const WRITE_MAX_REQUESTS = 20;
 
     /**
      * 計測ウィンドウ（秒）
@@ -40,19 +49,31 @@ class McpRateLimitMiddleware implements MiddlewareInterface
     public const WINDOW_SECONDS = 60;
 
     /**
-     * ib_logs の log_type
+     * ib_logs の log_type（読み取り）
      */
     public const LOG_TYPE = 'mcp_request';
 
     /**
+     * ib_logs の log_type（書き込み）
+     */
+    public const WRITE_LOG_TYPE = 'mcp_write';
+
+    /**
+     * 書き込み系ツール名（このツール群の tools/call だけ書き込みカウンタ対象）
+     */
+    private const WRITE_TOOLS = ['create_content', 'update_content'];
+
+    /**
      * @param \App\Model\Table\LogsTable $logsTable ログテーブル
-     * @param int $maxRequests ウィンドウ内の最大リクエスト数
+     * @param int $maxRequests ウィンドウ内の最大リクエスト数（読み取り）
      * @param \Psr\Http\Message\ResponseFactoryInterface|null $responseFactory 429 応答生成用
+     * @param int $writeMaxRequests ウィンドウ内の最大リクエスト数（書き込み）
      */
     public function __construct(
         private LogsTable $logsTable,
         private int $maxRequests = self::DEFAULT_MAX_REQUESTS,
         private ?ResponseFactoryInterface $responseFactory = null,
+        private int $writeMaxRequests = self::WRITE_MAX_REQUESTS,
     ) {
     }
 
@@ -72,12 +93,16 @@ class McpRateLimitMiddleware implements MiddlewareInterface
         }
         $userId = (int)$userId;
 
+        $isWrite = $this->isWriteToolCall($request);
+        $logType = $isWrite ? self::WRITE_LOG_TYPE : self::LOG_TYPE;
+        $maxRequests = $isWrite ? $this->writeMaxRequests : $this->maxRequests;
+
         $threshold = date('Y-m-d H:i:s', time() - self::WINDOW_SECONDS);
 
         try {
             $count = $this->logsTable->find()
                 ->where([
-                    'log_type' => self::LOG_TYPE,
+                    'log_type' => $logType,
                     'log_content' => (string)$userId,
                     'created >=' => $threshold,
                 ])
@@ -87,13 +112,42 @@ class McpRateLimitMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        if ($count >= $this->maxRequests) {
+        if ($count >= $maxRequests) {
             return $this->tooManyRequests();
         }
 
-        $this->logRequest($request, $userId);
+        $this->logRequest($request, $userId, $logType);
 
         return $handler->handle($request);
+    }
+
+    /**
+     * リクエストが書き込みツールの tools/call かを判定する
+     *
+     * JSON-RPC 本文を読み取り、create_content / update_content の
+     * 呼び出しだけを書き込みカウンタ対象とする（§5.8: 20 req/min）。
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request リクエスト
+     * @return bool 書き込みツール呼び出しの場合 true
+     */
+    private function isWriteToolCall(ServerRequestInterface $request): bool
+    {
+        try {
+            $stream = $request->getBody();
+            $stream->rewind();
+            $raw = $stream->getContents();
+            $stream->rewind();
+
+            $payload = json_decode($raw, true);
+            if (!is_array($payload)) {
+                return false;
+            }
+
+            return ($payload['method'] ?? null) === 'tools/call'
+                && in_array($payload['params']['name'] ?? '', self::WRITE_TOOLS, true);
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -101,9 +155,10 @@ class McpRateLimitMiddleware implements MiddlewareInterface
      *
      * @param \Psr\Http\Message\ServerRequestInterface $request リクエスト
      * @param int $userId ユーザID
+     * @param string $logType 計測カテゴリ（self::LOG_TYPE / self::WRITE_LOG_TYPE）
      * @return void
      */
-    private function logRequest(ServerRequestInterface $request, int $userId): void
+    private function logRequest(ServerRequestInterface $request, int $userId, string $logType): void
     {
         try {
             $serverParams = $request->getServerParams();
@@ -115,7 +170,7 @@ class McpRateLimitMiddleware implements MiddlewareInterface
             }
 
             $log = $this->logsTable->newEntity([
-                'log_type' => self::LOG_TYPE,
+                'log_type' => $logType,
                 'log_content' => (string)$userId,
                 'user_id' => $userId,
                 'user_ip' => mb_substr($ip, 0, 50),

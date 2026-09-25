@@ -298,10 +298,9 @@ class McpControllerTest extends TestCase
     }
 
     /**
-     * tools/list → Phase 2 の読み取り系ツール7個が返る
-     * （create_content / update_content は Phase 3 のため含まれない）
+     * tools/list → 読み取り系ツール7個 + 書き込み系ツール2個が返る
      */
-    public function testToolsListContainsSevenReadTools(): void
+    public function testToolsListContainsAllTools(): void
     {
         $user = $this->createUser('admin02', 'admin');
         $token = $this->issueToken((int)$user->id);
@@ -324,13 +323,13 @@ class McpControllerTest extends TestCase
             [
             'list_courses', 'get_course', 'list_contents', 'get_content',
             'get_content_html', 'list_records', 'get_user_profile',
+            'create_content', 'update_content',
             ] as $expected
         ) {
             $this->assertContains($expected, $names, "{$expected} が登録されている");
         }
 
-        $this->assertNotContains('create_content', $names, 'create_content は Phase 3');
-        $this->assertNotContains('update_content', $names, 'update_content は Phase 3');
+        $this->assertCount(9, $names, 'ツールは 9 個（読み取り7 + 書き込み2）');
     }
 
     // ----------------------------------------------------------------
@@ -824,5 +823,153 @@ class McpControllerTest extends TestCase
 
         $this->assertSame([], $data['data']);
         $this->assertSame(0, $data['meta']['total']);
+    }
+
+    // ----------------------------------------------------------------
+    // 書き込みツール（Phase 3）
+    // ----------------------------------------------------------------
+
+    /**
+     * スタッフが create_content で作成し、get_content で本文を取得できる（ラウンドトリップ）
+     */
+    public function testCreateContentRoundTrip(): void
+    {
+        $admin = $this->createUser('wadmin01', 'admin');
+        $token = $this->issueToken((int)$admin->id);
+        $course = $this->createCourse('MCP作成コース');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+        $sessionId = $this->initializeSession($token);
+
+        $created = $this->decodeToolResult($this->callTool($token, $sessionId, 'create_content', [
+            'course_id' => (int)$course->id,
+            'title' => 'MCPで作ったコンテンツ',
+            'kind' => 'markdown',
+            'body' => "# MCP作成\n\n**太字**",
+            'status' => 1,
+        ]));
+        $this->assertArrayHasKey('data', $created);
+        $contentId = (int)$created['data']['id'];
+
+        $fetched = $this->decodeToolResult($this->callTool($token, $sessionId, 'get_content', [
+            'content_id' => $contentId,
+        ]));
+        $this->assertSame('MCPで作ったコンテンツ', $fetched['data']['title']);
+        $this->assertSame("# MCP作成\n\n**太字**", $fetched['data']['body']);
+
+        // 部分更新（タイトルのみ）
+        $updated = $this->decodeToolResult($this->callTool($token, $sessionId, 'update_content', [
+            'content_id' => $contentId,
+            'title' => '更新後タイトル',
+        ]));
+        $this->assertSame('更新後タイトル', $updated['data']['title']);
+
+        $refetched = $this->decodeToolResult($this->callTool($token, $sessionId, 'get_content', [
+            'content_id' => $contentId,
+        ]));
+        $this->assertSame('更新後タイトル', $refetched['data']['title']);
+        $this->assertSame("# MCP作成\n\n**太字**", $refetched['data']['body'], 'body は部分更新で不変');
+    }
+
+    /**
+     * 非スタッフの create_content → 'Only staff members can create content.'
+     */
+    public function testCreateContentDeniedForNonStaff(): void
+    {
+        $user = $this->createUser('wuser01');
+        $token = $this->issueToken((int)$user->id);
+        $course = $this->createCourse();
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $sessionId = $this->initializeSession($token);
+
+        $data = $this->decodeToolResult($this->callTool($token, $sessionId, 'create_content', [
+            'course_id' => (int)$course->id,
+            'title' => '試し',
+            'kind' => 'html',
+            'body' => '<p>x</p>',
+        ]));
+
+        $this->assertArrayHasKey('error', $data);
+        $this->assertSame('Only staff members can create content.', $data['error']);
+    }
+
+    /**
+     * 書き込みツール: 20 リクエスト/分 → 21 回目で 429（読み取りカウンタと分離）
+     */
+    public function testWriteRateLimitReturns429After20(): void
+    {
+        $admin = $this->createUser('wadmin02', 'admin');
+        $token = $this->issueToken((int)$admin->id);
+        $course = $this->createCourse();
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+
+        $logsTable = $this->getTableLocator()->get('Logs');
+        $connection = $logsTable->getConnection();
+        for ($i = 0; $i < 20; $i++) {
+            $connection->insert($logsTable->getTable(), [
+                'log_type' => 'mcp_write',
+                'log_content' => (string)$admin->id,
+                'user_id' => (int)$admin->id,
+                'user_ip' => '127.0.0.1',
+                'user_agent' => 'phpunit',
+                'created' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        // initialize（読み取り）は書き込みカウンタの影響を受けない
+        $sessionId = $this->initializeSession($token);
+
+        $this->mcpRequest([
+            'Authorization' => 'Bearer ' . $token,
+            'Mcp-Session-Id' => $sessionId,
+        ], [
+            'jsonrpc' => '2.0',
+            'id' => 9,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'create_content',
+                'arguments' => [
+                    'course_id' => (int)$course->id,
+                    'title' => '限界テスト',
+                    'kind' => 'html',
+                    'body' => '<p>x</p>',
+                ],
+            ],
+        ]);
+
+        $this->assertResponseCode(429);
+        $this->assertNotEmpty($this->_response->getHeaderLine('Retry-After'));
+    }
+
+    /**
+     * 書き込み成功時は ib_logs に mcp_write が記録される
+     */
+    public function testWriteToolCallLoggedAsWriteCounter(): void
+    {
+        $admin = $this->createUser('wadmin03', 'admin');
+        $token = $this->issueToken((int)$admin->id);
+        $course = $this->createCourse();
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+        $sessionId = $this->initializeSession($token);
+
+        $this->callTool($token, $sessionId, 'create_content', [
+            'course_id' => (int)$course->id,
+            'title' => 'カウンタ確認',
+            'kind' => 'html',
+            'body' => '<p>x</p>',
+        ]);
+
+        $writeCount = $this->getTableLocator()->get('Logs')->find()->where([
+            'log_type' => 'mcp_write',
+            'log_content' => (string)$admin->id,
+        ])->count();
+        $this->assertSame(1, $writeCount);
+
+        // tools/call の読み取りカウンタには記録されない
+        // （読み取りは initialize + notifications/initialized の 2 件のみ）
+        $readCount = $this->getTableLocator()->get('Logs')->find()->where([
+            'log_type' => 'mcp_request',
+            'log_content' => (string)$admin->id,
+        ])->count();
+        $this->assertSame(2, $readCount, 'ハンドシェイク 2 件のみ（tools/call は読み取りに計上しない）');
     }
 }

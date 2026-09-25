@@ -12,7 +12,9 @@ namespace App\Mcp\Tool;
 
 use App\Service\AccessControlService;
 use App\Utility\MarkdownRenderer;
+use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
+use Exception;
 use Mcp\Server\RequestContext;
 
 /**
@@ -21,6 +23,15 @@ use Mcp\Server\RequestContext;
 class GetContentHtmlTool
 {
     use HasOAuthContextTrait;
+
+    /**
+     * html kind サニタイズ導入前のログ評価（U-5: Phase 3 でログ評価から開始）で
+     * 使用する ib_logs の log_type。
+     *
+     * HTMLPurifier 適用で内容が変化するコンテンツを 1 回だけ記録し、
+     * 影響範囲を把握してから適用フェーズに進む。
+     */
+    public const SANITIZE_EVAL_LOG_TYPE = 'html_sanitize_candidate';
 
     /**
      * @param \App\Service\AccessControlService $accessControl 権限チェックサービス
@@ -33,7 +44,8 @@ class GetContentHtmlTool
     /**
      * コンテンツをレンダリングした HTML を返す。
      * kind=markdown は Markdown→HTML 変換＋サニタイズ済み。
-     * kind=html は未サニタイズの生 HTML（G-9: Phase 3 で対応）。
+     * kind=html は未サニタイズの生 HTML のまま返すが、HTMLPurifier 適用時に
+     * 変化する場合は ib_logs に評価ログを記録する（U-5 段階導入のログ評価）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
      * @param int $contentId コンテンツID
@@ -66,7 +78,7 @@ class GetContentHtmlTool
         $body = (string)($content->body ?? '');
         $html = match ((string)$content->kind) {
             'markdown' => MarkdownRenderer::toHtml($body),
-            'html' => $body, // 未サニタイズ（G-9: Phase 3 で HTMLPurifier を適用）
+            'html' => $this->evaluateHtmlSanitization((int)$content->id, $body, $userId),
             'text' => nl2br(h($body)),
             default => h($body),
         };
@@ -80,5 +92,44 @@ class GetContentHtmlTool
                 'html' => $html,
             ],
         ];
+    }
+
+    /**
+     * kind=html のログ評価（影判定）: 応答は生 HTML のまま返し、
+     * HTMLPurifier 適用で内容が変わる場合のみ 1 回 ib_logs に記録する。
+     *
+     * @param int $contentId コンテンツID
+     * @param string $body 生 HTML
+     * @param int $userId 呼び出したユーザID
+     * @return string 生 HTML（応答値は変更しない）
+     */
+    private function evaluateHtmlSanitization(int $contentId, string $body, int $userId): string
+    {
+        try {
+            if (MarkdownRenderer::purifyHtml($body) === $body) {
+                return $body;
+            }
+
+            $logsTable = TableRegistry::getTableLocator()->get('Logs');
+            $exists = $logsTable->find()
+                ->where([
+                    'log_type' => self::SANITIZE_EVAL_LOG_TYPE,
+                    'log_content' => (string)$contentId,
+                ])
+                ->count();
+
+            if ($exists === 0) {
+                $logsTable->save($logsTable->newEntity([
+                    'log_type' => self::SANITIZE_EVAL_LOG_TYPE,
+                    'log_content' => (string)$contentId,
+                    'user_id' => $userId,
+                    'created' => new DateTime(),
+                ]));
+            }
+        } catch (Exception $e) {
+            // 評価ログの失敗は応答に影響させない
+        }
+
+        return $body;
     }
 }

@@ -66,4 +66,22 @@ class MarkdownRenderer
 
         return self::getPurifier()->purify($html);
     }
+
+    /**
+     * 生 HTML を HTMLPurifier でサニタイズする（Markdown 変換なし）
+     *
+     * kind='html' の段階的サニタイズ導入（U-5: Phase 3 でログ評価から開始）で
+     * 使う予定の関数。現時点ではログ評価（影判定）のみに使用する。
+     *
+     * @param string|null $html 生 HTML
+     * @return string サニタイズ済み HTML
+     */
+    public static function purifyHtml(?string $html): string
+    {
+        if ($html === null || $html === '') {
+            return '';
+        }
+
+        return self::getPurifier()->purify($html);
+    }
 }

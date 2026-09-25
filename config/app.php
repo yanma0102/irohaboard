@@ -120,6 +120,20 @@ return [
         ],
 
         /*
+         * Dedicated cache for API rate-limit counters.
+         * Keys are minute-scoped so they expire naturally.
+         * In production, consider using Redis or APCu for better performance.
+         */
+        'api_rate_limit' => [
+            'className' => FileEngine::class,
+            'prefix' => 'api_rl_',
+            'path' => CACHE,
+            'serialize' => false,
+            'duration' => '+2 minutes',
+            'url' => env('CACHE_RATELIMIT_URL', null),
+        ],
+
+        /*
          * Configure the cache for model and datasource caches. This cache
          * configuration is used to store schema descriptions, and table listings
          * in connections.
@@ -420,8 +434,10 @@ return [
         'defaults' => 'php',
         'cookie' => 'AppSession',
         'timeout' => 1440,
+        'secure' => filter_var(env('SESSION_SECURE', false), FILTER_VALIDATE_BOOLEAN),
         'ini' => [
             'session.cookie_path' => '/',
+            'session.cookie_samesite' => 'Lax',
         ],
     ],
 

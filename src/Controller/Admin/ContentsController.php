@@ -251,8 +251,13 @@ class ContentsController extends AppController
         $mode = '';
         $file_url = '';
 
-        $upload_extensions = (array)Configure::read('upload_' . $file_type . '_extensions');
-        $upload_maxsize = Configure::read('upload_' . $file_type . '_maxsize');
+        if ($file_type === 'file') {
+            $upload_extensions = (array)Configure::read('upload_extensions');
+            $upload_maxsize = Configure::read('upload_maxsize');
+        } else {
+            $upload_extensions = (array)Configure::read('upload_' . $file_type . '_extensions');
+            $upload_maxsize = Configure::read('upload_' . $file_type . '_maxsize');
+        }
 
         if ($this->request->is(['post', 'put'])) {
             if (Configure::read('demo_mode')) {

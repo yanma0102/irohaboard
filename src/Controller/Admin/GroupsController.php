@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
+use Cake\Core\Configure;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
 
@@ -91,6 +92,10 @@ class GroupsController extends AppController
         }
 
         if ($this->request->is(['post', 'put'])) {
+            if (Configure::read('demo_mode')) {
+                return null;
+            }
+
             $group = $group_id !== null
                 ? $groupsTable->get((int)$group_id)
                 : $groupsTable->newEmptyEntity();
@@ -121,6 +126,10 @@ class GroupsController extends AppController
      */
     public function delete($group_id = null): ?\Cake\Http\Response
     {
+        if (Configure::read('demo_mode')) {
+            return null;
+        }
+
         $groupsTable = $this->fetchTable('Groups');
 
         if (!$groupsTable->exists(['id' => $group_id])) {

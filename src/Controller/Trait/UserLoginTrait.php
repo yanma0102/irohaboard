@@ -215,7 +215,8 @@ trait UserLoginTrait
     /**
      * ログインブロック判定
      *
-     * 直近1時間以内に同一ユーザ名で10回以上ログイン失敗している場合、ブロック対象とする
+     * 直近1時間以内に同一ユーザ名＋同一IPで10回以上ログイン失敗している場合、ブロック対象とする。
+     * IPを鍵に含めることで、攻撃者が他人のユーザ名でロックアウトする DoS を防止する。
      *
      * @param string $username 試行されたユーザ名
      * @return bool true: ブロック対象, false: 通常処理続行
@@ -227,6 +228,8 @@ trait UserLoginTrait
             return false;
         }
 
+        $ip = $this->_getClientIp();
+
         $threshold_time = date('Y-m-d H:i:s', strtotime('-1 hour'));
         $max_attempts   = 10;
 
@@ -234,10 +237,29 @@ trait UserLoginTrait
             ->where([
                 'log_type'    => 'login_error',
                 'log_content' => $username,
+                'user_ip'     => $ip,
                 'created >='  => $threshold_time,
             ])
             ->count();
 
         return ($count >= $max_attempts);
+    }
+
+    /**
+     * クライアントIPアドレスを取得する
+     *
+     * X-Forwarded-For ヘッダーが存在する場合は先頭のIPを使用し、
+     * それ以外は REMOTE_ADDR を返す（AppController::writeLog と同じロジック）
+     *
+     * @return string IPアドレス文字列
+     */
+    protected function _getClientIp(): string
+    {
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return trim($ips[0]);
+        }
+
+        return $_SERVER['REMOTE_ADDR'] ?? '';
     }
 }

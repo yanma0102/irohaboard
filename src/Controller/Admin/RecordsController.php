@@ -178,6 +178,7 @@ class RecordsController extends AppController
 
         return $this->response
             ->withType('csv')
+            ->withHeader('Content-Type', 'text/csv; charset=SJIS-WIN')
             ->withHeader('Content-Disposition', 'attachment; filename="user_records.csv"')
             ->withStringBody($csvContent);
     }
@@ -284,6 +285,7 @@ class RecordsController extends AppController
 
         return $this->response
             ->withType('csv')
+            ->withHeader('Content-Type', 'text/csv; charset=SJIS-WIN')
             ->withHeader('Content-Disposition', 'attachment; filename="record_details.csv"')
             ->withStringBody($csvContent);
     }

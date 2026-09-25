@@ -18,6 +18,8 @@ namespace App;
 
 use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\ApiErrorMiddleware;
+use App\Middleware\ApiRateLimitMiddleware;
+use App\Middleware\SecurityHeadersMiddleware;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
@@ -80,6 +82,9 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // and make an error page/response
             ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
 
+            // Security headers on every response (CSP, HSTS, X-Frame-Options, etc.)
+            ->add(new SecurityHeadersMiddleware())
+
             // Validate Host header to prevent Host Header Injection attacks.
             // In production, ensures App.fullBaseUrl is configured and validates
             // the incoming Host header against it.
@@ -106,6 +111,9 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // available as array through $request->getData()
             // https://book.cakephp.org/5/en/controllers/middleware.html#body-parser-middleware
             ->add(new BodyParserMiddleware())
+
+            // API rate limiting (after body parsing, before authentication/controllers)
+            ->add(new ApiRateLimitMiddleware())
 
             // Authentication (Session ベースの Web 認証)
             ->add(new AuthenticationMiddleware($this))

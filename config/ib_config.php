@@ -201,6 +201,10 @@ $config['import_course_count'] = 20;
 $config['show_admin_link'] = false;
 $config['open_link_same_window'] = false;
 
+// API レートリミット（1分あたりの最大リクエスト数）
+// 0 で無効化。本番環境では適切な値に設定してください。
+$config['api_rate_limit_per_minute'] = 120;
+
 // インストーラー・アップデータへのアクセス拒否 (true : 拒否, false : 許可)
 $config['deny_install_update_access'] = false;
 

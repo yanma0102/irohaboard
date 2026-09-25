@@ -640,6 +640,7 @@ class UsersController extends AppController
 
         return $this->response
             ->withType('csv')
+            ->withHeader('Content-Type', 'text/csv; charset=SJIS-WIN')
             ->withHeader('Content-Disposition', 'attachment; filename="users_' . date('Ymd') . '.csv"')
             ->withStringBody($csvContent);
     }

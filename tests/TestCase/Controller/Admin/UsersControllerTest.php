@@ -519,4 +519,28 @@ class UsersControllerTest extends TestCase
         $this->assertNotEmpty($courseOption, 'コースの option が出力されていない');
         $this->assertStringContainsString('selected', $courseOption[0], '既存の受講コースが選択済みであること');
     }
+
+    // ----------------------------------------------------------------
+    // W2-F1 CSV Content-Type charset 回帰テスト
+    // ----------------------------------------------------------------
+
+    /**
+     * W2-F1: CSV エクスポートの Content-Type ヘッダが SJIS-WIN charset であること
+     *
+     * ユーザ CSV 出力は SJIS-WIN でエンコードされるため、
+     * Content-Type の charset も SJIS-WIN を宣言する必要がある。
+     */
+    public function testExportCsvContentTypeCharsetIsSjisWin(): void
+    {
+        $this->loginAsAdmin();
+        $this->createUser('csvcharsetuser');
+
+        $this->get('/admin/users?cmd=export');
+        $this->assertResponseOk();
+
+        $contentType = $this->_response->getHeaderLine('Content-Type');
+        $this->assertStringContainsString('text/csv', $contentType, 'Content-Type が text/csv であること');
+        $this->assertStringContainsString('SJIS-WIN', $contentType, 'Content-Type の charset が SJIS-WIN であること');
+        $this->assertStringNotContainsString('charset=UTF-8', $contentType, 'Content-Type の charset が UTF-8 でないこと');
+    }
 }

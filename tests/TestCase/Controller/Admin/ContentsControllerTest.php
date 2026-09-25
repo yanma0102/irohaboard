@@ -755,4 +755,26 @@ class ContentsControllerTest extends TestCase
         $this->assertSame('markdown', $copiedContent->kind);
         $this->assertSame('# コピー元本文', $copiedContent->body);
     }
+
+    /**
+     * D-02 回帰テスト: file タイプのアップロードで upload_extensions / upload_maxsize
+     * のフォールバックが正しく動作すること
+     *
+     * config には upload_file_extensions / upload_file_maxsize は存在せず、
+     * upload_extensions / upload_maxsize の汎用キーが使用されること。
+     * upload() アクションが file タイプで呼出され、upload_extensions_str と
+     * upload_maxsize が汎用キーの値でセットされることを確認する。
+     */
+    public function testUploadFileTypeUsesFallbackConfig(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->get('/admin/contents/upload/file');
+        $this->assertResponseOk();
+
+        // view 変数 upload_extensions_str に汎用 upload_extensions の拡張子が含まれること
+        $body = $this->_getBodyAsString();
+        $this->assertStringContainsString('.pdf', $body, 'file タイプで汎用 upload_extensions の .pdf が表示されること');
+        $this->assertStringContainsString('.zip', $body, 'file タイプで汎用 upload_extensions の .zip が表示されること');
+    }
 }

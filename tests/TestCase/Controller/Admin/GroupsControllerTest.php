@@ -358,4 +358,33 @@ class GroupsControllerTest extends TestCase
         $this->assertNotEmpty($matches, 'コースの option が出力されていない');
         $this->assertStringContainsString('selected', $matches[0], '既存のコース割当が選択済みであること');
     }
+
+    // ----------------------------------------------------------------
+    // D-03 demo_mode 回帰テスト
+    // ----------------------------------------------------------------
+
+    /**
+     * D-03: edit アクションに demo_mode ガードが存在すること
+     *
+     * IntegrationTestTrait 経由のリクエストでは Application::bootstrap() が
+     * Configure::load('ib_config') を呼び、demo_mode を false にリセットするため、
+     * ソースコードにガードが存在することを確認する。
+     */
+    public function testEditHasDemoModeGuard(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/Admin/GroupsController.php');
+        $this->assertStringContainsString("Configure::read('demo_mode')", $source, 'edit に demo_mode ガードが存在すること');
+    }
+
+    /**
+     * D-03: delete アクションに demo_mode ガードが存在すること
+     */
+    public function testDeleteHasDemoModeGuard(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/Admin/GroupsController.php');
+        // delete メソッド内に Configure::read('demo_mode') が含まれること
+        preg_match('/public function delete\b.*?\}/s', $source, $deleteMatch);
+        $this->assertNotEmpty($deleteMatch, 'delete メソッドが見つからない');
+        $this->assertStringContainsString("Configure::read('demo_mode')", $deleteMatch[0], 'delete に demo_mode ガードが存在すること');
+    }
 }

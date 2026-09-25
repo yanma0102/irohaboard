@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace App\Test\TestCase;
 
 use App\Application;
+use App\Middleware\ApiRateLimitMiddleware;
 use App\Middleware\HostHeaderMiddleware;
+use App\Middleware\SecurityHeadersMiddleware;
 use Cake\Core\Configure;
 use Cake\Error\Middleware\ErrorHandlerMiddleware;
 use Cake\Http\MiddlewareQueue;
@@ -66,7 +68,7 @@ class ApplicationTest extends TestCase
     }
 
     /**
-     * testMiddleware
+     * testMiddleware — verify middleware queue ordering
      *
      * @return void
      */
@@ -77,12 +79,50 @@ class ApplicationTest extends TestCase
 
         $middleware = $app->middleware($middleware);
 
+        // 0: ErrorHandlerMiddleware
         $this->assertInstanceOf(ErrorHandlerMiddleware::class, $middleware->current());
+
+        // 1: SecurityHeadersMiddleware
         $middleware->seek(1);
-        $this->assertInstanceOf(HostHeaderMiddleware::class, $middleware->current());
+        $this->assertInstanceOf(SecurityHeadersMiddleware::class, $middleware->current());
+
+        // 2: HostHeaderMiddleware
         $middleware->seek(2);
-        $this->assertInstanceOf(AssetMiddleware::class, $middleware->current());
+        $this->assertInstanceOf(HostHeaderMiddleware::class, $middleware->current());
+
+        // 3: AssetMiddleware
         $middleware->seek(3);
+        $this->assertInstanceOf(AssetMiddleware::class, $middleware->current());
+
+        // 4: RoutingMiddleware
+        $middleware->seek(4);
         $this->assertInstanceOf(RoutingMiddleware::class, $middleware->current());
+    }
+
+    /**
+     * Verify that SecurityHeadersMiddleware and ApiRateLimitMiddleware are present
+     * in the middleware queue.
+     *
+     * @return void
+     */
+    public function testSecurityAndRateLimitMiddlewareRegistered(): void
+    {
+        $app = new Application(dirname(__DIR__, 2) . '/config');
+        $middleware = new MiddlewareQueue();
+        $middleware = $app->middleware($middleware);
+
+        $foundSecurity = false;
+        $foundRateLimit = false;
+        foreach ($middleware as $mw) {
+            if ($mw instanceof SecurityHeadersMiddleware) {
+                $foundSecurity = true;
+            }
+            if ($mw instanceof ApiRateLimitMiddleware) {
+                $foundRateLimit = true;
+            }
+        }
+
+        $this->assertTrue($foundSecurity, 'SecurityHeadersMiddleware should be registered');
+        $this->assertTrue($foundRateLimit, 'ApiRateLimitMiddleware should be registered');
     }
 }

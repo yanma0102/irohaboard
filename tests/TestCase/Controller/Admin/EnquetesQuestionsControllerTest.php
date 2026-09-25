@@ -487,4 +487,41 @@ class EnquetesQuestionsControllerTest extends TestCase
         $this->get("/admin/enquetes-questions/record/99999/{$savedRecord->id}");
         $this->assertResponseCode(404);
     }
+
+    // ----------------------------------------------------------------
+    // D-03 demo_mode 回帰テスト
+    // ----------------------------------------------------------------
+
+    /**
+     * D-03: edit アクションに demo_mode ガードが存在すること
+     */
+    public function testEditHasDemoModeGuard(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/Admin/EnquetesQuestionsController.php');
+        preg_match('/public function edit\b.*?^    \}/ms', $source, $editMatch);
+        $this->assertNotEmpty($editMatch, 'edit メソッドが見つからない');
+        $this->assertStringContainsString("Configure::read('demo_mode')", $editMatch[0], 'edit に demo_mode ガードが存在すること');
+    }
+
+    /**
+     * D-03: delete アクションに demo_mode ガードが存在すること
+     */
+    public function testDeleteHasDemoModeGuard(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/Admin/EnquetesQuestionsController.php');
+        preg_match('/public function delete\b.*?^    \}/ms', $source, $deleteMatch);
+        $this->assertNotEmpty($deleteMatch, 'delete メソッドが見つからない');
+        $this->assertStringContainsString("Configure::read('demo_mode')", $deleteMatch[0], 'delete に demo_mode ガードが存在すること');
+    }
+
+    /**
+     * D-03: order アクションに demo_mode ガードが存在すること
+     */
+    public function testOrderHasDemoModeGuard(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/Admin/EnquetesQuestionsController.php');
+        preg_match('/public function order\b.*?^    \}/ms', $source, $orderMatch);
+        $this->assertNotEmpty($orderMatch, 'order メソッドが見つからない');
+        $this->assertStringContainsString("Configure::read('demo_mode')", $orderMatch[0], 'order に demo_mode ガードが存在すること');
+    }
 }

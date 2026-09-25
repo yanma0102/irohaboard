@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
+use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 
 /**
@@ -136,6 +137,10 @@ class EnquetesQuestionsController extends AppController
         $content = $this->fetchTable('Contents')->get($content_id, contain: ['Courses']);
 
         if ($this->request->is(['post', 'put'])) {
+            if (Configure::read('demo_mode')) {
+                return null;
+            }
+
             if ($question_id === null) {
                 $data = $this->request->getData();
                 $data['user_id'] = $this->readAuthUser('id');
@@ -180,6 +185,10 @@ class EnquetesQuestionsController extends AppController
      */
     public function delete($question_id = null): ?\Cake\Http\Response
     {
+        if (Configure::read('demo_mode')) {
+            return null;
+        }
+
         $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
 
         if (!$contentsQuestionsTable->exists(['id' => $question_id])) {
@@ -212,6 +221,10 @@ class EnquetesQuestionsController extends AppController
      */
     public function order(): \Cake\Http\Response
     {
+        if (Configure::read('demo_mode')) {
+            return $this->response->withStringBody('');
+        }
+
         if ($this->request->is('ajax')) {
             $this->fetchTable('ContentsQuestions')->setOrder($this->request->getData('id_list'));
 

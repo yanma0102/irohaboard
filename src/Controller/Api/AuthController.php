@@ -162,6 +162,9 @@ class AuthController extends BaseController
     /**
      * ログイン試行がブロック対象か判定する
      *
+     * 直近1時間以内に同一ユーザ名＋同一IPで規定回数以上失敗していたらブロックする。
+     * IPを鍵に含めることで、攻撃者が他人のユーザ名でロックアウトする DoS を防止する。
+     *
      * @param string $username ログインID
      * @return bool
      */
@@ -171,6 +174,8 @@ class AuthController extends BaseController
             return false;
         }
 
+        $ip = $this->_getApiClientIp();
+
         $threshold = date('Y-m-d H:i:s', strtotime('-1 hour'));
 
         $logsTable = $this->fetchTable('Logs');
@@ -178,6 +183,7 @@ class AuthController extends BaseController
             ->where([
                 'log_type' => 'api_login_error',
                 'log_content' => $username,
+                'user_ip' => $ip,
                 'created >=' => $threshold,
             ])
             ->count();
@@ -193,12 +199,7 @@ class AuthController extends BaseController
      */
     private function logFailedAttempt(string $username): void
     {
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            $ip = trim($ips[0]);
-        } else {
-            $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
-        }
+        $ip = $this->_getApiClientIp();
 
         $logsTable = $this->fetchTable('Logs');
         $log = $logsTable->newEntity([
@@ -209,5 +210,23 @@ class AuthController extends BaseController
             'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
         ]);
         $logsTable->save($log);
+    }
+
+    /**
+     * APIクライアントIPアドレスを取得する
+     *
+     * X-Forwarded-For ヘッダーが存在する場合は先頭のIPを使用し、
+     * それ以外は REMOTE_ADDR を返す
+     *
+     * @return string IPアドレス文字列
+     */
+    private function _getApiClientIp(): string
+    {
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return trim($ips[0]);
+        }
+
+        return $_SERVER['REMOTE_ADDR'] ?? '';
     }
 }

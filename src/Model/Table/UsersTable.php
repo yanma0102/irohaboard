@@ -99,29 +99,32 @@ class UsersTable extends AppTable
             ->requirePresence('role', 'create')
             ->notEmptyString('role', '権限が指定されていません');
 
+        // パスワードは編集時に未入力（変更なし）を許可する。
+        // 注意: CakePHP 5 では add() の 'allowEmpty' オプションは
+        // フィールドレベルの空許可（isEmptyAllowed）には反映されないため、
+        // 明示的に allowEmptyString() を呼ぶ必要がある。
+        // これを呼ばないと FormHelper が required 属性/必須ラベルを付与してしまう。
         $validator
             ->add('password', 'alphanumeric', [
                 'rule' => ['custom', '/^[a-zA-Z0-9]+$/'],
                 'message' => 'パスワードは英数字で入力して下さい',
-                'allowEmpty' => true,
             ])
             ->add('password', 'lengthBetween', [
                 'rule' => ['lengthBetween', 4, 32],
                 'message' => 'パスワードは4文字以上32文字以内で入力して下さい',
-                'allowEmpty' => true,
-            ]);
+            ])
+            ->allowEmptyString('password');
 
         $validator
             ->add('new_password', 'alphanumeric', [
                 'rule' => ['custom', '/^[a-zA-Z0-9]+$/'],
                 'message' => 'パスワードは英数字で入力して下さい',
-                'allowEmpty' => true,
             ])
             ->add('new_password', 'lengthBetween', [
                 'rule' => ['lengthBetween', 4, 32],
                 'message' => 'パスワードは4文字以上32文字以内で入力して下さい',
-                'allowEmpty' => true,
-            ]);
+            ])
+            ->allowEmptyString('new_password');
 
         return $validator;
     }

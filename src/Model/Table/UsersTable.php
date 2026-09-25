@@ -103,10 +103,12 @@ class UsersTable extends AppTable
             ->add('password', 'alphanumeric', [
                 'rule' => ['custom', '/^[a-zA-Z0-9]+$/'],
                 'message' => 'パスワードは英数字で入力して下さい',
+                'allowEmpty' => true,
             ])
             ->add('password', 'lengthBetween', [
                 'rule' => ['lengthBetween', 4, 32],
                 'message' => 'パスワードは4文字以上32文字以内で入力して下さい',
+                'allowEmpty' => true,
             ]);
 
         $validator

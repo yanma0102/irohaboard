@@ -91,10 +91,17 @@ class GroupsController extends AppController
         }
 
         if ($this->request->is(['post', 'put'])) {
+            $groupData = $this->request->getData();
+
+            // フォームの「Course」フィールドをORMの courses._ids 形式に変換
+            $courseIds = (array)($groupData['Course'] ?? []);
+            unset($groupData['Course']);
+            $groupData['courses'] = ['_ids' => $courseIds];
+
             $group = $group_id !== null
                 ? $groupsTable->get((int)$group_id)
                 : $groupsTable->newEmptyEntity();
-            $group = $groupsTable->patchEntity($group, $this->request->getData());
+            $group = $groupsTable->patchEntity($group, $groupData);
 
             if ($groupsTable->save($group)) {
                 $this->Flash->success(__('グループ情報を保存しました'));

@@ -741,7 +741,7 @@ Bearer トークン検証 → user_id / role 取得
 | U-2 | Markdown の画像の扱い | **初期は外部 URL のみ**（`![alt](url)`）。アップロードは Phase 3 | **確定** |
 | U-3 | MCP 認証済みプリンシパルのツールへの伝播方式 | **解決済み**: `OAuthRequestMetaMiddleware` + `oauth.*` 属性 + `RequestContext::getRequest()->getMeta()['oauth']`（§5.3） | **解決済み** |
 | U-4 | API Write のレスポンス（DELETE の 204 か 200 か、論理/物理削除） | **Web 側の既存挙動に合わせる**（`Admin/ContentsController::delete()` と同一の削除方式・ステータス。実装時に確定） | **確定** |
-| U-5 | `html` kind のサニタイズ導入時期 | **Phase 3 でログ評価から開始 → 適用済み**。log 評価完了（prod DB 25 件中 1 件 style 属性除去のみ、構造的損失なし）。Web（`templates/Contents/view.php`）・MCP（`get_content_html`）の双方で `MarkdownRenderer::purifyHtml()` を適用 | **適用済み** |
+| U-5 | `html` kind のサニタイズ導入時期 | **Phase 3 でログ評価から開始 → 適用済み**。log 評価完了（2026-09-25、再シード前のデモデータ 25 件中 1 件 style 属性除去のみ、構造的損失なし）。Web（`templates/Contents/view.php`）・MCP（`get_content_html`）の双方で `MarkdownRenderer::purifyHtml()` を適用 | **適用済み** |
 | U-6 | Markdown 許可タグの最終リスト | **本ドキュメント §3.3.3 の推奨リストで開始**し、運用で調整 | **確定** |
 
 > **補足（U-4）**: 具体的な削除方式（論理削除 / 物理削除）と HTTP ステータスは、実装時に `Admin/ContentsController::delete()` の現行実装を正として API 側を一致させる。`ContentsQuestions` のカスケード削除も同様に踏襲する。
@@ -3884,6 +3884,6 @@ composer require mcp/sdk
 | G-6 | `kind` の `text` | `content_kind` に `text` は存在しない（`templates/Contents/view.php` に `case 'text'` が残るのみ）。C-4 の body 必須判定に `text` を含めているが、新規作成では `markdown`/`html` のみ該当する |
 | G-7 | `kind` inList | C-4 のとおり `allowEmpty: true` を付与し、既存 `kind=''` レコードの更新を壊さないこと |
 | G-8 | DELETE 応答 | U-4 のとおり Web 側 `Admin/ContentsController::delete()` の既存挙動（方式・ステータス）に一致させる |
-| G-9 | `html` kind のサニタイズ | **適用済み**。ログ評価完了（25 件中 1 件 style 属性除去のみ、構造的損失なし）。Web（`templates/Contents/view.php`）、MCP（`get_content_html`）、MCP（`get_content` kind='html'）の三方で `MarkdownRenderer::purifyHtml()` を適用 |
+| G-9 | `html` kind のサニタイズ | **適用済み**。ログ評価完了（2026-09-25、再シード前のデモデータ 25 件中 1 件 style 属性除去のみ、構造的損失なし）。Web（`templates/Contents/view.php`）、MCP（`get_content_html`）、MCP（`get_content` kind='html'）の三方で `MarkdownRenderer::purifyHtml()` を適用 |
 | G-10 | mcp/sdk 残確認 | **解決済み（v0.8.1 ソース検証）** ① allow(array $attributes = []) / unauthorized(?string $error, ?string $errorDescription, ?array $scopes) ② AuthorizationMiddleware 不使用と決定（AS 無し）。ProtectedResourceMetadata は authorizationServers 非空必須のため、自作 IrohaAuthMiddleware が oauth.* request attributes を設定し OAuthRequestMetaMiddleware が転記（E-3/E-5 に反映） ③ RequestContext = Mcp\Server\RequestContext、getMeta()['oauth']（内部キーも oauth. 付き） ④ StreamableHttpTransport ctor（request, responseFactory, streamFactory, logger, middleware, maxBodyBytes）named arg 安全、defaultMiddleware()=Cors+DnsRebinding ⑤ addTool 省略時は #[McpTool] 属性、明示が優先。enum/description は #[Schema] 属性または addTool inputSchema ⑥ setDiscovery と addTool は併用可・手動優先 |
 

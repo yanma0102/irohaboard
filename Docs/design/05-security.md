@@ -401,7 +401,9 @@ Web 表示は `MarkdownHelper`、MCP の `get_content_html` ツールは同一�
 - **MCP (`get_content_html`)**: `src/Mcp/Tool/GetContentHtmlTool.php` の `kind='html'` マッチ Arms で `MarkdownRenderer::purifyHtml()` を直接呼ぶ
 - **MCP (`get_content`)**: `src/Mcp/Tool/GetContentTool.php` が `kind='html'` の場合 `MarkdownRenderer::purifyHtml()` を適用し、`sanitized: true` を付与して返す。`kind='markdown'` の場合は Markdown 原文のまま返す（サニタイズなし、`sanitized: false`）
 
-評価結果（prod DB 25 件中）: 24/25 件は変化なし、1 件（id=2「初めに」）のみ `<span style="background-color: rgb(255,255,0)">` の `style` 属性が除去された（76→19 バイト）。構造的・コンテンツ的損失なし。
+評価結果（2026-09-25 実施。検証用デモデータセット `kind='html'` 25 件が対象）: 24/25 件は変化なし、1 件（id=2「初めに」）のみ `<span style="background-color: rgb(255,255,0)">` の `style` 属性が除去された（76→19 バイト）。構造的・コンテンツ的損失なし。
+
+> なお同デモデータは後から再シードされ、現在は `kind='html'` 2 件（id=2 / id=10、いずれも無変化）のみ存在するため、上記 25 件の測定値は**再シード前のデータセット**に対する記録である。実運用データの投入時に再度評価すること。
 
 許可リストは design 13 §3.3（`HTML.Allowed`）に基づき、`class` / `style` 属性は許可しない（設計決定）。
 

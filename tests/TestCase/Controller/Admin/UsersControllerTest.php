@@ -244,6 +244,48 @@ class UsersControllerTest extends TestCase
     }
 
     /**
+     * 編集(edit) GET テスト — パスワード欄が「必須」にならないこと
+     *
+     * CakePHP 5 の Validator::add() に渡す 'allowEmpty' 配列オプションは
+     * フィールドレベルの空許可（isEmptyAllowed）に反映されない。
+     * allowEmptyString() を明示しないと FormHelper が required 属性と
+     * required クラス（CSS で「必須」ラベル）を付与し、ユーザ編集時に
+     * パスワード入力が必須となってしまう。
+     */
+    public function testEditFormPasswordNotRequired(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('formuser');
+
+        $this->get("/admin/users/edit/{$user->id}");
+        $this->assertResponseOk();
+
+        $html = $this->_getBodyAsString();
+
+        $pos = strpos($html, 'name="new_password"');
+        $this->assertNotFalse($pos, 'new_password フィールドがフォームに存在しない');
+
+        // 対象 input タグを抽出し、required 属性が無いことを確認
+        $inputStart = strrpos(substr($html, 0, $pos), '<input');
+        $inputEnd = strpos($html, '>', $pos);
+        $inputTag = substr($html, $inputStart, $inputEnd - $inputStart + 1);
+        $this->assertStringNotContainsString(
+            'required',
+            $inputTag,
+            'new_password に required 属性が付与されている（編集時にパスワードが必須になっている）'
+        );
+
+        // 対象 form-group を抽出し、required クラスが無いことを確認（CSS で必須ラベルが出る）
+        $divPos = strrpos(substr($html, 0, $pos), '<div class="form-group');
+        $divTag = substr($html, $divPos, strpos($html, '>', $divPos) - $divPos + 1);
+        $this->assertStringNotContainsString(
+            'required',
+            $divTag,
+            'new_password の form-group に required クラスが付与されている（必須ラベルが表示される）'
+        );
+    }
+
+    /**
      * 削除(delete) POST テスト
      */
     public function testDeletePost(): void

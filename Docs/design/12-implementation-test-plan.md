@@ -475,3 +475,20 @@ CakePHP 2.10 → 5.x 移行のフェーズ別実装計画、テスト設計、�
 | 8 | utf8mb4 変換が完了 | `SHOW CREATE TABLE` で確認 | □ |
 | 9 | Docker 環境が正常に構築される | `docker compose up` | □ |
 | 10 | 本番環境で全機能動作 | 本番デプロイ後の確認 | □ |
+
+---
+
+## 8. 機能拡張: Markdown / Contents API Write / MCP（design 13, Phase 1–3）
+
+§2 の移行フェーズとは別軸で、`Docs/design/13-markdown-mcp.md` に基づく機能拡張を実装した。実装記録・確定事項は design 13（§6 実装計画、§9 確定事項、§10 ドキュメント更新）を正とする。
+
+| Phase | 内容 | 主な成果物 | テスト | ステータス |
+|---|---|---|---|---|
+| Phase 1 | Markdown 対応 + Contents API Write | `kind='markdown'`、`MarkdownRenderer`（GFM + HTMLPurifier）、`POST/PUT/PATCH/DELETE /api/v1/contents`、付録D-1/D-2 テスト | PHPUnit（MarkdownRendererTest、ContentsControllerWriteTest） | ✅ 完了（commit 2f23f54） |
+| Phase 2 | MCP Read-Only | `POST /mcp`（Streamable HTTP）、Bearer 認証（IrohaAuthMiddleware）、レート制限、読み取り 7 ツール | McpControllerTest + 03-api.md §11 MCP-001〜013 | ✅ 完了（commit 6c5c705） |
+| Phase 3 | MCP Write + GUI Markdown エディタ | `create_content` / `update_content`（write 20/min 分離）、EasyMDE エディタ + 画像アップロード、kind='html' 影サニタイズログ | MCP-014/015、ブラウザ E2E 16/16、phpunit ベースライン一致（541 tests / 2495 assertions / Err36 / Fail16 / Dep3） | ✅ 完了（commit 3d7db5d） |
+
+- 既存の失敗（Err36 / Fail16、例: UsersCoursesControllerTest:117）は移行前のベースラインであり、本拡張の範囲外
+- ベースライン値は §2 Phase 0–6 の回帰確認と併用する（機能追加後も 541/2495/36/16/3 が維持されること）
+- ブラウザ E2E 証跡: `Docs/test/03-api.md` §11 第2ブロック（MCP-014/015 計測、不具合 ③〜⑤ の修正記録）
+- ドキュメント追記状況は design 13 §10 の更新表を参照（05-security §6・§7、08-rest-api §7.7、API.md v1.3、traceability §1.10・§3.4・§3.8、本ファイル §8）

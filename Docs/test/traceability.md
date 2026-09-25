@@ -139,6 +139,19 @@
 
 ---
 
+### 1.10 Markdown / Contents API Write / MCP（design 13, Phase 1–3）
+
+| 設計ID | 設計内容 | 試験項目ID | 試験ファイル |
+|--------|----------|-----------|-------------|
+| 13-§3 | Markdown レンダリング & サニタイズ（kind='markdown'、XSS 除去） | MCP-001〜003 | 03-api.md §11 |
+| 13-§4 | Contents API Write（POST / PUT / PATCH / DELETE /api/v1/contents） | 13 付録D-2（ContentsControllerWriteTest） | 03-api.md §5 |
+| 13-§5.3 | MCP 認証（Bearer、401、ミドルウェア） | MCP-004〜006 | 03-api.md §11 |
+| 13-§5.7 | MCP 権限モデル（コース所属 / staff 書き込み） | MCP-007〜012 | 03-api.md §11 |
+| 13-§5.8 | MCP レート制限（read 60/min、write 20/min 分離） | MCP-014〜015 | 03-api.md §11 |
+| 13-§6 Phase 3 | EasyMDE エディタ + 画像アップロード + 保存 E2E | 03-api §11 E2E（16 項目） | 03-api.md §11（第2ブロック） |
+
+---
+
 ## 2. ルーティング設計 → 試験項目 対応表
 
 > 参照: `Docs/design/06-routing.md`, `config/routes.php`
@@ -238,7 +251,7 @@
 
 ## 3. APIエンドポイント → 試験項目 対応表
 
-> 参照: `Docs/API.md`（全24エンドポイント）、`Docs/design/08-rest-api.md`
+> 参照: `Docs/API.md`（全28エンドポイント + MCP `/mcp`）、`Docs/design/08-rest-api.md`
 
 ### 3.1 認証
 
@@ -278,6 +291,9 @@
 |-----------------|-----------|-----------|------|
 | `GET /api/v1/contents` | API.md §4 | API-018 | staff |
 | `GET /api/v1/contents/{id}` | API.md §4 | API-019 | staff |
+| `POST /api/v1/contents` | API.md §7.3 | 13 付録D-2 | staff |
+| `PUT / PATCH /api/v1/contents/{id}` | API.md §7.4 | 13 付録D-2 | staff + コース権限 |
+| `DELETE /api/v1/contents/{id}` | API.md §7.5 | 13 付録D-2 | staff + コース権限 |
 
 ### 3.5 記録
 
@@ -306,6 +322,17 @@
 
 ---
 
+
+---
+
+### 3.8 MCP
+
+| APIエンドポイント | API.md参照 | 試験項目ID | 権限 |
+|-----------------|-----------|-----------|------|
+| `POST /mcp`（tools/list・tools/call 読み取り 7 種） | API.md §12 | MCP-001〜013 | Bearer + コース所属 |
+| `POST /mcp`（create_content / update_content） | API.md §12 | MCP-014 | Bearer + staff |
+| `POST /mcp`（レート制限 read 60/min・write 20/min） | API.md §12 | MCP-015 | Bearer |
+| `GET /mcp` → 405 | API.md §12 | MCP-005 | Bearer |
 
 ---
 
@@ -386,6 +413,9 @@
 | `05-validation.md` (VAL-) | 12-implementation-test-plan.md V1-V5 |
 | `06-database.md` (DB-) | 12-implementation-test-plan.md Q1-Q2 |
 | `07-nonfunctional-regression.md` (NON-) | 12-implementation-test-plan.md R1-R10 |
+| `03-api.md` §11 (MCP-) | 13-markdown-mcp.md §5・付録F, 05-security.md §7 |
+| `03-api.md` §5（Contents Write） | 13-markdown-mcp.md §4・付録D, 08-rest-api.md §7.7 |
+| `03-api.md` §11（E2E ブロック） | 13-markdown-mcp.md §6 Phase 3 |
 
 ---
 

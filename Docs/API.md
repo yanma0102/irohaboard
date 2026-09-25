@@ -24,6 +24,7 @@ iroha Board のデータを外部システムから参照・一部操作する�
 - ユーザのパスワード変更: `PUT /api/v1/users/{id}/password`
 - ユーザのコース割当 / 解除: `POST /api/v1/users/{id}/courses` / `DELETE /api/v1/users/{id}/courses/{course_id}`
 - グループのユーザ割当 / 解除: `POST /api/v1/groups/{id}/users` / `DELETE /api/v1/groups/{id}/users/{user_id}`
+- MCP エンドポイント（エージェント連携）: `POST /mcp`（§12）
 
 ---
 
@@ -874,10 +875,47 @@ curl -s -X DELETE "$BASE/auth/token" -H "Authorization: Bearer $TOKEN"
 
 ---
 
-## 12. 変更履歴
+## 12. MCP エンドポイント（`/mcp`）
+
+design 13（Markdown / MCP）により、エージェント連携用の MCP（Model Context Protocol）エンドポイントを追加しました。これは従来の REST API とは別プロトコル（JSON-RPC 2.0 over Streamable HTTP）ですが、同一サーバ・同一トークンで利用できます。
+
+- **パス**: `POST /mcp`
+- **認証**: `Authorization: Bearer <APIトークン>`（`/api/v1` と同じトークンを流用）
+- **トランスポート**: MCP Streamable HTTP（JSON-RPC 2.0 メッセージを `POST` で送信）。`GET /mcp` は `405`（`Allow: POST, DELETE, OPTIONS`）
+- **セッション**: サーバ側で MCP セッションを管理（`tmp/mcp-sessions`、TTL 3600 秒）
+- **CSRF**: `/mcp` はフォームの CSRF トークン検証対象外（Bearer 認証のため）
+
+### 12.1 ツール一覧（9 種）
+
+| ツール名 | 種別 | 概要 | 認可 |
+|---|---|---|---|
+| `list_courses` | 読み取り | コース一覧 | 所属（直接 / グループ） |
+| `get_course` | 読み取り | コース詳細 | 所属 |
+| `list_contents` | 読み取り | コンテンツ一覧 | 所属 |
+| `get_content` | 読み取り | コンテンツ取得（Markdown は生のまま） | 所属 |
+| `get_content_html` | 読み取り | コンテンツ取得（HTML 出力、サニタイズ済み） | 所属 |
+| `list_records` | 読み取り | 学習履歴一覧 | 所属 |
+| `get_user_profile` | 読み取り | 自ユーザプロフィール | 認証済 |
+| `create_content` | 書き込み | コンテンツ追加 | staff: admin / manager / editor / teacher |
+| `update_content` | 書き込み | コンテンツ更新 | staff + コース権限 |
+
+### 12.2 レート制限
+
+| 区分 | 制限 | `ib_logs` の log_type |
+|---|---|---|
+| 読み取り | 60 リクエスト / 分 / ユーザ | `mcp_request` |
+| 書き込み | 20 リクエスト / 分 / ユーザ | `mcp_write` |
+
+- 読み取りと書き込みは別カウンター。超過時は `429` + `Retry-After: 60`
+- 詳細は `Docs/design/05-security.md` §7、試験項目は `Docs/test/03-api.md` §11（MCP-001〜015）
+
+---
+
+## 13. 変更履歴
 
 | バージョン | 日付 | 内容 |
 |---|---|---|
 | v1 | 2026-09-16 | 初版（auth / users / courses / contents / records / groups の参照・一部追加削除） |
 | v1.1 | 2026-09-16 | ユーザ更新、パスワード変更、コース割当/解除、グループのユーザ割当/解除、完全一致検索（`exact=1`）、永続トークン、ログイン試行制限、ID の数値統一、未定義パスの JSON 404 |
 | v1.2 | 2026-09-24 | コンテンツの追加・更新・削除（POST / PUT / PATCH / DELETE）、staff 権限でのみ操作可能 |
+| v1.3 | 2026-09-25 | MCP エンドポイント追加（POST /mcp、MCP Streamable HTTP、ツール 9 種、レート制限 read 60/min・write 20/min） |

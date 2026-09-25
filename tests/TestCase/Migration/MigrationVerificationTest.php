@@ -46,13 +46,24 @@ class MigrationVerificationTest extends TestCase
             'ib_users_groups',
         ];
 
-        $result = ConnectionManager::get('test')->execute(
-            "SHOW TABLES LIKE 'ib_%'"
-        )->fetchAll('assoc');
+        $db = ConnectionManager::get('test');
+        $driver = $db->getDriver();
+        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
 
-        $actualTables = array_column($result, 'Tables_in_' . $this->getTestDbName() . ' (ib_%)');
-        if (empty($actualTables)) {
-            $actualTables = array_values($result[0] ?? []);
+        if ($isMysql) {
+            $dbName = $db->config()['database'];
+            $result = $db->execute(
+                "SHOW TABLES LIKE 'ib_%'"
+            )->fetchAll('assoc');
+            $actualTables = array_column($result, 'Tables_in_' . $dbName . ' (ib_%)');
+            if (empty($actualTables)) {
+                $actualTables = array_values($result[0] ?? []);
+            }
+        } else {
+            $result = $db->execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'ib_%'"
+            )->fetchAll('assoc');
+            $actualTables = array_column($result, 'name');
         }
 
         sort($expectedTables);
@@ -246,10 +257,8 @@ class MigrationVerificationTest extends TestCase
         $settingsTable = $this->getTableLocator()->get('Settings');
 
         $expectedKeys = ['title', 'copyright', 'color', 'information'];
-        $actualKeys = $settingsTable->find('list', [
-            'keyField' => 'setting_key',
-            'valueField' => 'setting_key',
-        ])->toArray();
+        $actualKeys = $settingsTable->find('list', keyField: 'setting_key', valueField: 'setting_key')
+            ->toArray();
 
         sort($expectedKeys);
         sort($actualKeys);
@@ -289,26 +298,48 @@ class MigrationVerificationTest extends TestCase
      */
     public function testIndexesExist(): void
     {
-        $db = $this->getTestDbName();
-        $result = ConnectionManager::get('test')->execute(
-            "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME "
-            . "FROM INFORMATION_SCHEMA.STATISTICS "
-            . "WHERE TABLE_SCHEMA = '{$db}' AND TABLE_NAME LIKE 'ib_%' "
-            . "AND INDEX_NAME != 'PRIMARY' "
-            . "ORDER BY TABLE_NAME, INDEX_NAME"
-        )->fetchAll('assoc');
+        $db = ConnectionManager::get('test');
+        $driver = $db->getDriver();
+        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
 
-        $this->assertNotEmpty($result, 'インデックスが1つも存在しません');
+        if ($isMysql) {
+            $dbName = $db->config()['database'];
+            $result = $db->execute(
+                "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME "
+                . "FROM INFORMATION_SCHEMA.STATISTICS "
+                . "WHERE TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME LIKE 'ib_%' "
+                . "AND INDEX_NAME != 'PRIMARY' "
+                . "ORDER BY TABLE_NAME, INDEX_NAME"
+            )->fetchAll('assoc');
 
-        $indexMap = [];
-        foreach ($result as $row) {
-            $key = $row['TABLE_NAME'] . '.' . $row['INDEX_NAME'];
-            $indexMap[$key][] = $row['COLUMN_NAME'];
+            $this->assertNotEmpty($result, 'インデックスが1つも存在しません');
+
+            $indexMap = [];
+            foreach ($result as $row) {
+                $key = $row['TABLE_NAME'] . '.' . $row['INDEX_NAME'];
+                $indexMap[$key][] = $row['COLUMN_NAME'];
+            }
+
+            $this->assertArrayHasKey('ib_users.login_id', $indexMap, 'ib_users の unique インデックス login_id がない');
+            $this->assertArrayHasKey('ib_records.idx_course_user_content_id', $indexMap, 'ib_records の複合インデックスがない');
+            $this->assertArrayHasKey('ib_user_tokens.uk_token_selector', $indexMap, 'ib_user_tokens の unique インデックスがない');
+        } else {
+            $tables = ['ib_users', 'ib_records', 'ib_user_tokens'];
+            $expectedIndexes = [
+                'ib_users' => 'login_id',
+                'ib_records' => 'idx_course_user_content_id',
+                'ib_user_tokens' => 'uk_token_selector',
+            ];
+            foreach ($tables as $table) {
+                $result = $db->execute("PRAGMA index_list('{$table}')")->fetchAll('assoc');
+                $indexNames = array_column($result, 'name');
+                $this->assertContains(
+                    $expectedIndexes[$table],
+                    $indexNames,
+                    "{$table} のインデックス {$expectedIndexes[$table]} が存在しません"
+                );
+            }
         }
-
-        $this->assertArrayHasKey('ib_users.login_id', $indexMap, 'ib_users の unique インデックス login_id がない');
-        $this->assertArrayHasKey('ib_records.idx_course_user_content_id', $indexMap, 'ib_records の複合インデックスがない');
-        $this->assertArrayHasKey('ib_user_tokens.uk_token_selector', $indexMap, 'ib_user_tokens の unique インデックスがない');
     }
 
     /**
@@ -316,11 +347,19 @@ class MigrationVerificationTest extends TestCase
      */
     public function testTableCharsetUtf8mb4(): void
     {
-        $db = $this->getTestDbName();
-        $result = ConnectionManager::get('test')->execute(
+        $db = ConnectionManager::get('test');
+        $driver = $db->getDriver();
+        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
+
+        if (!$isMysql) {
+            $this->markTestSkipped('SQLite では文字コード指定は不要です');
+        }
+
+        $dbName = $db->config()['database'];
+        $result = $db->execute(
             "SELECT TABLE_NAME, TABLE_COLLATION "
             . "FROM INFORMATION_SCHEMA.TABLES "
-            . "WHERE TABLE_SCHEMA = '{$db}' AND TABLE_NAME LIKE 'ib_%'"
+            . "WHERE TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME LIKE 'ib_%'"
         )->fetchAll('assoc');
 
         $this->assertNotEmpty($result);
@@ -339,11 +378,18 @@ class MigrationVerificationTest extends TestCase
      */
     private function assertTableHasColumns(string $table, array $expectedColumns): void
     {
-        $result = ConnectionManager::get('test')->execute(
-            "SHOW COLUMNS FROM `{$table}`"
-        )->fetchAll('assoc');
+        $db = ConnectionManager::get('test');
+        $driver = $db->getDriver();
+        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
 
-        $actualColumns = array_column($result, 'Field');
+        if ($isMysql) {
+            $result = $db->execute("SHOW COLUMNS FROM `{$table}`")->fetchAll('assoc');
+            $actualColumns = array_column($result, 'Field');
+        } else {
+            $result = $db->execute("PRAGMA table_info('{$table}')")->fetchAll('assoc');
+            $actualColumns = array_column($result, 'name');
+        }
+
         sort($expectedColumns);
         sort($actualColumns);
 

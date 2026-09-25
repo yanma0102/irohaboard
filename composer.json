@@ -12,6 +12,7 @@
         "cakephp/plugin-installer": "^2.0",
         "ezyang/htmlpurifier": "^4.19",
         "league/commonmark": "^2.10",
+        "mcp/sdk": "^0.8.1",
         "mobiledetect/mobiledetectlib": "^4.8.03"
     },
     "require-dev": {

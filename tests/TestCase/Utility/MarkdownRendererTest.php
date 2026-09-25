@@ -134,4 +134,41 @@ class MarkdownRendererTest extends TestCase
         $result = MarkdownRenderer::toHtml('![x](data:text/html,<script>alert(1)</script>)');
         $this->assertStringNotContainsString('data:', $result);
     }
+
+    /**
+     * HTMLPurifier が非対応の mark/details/summary を Allowed に含めていないこと。
+     * 含めると定義ビルド時に E_USER_WARNING が発火し、DEBUG=true の HTTP 応答を
+     * 破壊する（案A: 誤設定の修正の回帰テスト）。
+     */
+    public function testUnsupportedElementsEmitNoPurifierWarnings(): void
+    {
+        $property = new \ReflectionProperty(MarkdownRenderer::class, 'purifier');
+        $property->setValue(null, null);
+
+        $warnings = [];
+        set_error_handler(function (int $code, string $message) use (&$warnings): bool {
+            if ($code === E_USER_WARNING) {
+                $warnings[] = $message;
+
+                return true;
+            }
+
+            return false;
+        });
+
+        try {
+            $result = MarkdownRenderer::toHtml(
+                '<p><mark>ハイ</mark></p><details><summary>見出し</summary>中身</details>',
+            );
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $warnings, 'HTMLPurifier の Element not supported 警告が発火しない');
+        $this->assertStringNotContainsString('<mark', $result);
+        $this->assertStringNotContainsString('<details', $result);
+        $this->assertStringNotContainsString('<summary', $result);
+        $this->assertStringContainsString('ハイ', $result);
+        $this->assertStringContainsString('中身', $result);
+    }
 }

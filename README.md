@@ -22,6 +22,8 @@ composer install
 Config 目配下の `app_local.php` を作成し、DB接続情報を設定してください。
 初期セットアップは `/install` にアクセスして実行します。
 
+> **注**: `/mcp`（MCP サーバ）は `mcp/sdk` を使用します。既存環境を更新する際は `git pull` 後に必ず `composer install` を実行してください。
+
 ## テスト
 
 ```bash

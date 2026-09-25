@@ -147,6 +147,63 @@
 | API-093 | 整合性 | Content-Type レスポンスヘッダ | DS-1 + admin トークン | 1. GET /users のレスポンスヘッダ確認 | `Content-Type: application/json; charset=UTF-8` | 08-rest-api.md | 可 | P1 | □ | |
 | API-094 | 整合性 | JSON / form 両ボディ受付 | DS-1 + admin トークン | 1. `Content-Type: application/json` で POST<br>2. `Content-Type: application/x-www-form-urlencoded` で POST | 両方で正常処理 | — | 可 | P2 | □ | |
 
+## 11. MCP（POST /mcp — Streamable HTTP）
+
+前提: API トークンを `POST /api/v1/auth/token` で取得済み（`<TOKEN>`）。Claude Desktop 等の MCP クライアントは Streamable HTTP で `/mcp` に接続する。
+
+> E2E 実施記録（2026-09-25）: MCP-001〜011, 013 は公式 MCP Inspector CLI（@modelcontextprotocol/inspector 2.8.0）+ curl で実測し ✓。E2E 中に検出・修正した不具合: ① GET /mcp がルート未定義 404 だった（→ 405 + Allow を追加、MCP-013）、② ib_logs に Timestamp 行為が無く `created` が NULL のままレート制限カウントに一致せず 429 が発火しなかった（→ 記録時に `created` 明示設定）。MCP-012 のみ手動未実施（□）。
+
+| 項目ID | 分類 | 対象 | 前提条件 | 手順 | 期待結果 | 設計参照 | 自動化 | 優先 | 結果 | 証跡 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| MCP-001 | 正常系 | initialize ハンドシェイク | DS-1 + API トークン | 1. `curl -X POST /mcp -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"c","version":"1"}}}'` | 200。`Content-Type: application/json`、レスポンスヘッダ `Mcp-Session-Id`（UUID）、`serverInfo.name="iroha Board MCP"` | 13 §5 | 可 | P0 | ✓ | |
+| MCP-002 | 正常系 | notifications/initialized | MCP-001 実施済 | 1. `Mcp-Session-Id` を付けて `{"jsonrpc":"2.0","id":2,"method":"notifications/initialized"}` を POST | 202（または 200） | 13 §5 | 可 | P0 | ✓ | |
+| MCP-003 | 正常系 | tools/list（読み取り 7 種） | MCP-002 実施済 | 1. session 付きで `method:"tools/list"` POST | 200。`list_courses` / `get_course` / `list_contents` / `get_content` / `get_content_html` / `list_records` / `get_user_profile` の 7 件を含む。`create_content` / `update_content` は**含まない**（Phase 3） | 13 §6 | 可 | P0 | ✓ | |
+| MCP-004 | 正常系 | list_courses（全件） | admin トークン | 1. `tools/call list_courses` | `data` に全コース（削除済み除く）。`meta.total` 一致 | 13 §6 | 可 | P0 | ✓ | |
+| MCP-005 | 権限 | list_courses（権限絞り込み） | 未登録ユーザーのトークン | 1. 登録外ユーザーで `tools/call list_courses` | `data` は自分が所属（直接/グループ）するコースのみ | 13 §5.7 | 可 | P0 | ✓ | |
+| MCP-006 | 権限 | list_contents（未公開・未所属） | 未登録ユーザーのトークン | 1. 所属外コース id で `list_contents`<br>2. 所属コースで `list_contents` | 1: `Access denied to this course.`<br>2: `status=1` の公開コンテンツのみ（非公開は meta.total に含まない） | 13 §5.7、G-9 | 可 | P0 | ✓ | |
+| MCP-007 | 正常系 | get_content / get_content_html | admin トークン + markdown コンテンツ | 1. `get_content` で生 body<br>2. `get_content_html` で変換結果 | 1: DB に保存された生ボディが返る<br>2: markdown はサニタイズ済み HTML（`<h1>` 等。`<script>` はエスケープ）。kind=html は**生のまま**（G-9、Phase 3 でサニタイズ予定） | 13 §5.6、G-9 | 可 | P0 | ✓ | |
+| MCP-008 | 権限 | list_records / get_user_profile（本人限定） | 一般ユーザーのトークン | 1. `list_records` を user_id 指定なしで<br>2. `get_user_profile` を user_id 指定なしで | 1: 自分の記録のみ<br>2: 自分のプロフィール（password 不在）。他人指定は `Access denied.`（staff は全件可） | 13 §5.7 | 可 | P1 | ✓ | |
+| MCP-009 | 異常系 | 401 未認証 / 誤トークン | — | 1. Authorization なしで initialize<br>2. 不正トークンで initialize | 401。`WWW-Authenticate: Bearer error="invalid_token", error_description="..."` | 13 §5.3 | 可 | P0 | ✓ | |
+| MCP-010 | 異常系 | レート制限 | admin トークン | 1. 同一ユーザーで 60 件を超えるリクエストを 1 分以内に送信 | 61 件目: 429 + `Retry-After: 60` | 13 §5.8 | 可 | P1 | ✓ | |
+| MCP-011 | 正常系 | モダンera（ステートレス）対応 | admin トークン | 1. `MCP-Protocol-Version: 2026-07-28` + `Mcp-Method` ヘッダ + `params._meta`（protocolVersion/clientCapabilities クレーム）付きで `tools/list`（session 不要） | 200。ツール一覧が返る（セッション不要） | 13 §5、SDK SEP-2243 | 可 | P2 | ✓ | |
+| MCP-012 | 正常系 | Claude Desktop E2E（完了条件） | Claude Desktop + 有効トークン | 1. カスタムコネクタに URL `<BASE>/mcp` + ヘッダ `Authorization: Bearer <TOKEN>` を設定して接続<br>2. `list_courses` を実行<br>3. `get_content` を実行 | 接続成功。2: 所属コース一覧。3: 本文。権限外コースは Access denied | 13 §6（Phase 2 完了条件） | 手動 | P0 | □ | |
+| MCP-013 | 整合性 | GET /mcp（SSE 非対応） | — | 1. `curl -i GET /mcp`（Accept: text/event-stream） | 405 Method Not Allowed + `Allow: POST, DELETE, OPTIONS`（ルート未定義 404 はクライアント接続フローを壊すため。PHP は SSE 接続維持不可） | MCP Streamable HTTP 仕様 | 可 | P1 | ✓ | E2E 実測 2026-09-25 |
+
+Claude Desktop 接続例（Streamable HTTP / リモートコネクタ）:
+
+```json
+{
+  "mcpServers": {
+    "irohaboard": {
+      "url": "http://localhost:8082/mcp",
+      "headers": { "Authorization": "Bearer <API_TOKEN>" }
+    }
+  }
+}
+```
+
+curl での一連の実行例:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8082/api/v1/auth/token \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"admin"}' | jq -r '.data.token')
+
+# initialize → Mcp-Session-Id を保存
+curl -s -D /tmp/mcp_hdr -X POST http://localhost:8082/mcp \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"curl","version":"1"}}}'
+SID=$(grep -i '^Mcp-Session-Id' /tmp/mcp_hdr | tr -d '\r' | cut -d' ' -f2)
+
+curl -s -X POST http://localhost:8082/mcp \
+  -H "Authorization: Bearer $TOKEN" -H "Mcp-Session-Id: $SID" -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":2,"method":"notifications/initialized"}'
+
+curl -s -X POST http://localhost:8082/mcp \
+  -H "Authorization: Bearer $TOKEN" -H "Mcp-Session-Id: $SID" -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/list"}'
+```
+
 ## 集計表
 
 | 分類 | 項目数 |
@@ -163,6 +220,16 @@
 | P1 | 23 |
 | P2 | 1 |
 | **合計** | **90** |
+
+（上表の集計は API 項目〈API-001〜094〉のみ。MCP 項目は §11 参照。）
+
+| 分類（MCP） | 項目数 |
+|---|---|
+| 正常系 | 7 |
+| 異常系 | 2 |
+| 権限 | 3 |
+| 整合性 | 1 |
+| **合計（MCP-001〜013）** | **13** |
 
 ### 設計書（12-implementation-test-plan.md A1〜A24）対応状況
 

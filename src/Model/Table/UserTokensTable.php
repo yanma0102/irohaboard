@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use Cake\Core\Configure;
+use Cake\Datasource\FactoryLocator;
+use Exception;
 
 /**
  * UserTokens Model
@@ -397,6 +399,68 @@ class UserTokensTable extends AppTable
             ];
         } catch (\Exception $e) {
             $this->_tableReady = false;
+            return null;
+        }
+    }
+
+    /**
+     * API トークンを照合する（MCP ミドルウェア用・失効副作用なし）
+     *
+     * authenticateApiToken() と異なり、password_verify 失敗時に
+     * トークンを失効せず、last_used も更新しない（毎リクエスト照合）。
+     *
+     * @param string $tokenString selector:validator
+     * @return array{user: array<string, mixed>, token_id: int}|null 失敗時 null
+     */
+    public function lookupApiToken(string $tokenString): ?array
+    {
+        if (!$this->isAvailable()) {
+            return null;
+        }
+
+        $parsed = $this->parseCookie($tokenString);
+        if ($parsed === null) {
+            return null;
+        }
+
+        try {
+            $token = $this->find()
+                ->where([
+                    'token_type' => 'api',
+                    'token_selector' => $parsed['selector'],
+                    'revoked IS NULL',
+                    'expired >=' => date('Y-m-d H:i:s'),
+                ])
+                ->first();
+
+            if (!$token) {
+                return null;
+            }
+
+            // password_verify で照合。失敗してもトークンを失効しない。
+            if (!password_verify($parsed['validator'], $token->token_hash)) {
+                return null;
+            }
+
+            $usersTable = FactoryLocator::get('Table')->get('Users');
+            $user = $usersTable->find()
+                ->where(['id' => $token->user_id, 'deleted IS NULL'])
+                ->first();
+
+            if (!$user) {
+                return null;
+            }
+
+            $userArray = $user->toArray();
+            unset($userArray['password']);
+
+            return [
+                'user' => $userArray,
+                'token_id' => (int)$token->id,
+            ];
+        } catch (Exception $e) {
+            $this->_tableReady = false;
+
             return null;
         }
     }

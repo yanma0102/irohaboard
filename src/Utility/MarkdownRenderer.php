@@ -35,10 +35,10 @@ class MarkdownRenderer
             $config->set('HTML.Allowed', implode(',', [
                 'p', 'br', 'hr',
                 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                'strong', 'em', 'del', 'ins', 'mark', 'code', 'pre', 'sup', 'sub', 'abbr',
+                'strong', 'em', 'del', 'ins', 'code', 'pre', 'sup', 'sub', 'abbr',
                 'ul', 'ol', 'li', 'dl', 'dt', 'dd',
                 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
-                'blockquote', 'details', 'summary',
+                'blockquote',
                 'a[href|title|target]', 'img[src|alt|title|width|height]',
             ]));
             $config->set('URI.AllowedSchemes', ['http' => true, 'https' => true, 'mailto' => true]);

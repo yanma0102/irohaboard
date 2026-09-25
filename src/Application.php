@@ -121,6 +121,10 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                     if (str_starts_with($uri, '/api/')) {
                         return true;
                     }
+                    // MCP エンドポイントは Bearer トークン認証のため CSRF スキップ
+                    if (str_starts_with($uri, '/mcp')) {
+                        return true;
+                    }
                     // ログイン/ログアウト POST は CSRF チェックをスキップ
                     if (str_starts_with($uri, '/users/login') || str_starts_with($uri, '/users/logout')) {
                         return true;

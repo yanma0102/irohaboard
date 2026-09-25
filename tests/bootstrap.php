@@ -28,6 +28,15 @@ use Migrations\TestSuite\Migrator;
  */
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+// テストは必ずテスト用DB (irohaboard_test) に対して実行する（メインDB破壊防止）。
+// CakePHP の env() は $_SERVER を $_ENV より優先して参照するため、コンテナの
+// 環境変数 DB_NAME=irohaboard が config/app_local.php の test 接続デフォルト
+// (irohaboard_test) を上書きしてしまい、テストがメインDBに対して実行され
+// 消去される事故が発生した。config を読み込む前に明示的に上書きする。
+$testDbName = getenv('TEST_DB_NAME') ?: 'irohaboard_test';
+$_SERVER['DB_NAME'] = $_ENV['DB_NAME'] = $testDbName;
+putenv('DB_NAME=' . $testDbName);
+
 require dirname(__DIR__) . '/config/bootstrap.php';
 
 if (empty($_SERVER['HTTP_HOST']) && !Configure::read('App.fullBaseUrl')) {

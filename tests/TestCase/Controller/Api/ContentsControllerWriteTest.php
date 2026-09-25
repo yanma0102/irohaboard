@@ -681,10 +681,10 @@ class ContentsControllerWriteTest extends TestCase
 
         $conn = $this->getTableLocator()->get('Contents')->getConnection();
         $conn->execute(
-            "INSERT INTO ib_contents (course_id, user_id, title, kind, status, sort_no, created) VALUES (:cid, :uid, :title, :kind, 1, 1, datetime('now'))",
+            "INSERT INTO ib_contents (course_id, user_id, title, kind, status, sort_no, created) VALUES (:cid, :uid, :title, :kind, 1, 1, NOW())",
             ['cid' => $course->id, 'uid' => $admin->id, 'title' => '旧データ', 'kind' => ''],
         );
-        $insertedId = (int)$conn->execute('SELECT last_insert_rowid() AS id')->fetch('assoc')['id'];
+        $insertedId = (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
 
         $contentsTable = $this->getTableLocator()->get('Contents');
         $this->assertTrue($contentsTable->exists(['id' => $insertedId]), '旧レコードが存在する');

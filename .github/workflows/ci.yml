@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:11.4
+        ports:
+          - 3306:3306
+        env:
+          MARIADB_ROOT_PASSWORD: rootpass
+          MARIADB_DATABASE: irohaboard_test
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME: irohaboard_test
+      DB_USER: root
+      DB_PASS: rootpass
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          # PHPUnit 13 / phpunit.xml.dist (schema 13.3) と揃える。本番 Docker も php:8.4-apache。
+          php-version: "8.4"
+          extensions: pdo_mysql, mbstring, intl, gd, zip, bcmath
+          coverage: xdebug
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHPUnit
+        run: composer test
+
+      # 既存コードのスタイル負債（多数の既存違反）があるため、当面は non-blocking で可視化のみ。
+      # 負債解消後に continue-on-error を外す。
+      - name: Code style (phpcs)
+        run: composer cs-check
+        continue-on-error: true

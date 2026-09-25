@@ -39,18 +39,18 @@ return [
      */
     'Datasources' => [
         'default' => [
-            'host' => 'localhost',
+            'host' => env('DB_HOST', '127.0.0.1'),
             /*
              * CakePHP will use the default DB port based on the driver selected
              * MySQL on MAMP uses port 8889, MAMP users will want to uncomment
              * the following line and set the port accordingly
              */
-            //'port' => 'non_standard_port_number',
+            'port' => env('DB_PORT', '3306'),
 
-            'username' => 'my_app',
-            'password' => 'secret',
+            'username' => env('DB_USER', 'root'),
+            'password' => env('DB_PASS', 'rootpass'),
 
-            'database' => 'my_app',
+            'database' => env('DB_NAME', 'irohaboard'),
             /*
              * If not using the default 'public' schema with the PostgreSQL driver
              * set it here.
@@ -67,13 +67,13 @@ return [
          * The test connection is used during the test suite.
          */
         'test' => [
-            'host' => 'localhost',
-            //'port' => 'non_standard_port_number',
-            'username' => 'my_app',
-            'password' => 'secret',
-            'database' => 'test_myapp',
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '13307'),
+            'username' => env('DB_USER', 'root'),
+            'password' => env('DB_PASS', 'rootpass'),
+            'database' => env('DB_NAME', 'irohaboard_test'),
             //'schema' => 'myapp',
-            'url' => env('DATABASE_TEST_URL', 'sqlite://127.0.0.1/tmp/tests.sqlite'),
+            'url' => env('DATABASE_TEST_URL', null),
         ],
     ],
 

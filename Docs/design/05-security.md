@@ -393,11 +393,21 @@ Markdown（kind='markdown'）は保存時にそのまま生テキストで保持
 
 Web 表示は `MarkdownHelper`、MCP の `get_content_html` ツールは同一経路（`MarkdownRenderer::toHtml()`）を使うため、出力経路は常にサニタイズされる。
 
-### 6.2 kind='html' の扱い（U-5 / 付録G-9）
+### 6.2 kind='html' の扱い（U-5 / 付録G-9）— 適用済み
 
-既存 kind='html' コンテンツは**出力をそのまま返す**（既存互換を維持）。design 13 Phase 3 から `MarkdownRenderer::purifyHtml()` による**影判定ログ**を `get_content_html` で出力する（log_type=`html_sanitize_candidate`、`src/Mcp/Tool/GetContentHtmlTool.php:34`）。ログによる影響評価の後、対象範囲を把握した上で本適用を判断する。
+既存 kind='html' コンテンツには **HTMLPurifier によるサニタイズを適用済み**（U-5: design 13 §9）。
 
-**根拠**: `src/Utility/MarkdownRenderer.php:35-46`（Environment / HTML.Purifier 設定）、`src/Mcp/Tool/GetContentHtmlTool.php:34`（影ログ）、design 13 §3.3 / §9 U-5 / 付録G-9
+- **Web 表示**: `templates/Contents/view.php` の `case 'html'` が `$this->Markdown->html()` 経由で `MarkdownRenderer::purifyHtml()` を呼ぶ
+- **MCP (`get_content_html`)**: `src/Mcp/Tool/GetContentHtmlTool.php` の `kind='html'` マッチ Arms で `MarkdownRenderer::purifyHtml()` を直接呼ぶ
+- **MCP (`get_content`)**: `src/Mcp/Tool/GetContentTool.php` が `kind='html'` の場合 `MarkdownRenderer::purifyHtml()` を適用し、`sanitized: true` を付与して返す。`kind='markdown'` の場合は Markdown 原文のまま返す（サニタイズなし、`sanitized: false`）
+
+評価結果（prod DB 25 件中）: 24/25 件は変化なし、1 件（id=2「初めに」）のみ `<span style="background-color: rgb(255,255,0)">` の `style` 属性が除去された（76→19 バイト）。構造的・コンテンツ的損失なし。
+
+許可リストは design 13 §3.3（`HTML.Allowed`）に基づき、`class` / `style` 属性は許可しない（設計決定）。
+
+> **残存リスク**: REST API（`GET /api/v1/contents` および `GET /api/v1/contents/{id}`、`src/Controller/Api/ContentsController.php:74-91` および `:121`）は `kind='html'` の `body` を生のまま返す。これは U-5 の対象外とした（JSON/プログラマティック consumers 向けであり、サニタイズは API コンシューマへの破壊的変更となるため）。別途の判断が必要。
+
+**根拠**: `src/Utility/MarkdownRenderer.php`（HTML.Purifier 設定）、`src/View/Helper/MarkdownHelper.php`（`html()` メソッド）、design 13 §3.3 / §9 U-5 / 付録G-9
 
 ---
 

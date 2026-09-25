@@ -23,7 +23,7 @@ use Mcp\Server\Session\SessionInterface;
  * get_content / get_content_html ツールのテスト
  *
  * - markdown: MarkdownRenderer でサニタイズされた HTML を返す（G-9）
- * - html: 生 HTML をそのまま返す（Phase 1/2 仕様・G-9）
+ * - html: HTMLPurifier でサニタイズされた HTML を返す（U-5 適用済み）
  * - 権限: 非受講者は Access denied、未公開は not found
  */
 class GetContentHtmlToolTest extends TestCase
@@ -165,6 +165,7 @@ class GetContentHtmlToolTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertSame("# 見出し\n\n**太字**", $result['data']['body']);
         $this->assertSame('markdown', $result['data']['kind']);
+        $this->assertFalse($result['data']['sanitized']);
     }
 
     // ----------------------------------------------------------------
@@ -195,25 +196,62 @@ class GetContentHtmlToolTest extends TestCase
     }
 
     /**
-     * html → 生 HTML がそのまま返る（G-9・Phase 1/2 仕様）
+     * html kind: サニタイズで <script> が除去される（U-5 適用）
      */
-    public function testGetContentHtmlKindReturnsRawHtml(): void
+    public function testGetContentHtmlKindSanitizesScriptTag(): void
     {
         $course = $this->createCourse();
         $user = $this->createUser('htmlkinduser');
         $this->enrollUser((int)$user->id, (int)$course->id);
         $this->createContent((int)$course->id, [
             'kind' => 'html',
-            'body' => '<div class="raw">生HTML</div><script>keep()</script>',
+            'body' => '<p>ok</p><script>alert(1)</script>',
         ]);
 
         $result = $this->htmlTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
 
         $this->assertArrayHasKey('data', $result);
-        $this->assertSame(
-            '<div class="raw">生HTML</div><script>keep()</script>',
-            $result['data']['html'],
-        );
+        $this->assertStringContainsString('<p>ok</p>', $result['data']['html']);
+        $this->assertStringNotContainsString('<script>', $result['data']['html']);
+    }
+
+    /**
+     * html kind: サニタイズで onerror イベントハンドラが除去される（U-5 適用）
+     */
+    public function testGetContentHtmlKindSanitizesOnError(): void
+    {
+        $course = $this->createCourse();
+        $user = $this->createUser('htmlonerror');
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $this->createContent((int)$course->id, [
+            'kind' => 'html',
+            'body' => '<img src=x onerror=alert(1)>',
+        ]);
+
+        $result = $this->htmlTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertStringNotContainsString('onerror', $result['data']['html']);
+    }
+
+    /**
+     * html kind: 正当な HTML（<p>, <h2> 等）はそのまま保持される（U-5 適用）
+     */
+    public function testGetContentHtmlKindPreservesBenignHtml(): void
+    {
+        $course = $this->createCourse();
+        $user = $this->createUser('htmlbenign');
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $body = '<p>段落</p><h2>見出し</h2>';
+        $this->createContent((int)$course->id, [
+            'kind' => 'html',
+            'body' => $body,
+        ]);
+
+        $result = $this->htmlTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertSame($body, $result['data']['html']);
     }
 
     // ----------------------------------------------------------------
@@ -285,16 +323,15 @@ class GetContentHtmlToolTest extends TestCase
     }
 
     // ----------------------------------------------------------------
-    // html kind サニタイズ導入前のログ評価（U-5 / Phase 3 3-5）
+    // html kind サニタイズ適用（U-5 適用済み / design 13 §9）
     // ----------------------------------------------------------------
 
     /**
-     * html kind でサニタイズ差分がある場合、応答は生 HTML のまま返しつつ
-     * ib_logs に評価ログを 1 件だけ記録する（2 回目の呼び出しでは重複しない）
+     * html kind で <script> タグを含む場合、サニタイズされて除去される
      */
-    public function testSanitizeCandidateLoggedOnceForDirtyHtml(): void
+    public function testHtmlKindSanitizesScriptTag(): void
     {
-        $admin = $this->createUser('evaladmin', 'admin');
+        $admin = $this->createUser('sanadmin', 'admin');
         $course = $this->createCourse();
         $content = $this->createContent((int)$course->id, [
             'body' => '<p>ok</p><script>alert(1)</script>',
@@ -302,64 +339,43 @@ class GetContentHtmlToolTest extends TestCase
 
         $result = $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
 
-        // 応答は変更されない（ログ評価フェーズのため生 HTML のまま）
-        $this->assertStringContainsString('<script>', $result['data']['html']);
-
-        $logsTable = $this->getTableLocator()->get('Logs');
-        $rows = $logsTable->find()->where([
-            'log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE,
-            'log_content' => (string)$this->lastContentId,
-        ])->all()->toList();
-        $this->assertCount(1, $rows);
-        $this->assertSame((int)$admin->id, (int)$rows[0]->user_id);
-        $this->assertNotNull($rows[0]->created);
-
-        // 2 回目は重複記録しない
-        $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
-        $count = $logsTable->find()->where([
-            'log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE,
-            'log_content' => (string)$this->lastContentId,
-        ])->count();
-        $this->assertSame(1, $count);
+        $this->assertArrayHasKey('data', $result);
+        $this->assertStringContainsString('<p>ok</p>', $result['data']['html']);
+        $this->assertStringNotContainsString('<script>', $result['data']['html']);
     }
 
     /**
-     * サニタイズで変化しない HTML は記録しない
+     * html kind で onerror イベントハンドラを含む場合、サニタイズされて除去される
      */
-    public function testNoLogForCleanHtml(): void
+    public function testHtmlKindSanitizesOnErrorAttribute(): void
     {
-        $admin = $this->createUser('evaladmin2', 'admin');
+        $admin = $this->createUser('sanadmin2', 'admin');
         $course = $this->createCourse();
         $content = $this->createContent((int)$course->id, [
-            'body' => '<p>きれいな本文</p>',
-        ]);
-
-        $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
-
-        $count = $this->getTableLocator()->get('Logs')->find()
-            ->where(['log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE])
-            ->count();
-        $this->assertSame(0, $count);
-    }
-
-    /**
-     * markdown kind はもともとサニタイズ済みのため記録しない
-     */
-    public function testNoLogForMarkdownKind(): void
-    {
-        $admin = $this->createUser('evaladmin3', 'admin');
-        $course = $this->createCourse();
-        $content = $this->createContent((int)$course->id, [
-            'kind' => 'markdown',
-            'body' => "# 見出し\n\n<script>alert(1)</script>",
+            'body' => '<img src=x onerror=alert(1)>',
         ]);
 
         $result = $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
-        $this->assertStringNotContainsString('<script>', $result['data']['html']);
 
-        $count = $this->getTableLocator()->get('Logs')->find()
-            ->where(['log_type' => GetContentHtmlTool::SANITIZE_EVAL_LOG_TYPE])
-            ->count();
-        $this->assertSame(0, $count);
+        $this->assertArrayHasKey('data', $result);
+        $this->assertStringNotContainsString('onerror', $result['data']['html']);
+    }
+
+    /**
+     * html kind で正当な HTML を含む場合、サニタイズ後もそのまま保持される
+     */
+    public function testHtmlKindPreservesBenignHtml(): void
+    {
+        $admin = $this->createUser('sanadmin3', 'admin');
+        $course = $this->createCourse();
+        $body = '<p>段落</p><h2>見出し</h2>';
+        $content = $this->createContent((int)$course->id, [
+            'body' => $body,
+        ]);
+
+        $result = $this->htmlTool->__invoke($this->makeContext((int)$admin->id, 'admin'), (int)$content->id);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertSame($body, $result['data']['html']);
     }
 }

@@ -597,7 +597,7 @@ class McpServerFactory
 
 > AI クライアントに渡す本文は原則 **生 Markdown**（`get_content` の `body`）。`get_content_html` はサニタイズ済み HTML が必要な場合の補助。
 >
-> **セキュリティ注意**: `get_content_html` のうち `kind='markdown'` は `MarkdownRenderer` でサニタイズ済み HTML（§3.3）を返す。一方 `kind='html'` は既存仕様どおり**未サニタイズの生 HTML** を返す（§3.6 の Phase 1 方針による）。既定では `kind='html'` の呼び出しを許可するが、MCP クライアント側でのサニタイズを推奨する旨をドキュメント化する。厳格化する場合は `kind='html'` にも HTMLPurifier を適用する選択肢がある。ただし U-5 の決定により、`html` kind へのサニタイズ適用は Phase 3 でログ評価を経てから行う（§9）。
+> **セキュリティ注意**: Web 表示（`MarkdownHelper`）、`get_content_html`、`get_content`（`kind='html'`）はすべて `MarkdownRenderer::purifyHtml()` による HTMLPurifier サニタイズ済みである。`get_content` は `kind='html'` の場合 `sanitized: true` を付与し、`kind='markdown'` の場合は Markdown 原文のまま返す。HTML 表示用途は `get_content_html` を参照。
 
 #### 書き込み系（Phase 3）
 
@@ -741,7 +741,7 @@ Bearer トークン検証 → user_id / role 取得
 | U-2 | Markdown の画像の扱い | **初期は外部 URL のみ**（`![alt](url)`）。アップロードは Phase 3 | **確定** |
 | U-3 | MCP 認証済みプリンシパルのツールへの伝播方式 | **解決済み**: `OAuthRequestMetaMiddleware` + `oauth.*` 属性 + `RequestContext::getRequest()->getMeta()['oauth']`（§5.3） | **解決済み** |
 | U-4 | API Write のレスポンス（DELETE の 204 か 200 か、論理/物理削除） | **Web 側の既存挙動に合わせる**（`Admin/ContentsController::delete()` と同一の削除方式・ステータス。実装時に確定） | **確定** |
-| U-5 | `html` kind のサニタイズ導入時期 | **Phase 3 でログ評価から開始**（影響範囲把握後に適用） | **確定** |
+| U-5 | `html` kind のサニタイズ導入時期 | **Phase 3 でログ評価から開始 → 適用済み**。log 評価完了（prod DB 25 件中 1 件 style 属性除去のみ、構造的損失なし）。Web（`templates/Contents/view.php`）・MCP（`get_content_html`）の双方で `MarkdownRenderer::purifyHtml()` を適用 | **適用済み** |
 | U-6 | Markdown 許可タグの最終リスト | **本ドキュメント §3.3.3 の推奨リストで開始**し、運用で調整 | **確定** |
 
 > **補足（U-4）**: 具体的な削除方式（論理削除 / 物理削除）と HTTP ステータスは、実装時に `Admin/ContentsController::delete()` の現行実装を正として API 側を一致させる。`ContentsQuestions` のカスケード削除も同様に踏襲する。
@@ -2791,7 +2791,7 @@ class GetContentTool
 
     #[McpTool(
         name: 'get_content',
-        description: 'コンテンツのメタデータ＋本文を返す。kind=html は未サニタイズの生 HTML を含む（Phase 3 で対応）。',
+        description: 'コンテンツのメタデータ＋本文を返す。kind=html は HTMLPurifier サニタイズ済み（sanitized=true）。kind=markdown は Markdown 原文。',
     )]
     public function __invoke(RequestContext $context, int $content_id): array
     {
@@ -2820,9 +2820,8 @@ class GetContentTool
                 'status'     => $content->status,
                 'sort_no'    => $content->sort_no,
                 'created'    => $content->created,
-                // kind=html の body は未サニタイズ。
-                // Phase 3 で HTMLPurifier を適用する。
-                // kind=markdown の場合はここでは Markdown 原文を返す。
+                // kind=html の body は MarkdownRenderer::purifyHtml() でサニタイズ済み。
+                // kind=markdown の場合は Markdown 原文を返す（サニタイズなし）。
                 // HTML 変換は get_content_html を使うこと。
             ],
         ];
@@ -2859,7 +2858,7 @@ class GetContentHtmlTool
 
     #[McpTool(
         name: 'get_content_html',
-        description: 'コンテンツをレンダリングした HTML を返す。kind=markdown は Markdown→HTML 変換＋サニタイズ。kind=html は生 HTML（未サニタイズ）。',
+        description: 'コンテンツをレンダリングした HTML を返す。kind=markdown は Markdown→HTML 変換＋サニタイズ。kind=html は HTMLPurifier サニタイズ済み。',
     )]
     public function __invoke(RequestContext $context, int $content_id): array
     {
@@ -2880,7 +2879,7 @@ class GetContentHtmlTool
         $body = $content->body ?? '';
         $html = match ($content->kind) {
             'markdown' => (new MarkdownHelper())->text($body),
-            'html'     => $body, // ⚠️ 未サニタイズ。Phase 3 で HTMLPurifier を適用する。
+            'html'     => MarkdownRenderer::purifyHtml($body), // U-5 適用済み: HTMLPurifier サニタイズ
             'text'     => nl2br(h($body)),
             default    => h($body),
         };
@@ -3885,6 +3884,6 @@ composer require mcp/sdk
 | G-6 | `kind` の `text` | `content_kind` に `text` は存在しない（`templates/Contents/view.php` に `case 'text'` が残るのみ）。C-4 の body 必須判定に `text` を含めているが、新規作成では `markdown`/`html` のみ該当する |
 | G-7 | `kind` inList | C-4 のとおり `allowEmpty: true` を付与し、既存 `kind=''` レコードの更新を壊さないこと |
 | G-8 | DELETE 応答 | U-4 のとおり Web 側 `Admin/ContentsController::delete()` の既存挙動（方式・ステータス）に一致させる |
-| G-9 | `html` kind のサニタイズ | U-5 のとおり Phase 3 でログ評価から開始。Phase 1/2 では `get_content_html` を含め未サニタイズのまま返す点をドキュメント化する |
+| G-9 | `html` kind のサニタイズ | **適用済み**。ログ評価完了（25 件中 1 件 style 属性除去のみ、構造的損失なし）。Web（`templates/Contents/view.php`）、MCP（`get_content_html`）、MCP（`get_content` kind='html'）の三方で `MarkdownRenderer::purifyHtml()` を適用 |
 | G-10 | mcp/sdk 残確認 | **解決済み（v0.8.1 ソース検証）** ① allow(array $attributes = []) / unauthorized(?string $error, ?string $errorDescription, ?array $scopes) ② AuthorizationMiddleware 不使用と決定（AS 無し）。ProtectedResourceMetadata は authorizationServers 非空必須のため、自作 IrohaAuthMiddleware が oauth.* request attributes を設定し OAuthRequestMetaMiddleware が転記（E-3/E-5 に反映） ③ RequestContext = Mcp\Server\RequestContext、getMeta()['oauth']（内部キーも oauth. 付き） ④ StreamableHttpTransport ctor（request, responseFactory, streamFactory, logger, middleware, maxBodyBytes）named arg 安全、defaultMiddleware()=Cors+DnsRebinding ⑤ addTool 省略時は #[McpTool] 属性、明示が優先。enum/description は #[Schema] 属性または addTool inputSchema ⑥ setDiscovery と addTool は併用可・手動優先 |
 

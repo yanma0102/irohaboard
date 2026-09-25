@@ -18,4 +18,17 @@ class MarkdownHelper extends Helper
     {
         return MarkdownRenderer::toHtml($markdown);
     }
+
+    /**
+     * 既に HTML な入力（kind='html'）を HTMLPurifier でサニタイズする。
+     * text() は Markdown→HTML 変換を行うのに対し、本メソッドは Markdown 変換なしで
+     * そのまま HTML をサニタイズする（U-5 適用: design 13 §9）。
+     *
+     * @param string|null $html 生 HTML
+     * @return string サニタイズ済み HTML
+     */
+    public function html(?string $html): string
+    {
+        return MarkdownRenderer::purifyHtml($html);
+    }
 }

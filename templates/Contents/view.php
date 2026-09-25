@@ -60,7 +60,7 @@
 			$body = nl2br($body);
 			break;
 		case 'html': // リッチテキストコンテンツ
-			$body = $content['body'];
+			$body = $this->Markdown->html($content['body']);
 			//$body = str_replace('src="/uploads/', 'src="'. $this->Url->build(['controller' => 'contents', 'action' => 'file_image']).'/', $body);
 			break;
 		case 'markdown': // Markdown コンテンツ

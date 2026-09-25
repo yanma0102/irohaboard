@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tool;
 
 use App\Service\AccessControlService;
+use App\Utility\MarkdownRenderer;
 use Cake\ORM\TableRegistry;
 use Mcp\Server\RequestContext;
 
@@ -31,9 +32,9 @@ class GetContentTool
 
     /**
      * コンテンツのメタデータと本文を返す。
-     * body は生データ（kind=markdown の場合は Markdown 原文、
-     * kind=html の場合は未サニタイズの生 HTML — Phase 3 で対応、G-9）。
-     * HTML が必要な場合は get_content_html を使うこと。
+     * kind='markdown' は Markdown 原文のまま、
+     * kind='html' は HTMLPurifier サニタイズ済み（sanitized = true）。
+     * HTML 表示用途は get_content_html を参照。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
      * @param int $contentId コンテンツID
@@ -64,13 +65,16 @@ class GetContentTool
             }
         }
 
+        $isHtml = (string)$content->kind === 'html';
+
         return [
             'data' => [
                 'id' => $content->id,
                 'course_id' => $content->course_id,
                 'title' => $content->title,
                 'kind' => $content->kind,
-                'body' => $content->body,
+                'body' => $isHtml ? MarkdownRenderer::purifyHtml((string)$content->body) : $content->body,
+                'sanitized' => $isHtml,
                 'status' => $content->status,
                 'sort_no' => $content->sort_no,
                 'created' => $content->created,

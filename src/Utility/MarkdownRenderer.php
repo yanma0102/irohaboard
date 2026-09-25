@@ -70,8 +70,8 @@ class MarkdownRenderer
     /**
      * 生 HTML を HTMLPurifier でサニタイズする（Markdown 変換なし）
      *
-     * kind='html' の段階的サニタイズ導入（U-5: Phase 3 でログ評価から開始）で
-     * 使う予定の関数。現時点ではログ評価（影判定）のみに使用する。
+     * kind='html' の出力時サニタイズ（U-5 適用済み: design 13 §9）で使う。
+     * 許可リストは getPurifier() の HTML.Allowed に基づく（design 13 §3.3）。
      *
      * @param string|null $html 生 HTML
      * @return string サニタイズ済み HTML

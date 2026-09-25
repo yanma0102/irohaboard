@@ -326,4 +326,36 @@ class GroupsControllerTest extends TestCase
             'グループにコースが紐付くこと'
         );
     }
+
+    /**
+     * グループ編集フォームで既存のコース割当が選択済みで表示されること
+     *
+     * コントローラの get() に contain(['Courses']) が無いと、courses._ids の
+     * 現在値が取得できず、そのまま保存すると既存の割当が消える（データロス）。
+     * その回帰ガード。
+     */
+    public function testEditFormPreselectsAssignedCourses(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $group = $this->createGroup('プリセレクトグループ');
+
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => 'プリセレクトコース',
+            'user_id' => $admin->id,
+        ]));
+        $this->assertNotFalse($course, 'コースの保存に失敗');
+
+        $groupsTable = $this->getTableLocator()->get('Groups');
+        $group = $groupsTable->patchEntity($group, ['courses' => ['_ids' => [$course->id]]]);
+        $this->assertNotFalse($groupsTable->save($group), 'グループのコース割当保存に失敗');
+
+        $this->get("/admin/groups/edit/{$group->id}");
+        $this->assertResponseOk();
+
+        $html = $this->_getBodyAsString();
+        preg_match('/<option value="' . $course->id . '"[^>]*>/i', $html, $matches);
+        $this->assertNotEmpty($matches, 'コースの option が出力されていない');
+        $this->assertStringContainsString('selected', $matches[0], '既存のコース割当が選択済みであること');
+    }
 }

@@ -468,4 +468,55 @@ class UsersControllerTest extends TestCase
             'パスワードが更新されていない'
         );
     }
+
+    /**
+     * ユーザ編集フォームで既存の所属グループ・受講コースが選択済みで表示されること
+     *
+     * フォーム項目を groups._ids / courses._ids に変更したため、
+     * EntityContext が現在値を取得して選択状態を復元できることを確認する
+     * （取得できないと保存時に既存の割当が消える＝データロス）。
+     */
+    public function testEditFormPreselectsGroupsAndCourses(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $user = $this->createUser('preselectuser');
+
+        $groupsTable = $this->getTableLocator()->get('Groups');
+        $group = $groupsTable->save($groupsTable->newEntity(['title' => 'プリセレクト所属グループ']));
+        $this->assertNotFalse($group, 'グループの保存に失敗');
+
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => 'プリセレクト受講コース',
+            'user_id' => $admin->id,
+        ]));
+        $this->assertNotFalse($course, 'コースの保存に失敗');
+
+        $usersTable = $this->getTableLocator()->get('Users');
+        $user = $usersTable->patchEntity($user, [
+            'groups' => ['_ids' => [$group->id]],
+            'courses' => ['_ids' => [$course->id]],
+        ]);
+        $this->assertNotFalse($usersTable->save($user), 'ユーザーの割当保存に失敗');
+
+        $this->get("/admin/users/edit/{$user->id}");
+        $this->assertResponseOk();
+
+        $html = $this->_getBodyAsString();
+        preg_match('/<select[^>]*name="groups\[_ids\]\[\]"[^>]*>/i', $html, $groupSelect);
+        $this->assertNotEmpty($groupSelect, 'グループの複数選択 select が出力されていない');
+        $this->assertStringContainsString('multiple', $groupSelect[0], 'グループは複数選択できること');
+
+        preg_match('/<select[^>]*name="courses\[_ids\]\[\]"[^>]*>/i', $html, $courseSelect);
+        $this->assertNotEmpty($courseSelect, 'コースの複数選択 select が出力されていない');
+        $this->assertStringContainsString('multiple', $courseSelect[0], 'コースは複数選択できること');
+
+        preg_match('/<option value="' . $group->id . '"[^>]*>/i', $html, $groupOption);
+        $this->assertNotEmpty($groupOption, 'グループの option が出力されていない');
+        $this->assertStringContainsString('selected', $groupOption[0], '既存の所属グループが選択済みであること');
+
+        preg_match('/<option value="' . $course->id . '"[^>]*>/i', $html, $courseOption);
+        $this->assertNotEmpty($courseOption, 'コースの option が出力されていない');
+        $this->assertStringContainsString('selected', $courseOption[0], '既存の受講コースが選択済みであること');
+    }
 }

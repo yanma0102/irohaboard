@@ -4,8 +4,8 @@
 <?php use Cake\Core\Configure; ?>
 <?php $this->Html->scriptStart(['inline' => false]); ?>
 	$(function (e) {
-		$('#group').select2({placeholder:   "<?= __('所属するグループを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
-		$('#course').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
+		$('#groups-ids').select2({placeholder:   "<?= __('所属するグループを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
+		$('#courses-ids').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
 		// パスワードの自動復元を防止
 		setTimeout('$("#new-password").val("");', 500);
 	});
@@ -33,8 +33,8 @@
 			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
 			
 			echo $this->Form->control('email',				['label' => __('メールアドレス')]);
-			echo $this->Form->control('Group',				['label' => __('所属グループ')]);
-			echo $this->Form->control('Course',				['label' => __('受講コース')]);
+			echo $this->Form->control('groups._ids',				['label' => __('所属グループ'), 'options' => $groups]);
+			echo $this->Form->control('courses._ids',				['label' => __('受講コース'), 'options' => $courses]);
 			echo $this->Form->control('comment',				['label' => __('備考')]);
 			echo Configure::read('form_submit_before')
 				.$this->Form->submit(__('保存'), Configure::read('form_submit_defaults'))

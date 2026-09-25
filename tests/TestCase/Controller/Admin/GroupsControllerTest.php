@@ -158,7 +158,7 @@ class GroupsControllerTest extends TestCase
 
         $this->post('/admin/groups/add', [
             'title' => '新規グループ',
-            'Course' => [],
+            'courses' => ['_ids' => []],
             'comment' => '新規グループのコメント',
         ]);
 
@@ -182,7 +182,7 @@ class GroupsControllerTest extends TestCase
         $this->post("/admin/groups/edit/{$group->id}", [
             'id' => $group->id,
             'title' => '更新後のグループ名',
-            'Course' => [],
+            'courses' => ['_ids' => []],
             'comment' => '更新後のコメント',
         ]);
         $this->assertRedirect();
@@ -253,7 +253,7 @@ class GroupsControllerTest extends TestCase
 
         $this->post('/admin/groups/add', [
             'title' => '',
-            'Course' => [],
+            'courses' => ['_ids' => []],
             'comment' => '',
         ]);
         $this->assertResponseOk();
@@ -270,9 +270,60 @@ class GroupsControllerTest extends TestCase
         $this->post("/admin/groups/edit/{$group->id}", [
             'id' => $group->id,
             'title' => '',
-            'Course' => [],
+            'courses' => ['_ids' => []],
             'comment' => '',
         ]);
         $this->assertResponseOk();
+    }
+
+    /**
+     * グループ編集フォームの受講コース欄が複数選択できること
+     */
+    public function testEditFormCourseSelectIsMultiple(): void
+    {
+        $this->loginAsAdmin();
+        $group = $this->createGroup('複数選択グループ');
+
+        $this->get("/admin/groups/edit/{$group->id}");
+        $this->assertResponseOk();
+
+        $html = $this->_getBodyAsString();
+        preg_match('/<select[^>]*name="courses\[_ids\]\[\]"[^>]*>/i', $html, $matches);
+        $this->assertNotEmpty($matches, '受講コースの select が出力されていない');
+        $this->assertStringContainsString('multiple', $matches[0], '受講コースは複数選択できること');
+        $this->assertStringContainsString('id="courses-ids"', $matches[0], 'courses-ids の id が付与されること');
+    }
+
+    /**
+     * グループ編集でコースを割り当てると ib_groups_courses に保存されること
+     *
+     * 以前はフォームの「Course」フィールドが ORM の courses._ids 形式に
+     * 変換されず、コースの割り当てが保存されなかった（ログインしてもコースが出ない）。
+     */
+    public function testEditPostSavesCourseAssignment(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $group = $this->createGroup('コース割当グループ');
+
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => '割当テストコース',
+            'user_id' => $admin->id,
+        ]));
+        $this->assertNotFalse($course, 'コースの保存に失敗');
+
+        $this->post("/admin/groups/edit/{$group->id}", [
+            'id' => $group->id,
+            'title' => 'コース割当グループ',
+            'courses' => ['_ids' => [$course->id]],
+            'comment' => '',
+        ]);
+        $this->assertRedirect();
+
+        $this->assertTrue(
+            $this->getTableLocator()->get('GroupsCourses')
+                ->exists(['group_id' => $group->id, 'course_id' => $course->id]),
+            'グループにコースが紐付くこと'
+        );
     }
 }

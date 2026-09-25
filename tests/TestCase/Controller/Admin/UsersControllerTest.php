@@ -150,8 +150,8 @@ class UsersControllerTest extends TestCase
             'name' => '新規テストユーザー',
             'role' => 'user',
             'email' => 'newuser@example.com',
-            'Group' => [],
-            'Course' => [],
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
             'comment' => 'テストコメント',
         ]);
         $this->assertRedirect();
@@ -179,8 +179,8 @@ class UsersControllerTest extends TestCase
             'name' => 'ハッシュテスト',
             'role' => 'user',
             'email' => 'hash@example.com',
-            'Group' => [],
-            'Course' => [],
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
             'comment' => '',
         ]);
         $this->assertRedirect();
@@ -205,8 +205,8 @@ class UsersControllerTest extends TestCase
             'name' => '更新後の名前',
             'role' => 'user',
             'email' => 'updated@example.com',
-            'Group' => [],
-            'Course' => [],
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
             'comment' => '更新コメント',
         ]);
         $this->assertRedirect();
@@ -233,8 +233,8 @@ class UsersControllerTest extends TestCase
             'name' => 'パスワード変更なしテスト',
             'role' => 'user',
             'email' => 'pwd@example.com',
-            'Group' => [],
-            'Course' => [],
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
             'comment' => '',
         ]);
         $this->assertRedirect();
@@ -390,8 +390,8 @@ class UsersControllerTest extends TestCase
             'name' => '重複テスト',
             'role' => 'user',
             'email' => 'dup@example.com',
-            'Group' => [],
-            'Course' => [],
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
             'comment' => '',
         ]);
         $this->assertResponseOk();
@@ -410,8 +410,8 @@ class UsersControllerTest extends TestCase
             'name' => 'ロール空テスト',
             'role' => '',
             'email' => 'norole@example.com',
-            'Group' => [],
-            'Course' => [],
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
             'comment' => '',
         ]);
         $this->assertResponseOk();
@@ -435,8 +435,8 @@ class UsersControllerTest extends TestCase
             'name' => 'パスワード未変更テスト',
             'role' => 'user',
             'email' => 'pwdunchanged@example.com',
-            'Group' => [],
-            'Course' => [],
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
             'comment' => '',
             // new_password を送信しない（パスワード変更なし）
         ]);

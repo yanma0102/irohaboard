@@ -14,7 +14,7 @@
 <head>
 	<?= $this->Html->charset(); ?>
 	
-	<title><?= h($this->AppView->readSession('Setting.title')); ?></title>
+	<title><?= h($this->AppView->readSession('Setting.title') ?: 'irohaboard'); ?></title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 	<?php
 		// 管理画面か確認、ただしログイン画面は例外とする
@@ -64,7 +64,7 @@
 	<style>
 		.ib-theme-color
 		{
-			background-color	: <?= h($this->AppView->readSession('Setting.color')); ?>;
+			background-color	: <?= h($this->AppView->readSession('Setting.color') ?: '#337ab7'); ?>;
 			color				: white;
 		}
 		
@@ -78,7 +78,7 @@
 <body>
 	<header class="header ib-theme-color">
 		<div class="ib-logo ib-left">
-			<a href="<?= $this->Url->build('/')?>"><?= h($this->AppView->readSession('Setting.title')); ?></a>
+			<a href="<?= $this->Url->build('/')?>"><?= h($this->AppView->readSession('Setting.title') ?: 'irohaboard'); ?></a>
 		</div>
 		<?php if(isset($loginedUser)) {?>
 		<nav class="ib-navi">

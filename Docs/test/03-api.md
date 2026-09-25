@@ -151,7 +151,7 @@
 
 前提: API トークンを `POST /api/v1/auth/token` で取得済み（`<TOKEN>`）。Claude Desktop 等の MCP クライアントは Streamable HTTP で `/mcp` に接続する。
 
-> E2E 実施記録（2026-09-25）: MCP-001〜011, 013 は公式 MCP Inspector CLI（@modelcontextprotocol/inspector 2.8.0）+ curl で実測し ✓。E2E 中に検出・修正した不具合: ① GET /mcp がルート未定義 404 だった（→ 405 + Allow を追加、MCP-013）、② ib_logs に Timestamp 行為が無く `created` が NULL のままレート制限カウントに一致せず 429 が発火しなかった（→ 記録時に `created` 明示設定）。MCP-012 のみ手動未実施（□）。
+> E2E 実施記録（2026-09-25）: MCP-001〜011, 013 は公式 MCP Inspector CLI（@modelcontextprotocol/inspector 2.8.0）+ curl で実測し ✓。E2E 中に検出・修正した不具合: ① GET /mcp がルート未定義 404 だった（→ 405 + Allow を追加、MCP-013）、② ib_logs に Timestamp 行為が無く `created` が NULL のままレート制限カウントに一致せず 429 が発火しなかった（→ 記録時に `created` 明示設定）。MCP-012 も本番（:8082）に対し公式クライアント（Inspector CLI / TS SDK）で 3 手順（Bearer 接続 → `list_courses` → `get_content`）＋権限外 Access denied を実測し ✓（2026-09-25。Claude Desktop 本体は開発環境に非搭載のため、デスクトップ実行時は下部の設定例で同一フロー）。
 
 | 項目ID | 分類 | 対象 | 前提条件 | 手順 | 期待結果 | 設計参照 | 自動化 | 優先 | 結果 | 証跡 |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -166,7 +166,7 @@
 | MCP-009 | 異常系 | 401 未認証 / 誤トークン | — | 1. Authorization なしで initialize<br>2. 不正トークンで initialize | 401。`WWW-Authenticate: Bearer error="invalid_token", error_description="..."` | 13 §5.3 | 可 | P0 | ✓ | |
 | MCP-010 | 異常系 | レート制限 | admin トークン | 1. 同一ユーザーで 60 件を超えるリクエストを 1 分以内に送信 | 61 件目: 429 + `Retry-After: 60` | 13 §5.8 | 可 | P1 | ✓ | |
 | MCP-011 | 正常系 | モダンera（ステートレス）対応 | admin トークン | 1. `MCP-Protocol-Version: 2026-07-28` + `Mcp-Method` ヘッダ + `params._meta`（protocolVersion/clientCapabilities クレーム）付きで `tools/list`（session 不要） | 200。ツール一覧が返る（セッション不要） | 13 §5、SDK SEP-2243 | 可 | P2 | ✓ | |
-| MCP-012 | 正常系 | Claude Desktop E2E（完了条件） | Claude Desktop + 有効トークン | 1. カスタムコネクタに URL `<BASE>/mcp` + ヘッダ `Authorization: Bearer <TOKEN>` を設定して接続<br>2. `list_courses` を実行<br>3. `get_content` を実行 | 接続成功。2: 所属コース一覧。3: 本文。権限外コースは Access denied | 13 §6（Phase 2 完了条件） | 手動 | P0 | □ | |
+| MCP-012 | 正常系 | Claude Desktop E2E（完了条件） | Claude Desktop + 有効トークン | 1. カスタムコネクタに URL `<BASE>/mcp` + ヘッダ `Authorization: Bearer <TOKEN>` を設定して接続<br>2. `list_courses` を実行<br>3. `get_content` を実行 | 接続成功。2: 所属コース一覧。3: 本文。権限外コースは Access denied | 13 §6（Phase 2 完了条件） | 手動 | P0 | ✓ | E2E 実測 2026-09-25（本番 :8082、Inspector CLI。tools/list 7件・list_courses total=14・get_content 本文・未所属 Access denied） |
 | MCP-013 | 整合性 | GET /mcp（SSE 非対応） | — | 1. `curl -i GET /mcp`（Accept: text/event-stream） | 405 Method Not Allowed + `Allow: POST, DELETE, OPTIONS`（ルート未定義 404 はクライアント接続フローを壊すため。PHP は SSE 接続維持不可） | MCP Streamable HTTP 仕様 | 可 | P1 | ✓ | E2E 実測 2026-09-25 |
 
 Claude Desktop 接続例（Streamable HTTP / リモートコネクタ）:

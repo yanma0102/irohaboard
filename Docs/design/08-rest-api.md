@@ -1158,4 +1158,14 @@ API のレスポンス形式（`{ data: ... }` / `{ data: [...], meta: {...} }` 
 | DELETE | `/api/v1/groups/{id}` | グループ削除 | admin / manager |
 | PUT / PATCH | `/api/v1/courses/{id}` | コース更新 | admin / manager |
 
-> API 全体の正は `Docs/API.md`（v1.1）とする。本節は設計書と実装の差分を記録するものであり、ルートの追加・変更時は双方を更新すること。
+また、design 13（Markdown / Contents API Write）の Phase 1 により、コンテンツの書き込み系が実装済みとなった（`12-implementation-test-plan.md` §8 参照）。
+
+| メソッド | パス | 概要 | ロール |
+|---|---|---|---|
+| POST | `/api/v1/contents` | コンテンツ追加（`course_id` / `title` / `kind` 必須） | staff: admin / manager / editor / teacher |
+| PUT / PATCH | `/api/v1/contents/{id}` | コンテンツ更新（部分更新可） | staff |
+| DELETE | `/api/v1/contents/{id}` | コンテンツ削除（Web 画面と同一方式・同一ステータス遷移） | staff |
+
+Markdown（kind='markdown'）の `body` は生のまま保存し、出力時に `MarkdownRenderer` でサニタイズする（05-security.md §6）。認可は `user` ロールを拒否し、コース未所属・存在しない ID は 404、権限外は 403（design 13 §D-2）。
+
+> API 全体の正は `Docs/API.md`（v1.2）とする。本節は設計書と実装の差分を記録するものであり、ルートの追加・変更時は双方を更新すること。

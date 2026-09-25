@@ -363,3 +363,72 @@ CakePHP 5 では `FormProtectionComponent`（CakePHP 4 方式相当）が唯一�
 4. **`Security.salt` の廃止**: `Config/core.php:243` の `Security.salt` は CakePHP 5 では不要（`FormProtectionComponent` は `Security.salt` を使用しない）
 
 **根拠**: `Config/core.php:243-256`（Security.salt / cipherSeed）、`Config/core.php:250`（formProtection 設定）、`Controller/AppController.php:37-39`（AppSecurity 設定）
+
+---
+
+## 6. Markdown / MCP の XSS 対策（design 13 Phase 1–3）
+
+### 6.1 出力時サニタイズ（`MarkdownRenderer::toHtml()`）
+
+Markdown（kind='markdown'）は保存時にそのまま生テキストで保持し、**出力時に必ずサニタイズする**（保存時サニタイズは行わない。コードフェンス内の HTML を壊さないため）。
+
+`src/Utility/MarkdownRenderer.php` は 2 段構成で処理する：
+
+1. **GFM レンダリング**: League\CommonMark の `Environment::createGFMEnvironment()`（GFM 拡張: 表・打消し・タスクリスト・自動リンク）+ `MarkdownConverter` をシングルトンで使用
+2. **HTMLPurifier によるサニタイズ**: 許可リスト方式で危険要素を除去
+
+許可リスト（`HTML.Allowed`）:
+
+| 分類 | 要素 |
+|---|---|
+| ブロック | `p`, `br`, `hr`, `h1`〜`h6`, `blockquote`, `ul`, `ol`, `li`, `dl`, `dt`, `dd`, `table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`, `pre` |
+| インライン | `strong`, `em`, `del`, `ins`, `code`, `sup`, `sub`, `abbr` |
+| リンク | `a[href\|title\|target]` |
+| 画像 | `img[src\|alt\|title\|width\|height]` |
+
+- `script` / `style` / `iframe` / `object` / すべてのイベント属性（`on*`）はリスト外のため**除去される**
+- `URI.AllowedSchemes` = `http` / `https` / `mailto` のみ（`javascript:` スキーム拒否）
+- `Attr.EnableID=true`（見出しアンカー用 id を許可）
+- `<mark>` / `<details>` / `<summary>` は HTMLPurifier に組込み定義が無く DEBUG=true 時の警告が JSON 応答を汚染するため、許可リストから外している（03-api.md §11 案A）
+
+Web 表示は `MarkdownHelper`、MCP の `get_content_html` ツールは同一経路（`MarkdownRenderer::toHtml()`）を使うため、出力経路は常にサニタイズされる。
+
+### 6.2 kind='html' の扱い（U-5 / 付録G-9）
+
+既存 kind='html' コンテンツは**出力をそのまま返す**（既存互換を維持）。design 13 Phase 3 から `MarkdownRenderer::purifyHtml()` による**影判定ログ**を `get_content_html` で出力する（log_type=`html_sanitize_candidate`、`src/Mcp/Tool/GetContentHtmlTool.php:34`）。ログによる影響評価の後、対象範囲を把握した上で本適用を判断する。
+
+**根拠**: `src/Utility/MarkdownRenderer.php:35-46`（Environment / HTML.Purifier 設定）、`src/Mcp/Tool/GetContentHtmlTool.php:34`（影ログ）、design 13 §3.3 / §9 U-5 / 付録G-9
+
+---
+
+## 7. MCP サーバの認証・レート制限（design 13 Phase 2–3）
+
+### 7.1 認証フロー（`POST /mcp`）
+
+- `Authorization: Bearer <APIトークン>` を**必須**とする。認証は `/api/v1` と同じ `UserTokensTable` の API トークンを流用する
+- ミドルウェア構成（`src/Controller/McpController.php:96-102`、この順序）:
+
+```
+IrohaAuthMiddleware → McpRateLimitMiddleware → OAuthRequestMetaMiddleware
+```
+
+- MCP SDK の `AuthorizationMiddleware` は**使用しない**（ProtectedResourceMetadata に Authorization Server URL が必須のため）。代わりに `IrohaTokenValidator` が `UserTokensTable::lookupApiToken()` で毎リクエスト照合する（付録G-3: `authenticateApiToken()` は失効副作用を持つため使用不可）
+- 認証失敗時は `401` + `WWW-Authenticate: Bearer error="invalid_token"` を返す
+- 認証済み principal（ユーザ情報）は `oauth.*` プレフィクス付き request 属性に格納され、`OAuthRequestMetaMiddleware` がツール実行コンテキストへ転記する
+- **認可**（ツール単位）は `AccessControlService`: 読み取り系はコース所属（直接割当 / グループ経由）必須、書き込み系（`create_content` / `update_content`）はスタッフ限定（design 13 U-1: admin / manager / editor / teacher）
+- セッションは `FileSessionStore`（`tmp/mcp-sessions`、TTL 3600 秒）。`/mcp` は CSRF 検証の対象外。`GET /mcp` は `405`（SSE 非対応、`Allow: POST, DELETE, OPTIONS`）
+
+### 7.2 レート制限（design 13 §5.8）
+
+`ib_logs` ベースの従来方式を流用し、読み取りと書き込みでカウンターを**分離**する（`src/Mcp/McpRateLimitMiddleware.php`）:
+
+| 区分 | 制限 | log_type | 対象 |
+|---|---|---|---|
+| 読み取り | 60 req/分/ユーザ | `mcp_request` | 7 read ツール + 接続系 |
+| 書き込み | 20 req/分/ユーザ | `mcp_write` | `create_content` / `update_content` |
+
+- 超過時は `429` + `Retry-After: 60` を返す
+- 読み取り・書き込みは別カウンターのため、書き込み制限超過中も読み取り系ツールは利用可能
+- 制限値は `McpRateLimitMiddleware::DEFAULT_MAX_REQUESTS=60` / `WRITE_MAX_REQUESTS=20` / `WINDOW_SECONDS=60` で定義
+
+**根拠**: `src/Controller/McpController.php:96-102`（ミドルウェア順序）、`src/Mcp/McpRateLimitMiddleware.php:52-59`（log_type 定数）、design 13 §5.3 / §5.7 / §5.8 / 付録G-3

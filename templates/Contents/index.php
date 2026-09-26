@@ -135,7 +135,7 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 					$content['title'], 
 					[
 						'controller' => 'contents',
-						'action' => 'file_download',
+						'action' => 'fileDownload',
 						$content['id']
 					],
 					[

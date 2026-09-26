@@ -27,6 +27,11 @@ services:
     mem_limit: 1536m
     pids_limit: 512
     restart: unless-stopped
+    # D-36 対策: アップロード先の所有権を Apache 実行ユーザ www-data に合わせる。
+    # webroot/uploads はホスト bind、files は named volume のため、起動時に毎回 chown する。
+    command: >
+      sh -c "chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files &&
+      exec apache2-foreground"
 
   db:
     image: mariadb:11.4

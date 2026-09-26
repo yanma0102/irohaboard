@@ -12,14 +12,8 @@ use Cake\TestSuite\TestCase;
  *
  * ContentsController::index() は学習コンテンツ一覧を表示。
  * ContentsController::view() はコンテンツの閲覧画面を表示。
- * ContentsController::file_image() は画像ファイルを表示。
+ * ContentsController::fileImage() は画像ファイルを表示。
  * ContentsController::preview() はセッションベースのプレビュー表示。
- *
- * 実装バグ:
- * DashedRoute がアクション名 file_image を fileImage に変換するため、
- * Controller::isAction() が false を返し MissingActionException → 404 になる。
- * 同様に file_download → fileDownload、file_movie → fileMovie も影響を受ける。
- * テストでは実際の挙動（404）を検証する。
  */
 class ContentsControllerTest extends TestCase
 {
@@ -317,13 +311,13 @@ class ContentsControllerTest extends TestCase
     }
 
     // =========================================================================
-    // file_image アクションのテスト
+    // fileImage アクションのテスト
     // =========================================================================
 
     /**
      * 未認証で /contents/file-image にアクセスするとリダイレクトされること
      *
-     * file_image は認証コンポーネントにより認証が必要。
+     * fileImage は認証コンポーネントにより認証が必要。
      */
     public function testFileImageRequiresLogin(): void
     {
@@ -332,26 +326,24 @@ class ContentsControllerTest extends TestCase
     }
 
     /**
-     * バグ確認: file_image は DashedRoute のアクション名変換により 404 が返されること
+     * バグ修正: file_image アクションは正常に 200 で画像を返すこと
      *
-     * DashedRoute が file_image → fileImage に変換し、
-     * Controller::isAction() が false を返すため MissingActionException になる。
-     * ファイルが存在しても 404 が返される。
+     * DashedRoute のアクション名変換バグ修正後、
+     * 有効な PNG ファイルが正しく配信されることを確認する。
      */
-    public function testFileImageActionNotFoundDueToRouteBug(): void
+    public function testFileImageActionReturnsValidPng(): void
     {
         $this->loginAsUser();
 
-        $testFile = ROOT . DS . 'files' . DS . 'test_action_bug.png';
+        $testFile = ROOT . DS . 'files' . DS . 'test_action_fix.png';
         $pngData = base64_decode(
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRUEFTkSuQmCC',
         );
         file_put_contents($testFile, $pngData);
 
         try {
-            $this->get('/contents/file-image/test_action_bug.png');
-            // 実装バグ: DashedRoute が file_image を fileImage に変換 → 404
-            $this->assertResponseCode(404);
+            $this->get('/contents/file-image/test_action_fix.png');
+            $this->assertResponseOk();
         } finally {
             if (file_exists($testFile)) {
                 unlink($testFile);
@@ -360,10 +352,9 @@ class ContentsControllerTest extends TestCase
     }
 
     /**
-     * 許可拡張子の画像ファイルを配置しても、バグにより 404 が返されること
+     * 許可拡張子の画像ファイルを配置した場合、200 で返されること
      *
-     * ROOT/files/ にダミー PNG を配置。本来は 200 で返すべきだが、
-     * アクション名変換バグにより 404 が返される。
+     * ROOT/files/ にダミー PNG を配置し、正しく配信されることを確認する。
      */
     public function testFileImageValidPng(): void
     {
@@ -379,8 +370,7 @@ class ContentsControllerTest extends TestCase
 
         try {
             $this->get('/contents/file-image/test_image.png');
-            // 実装バグ: DashedRoute が file_image を fileImage に変換 → 404
-            $this->assertResponseCode(404);
+            $this->assertResponseOk();
         } finally {
             if (file_exists($testFile)) {
                 unlink($testFile);
@@ -390,8 +380,6 @@ class ContentsControllerTest extends TestCase
 
     /**
      * 存在しない画像ファイルは 404 が返されること
-     *
-     * 注: アクション名バグにより本来のバリデーション前に 404 になる。
      */
     public function testFileImageNotFound(): void
     {
@@ -403,8 +391,6 @@ class ContentsControllerTest extends TestCase
 
     /**
      * 許可されていない拡張子のファイルは 404 が返されること
-     *
-     * 注: アクション名バグにより本来のバリデーション前に 404 になる。
      */
     public function testFileImageInvalidExtension(): void
     {
@@ -416,8 +402,6 @@ class ContentsControllerTest extends TestCase
 
     /**
      * 不正な文字を含むファイル名は 404 が返されること
-     *
-     * 注: アクション名バグにより本来のバリデーション前に 404 になる。
      */
     public function testFileImageInvalidFilename(): void
     {
@@ -429,8 +413,6 @@ class ContentsControllerTest extends TestCase
 
     /**
      * 先頭がドットのファイル名は 404 が返されること
-     *
-     * 注: アクション名バグにより本来のバリデーション前に 404 になる。
      */
     public function testFileImageDotPrefix(): void
     {
@@ -441,7 +423,7 @@ class ContentsControllerTest extends TestCase
     }
 
     /**
-     * 許可拡張子の .jpg ファイルもバグにより 404 が返されること
+     * 許可拡張子の .jpg ファイルも 200 で返されること
      */
     public function testFileImageValidJpg(): void
     {
@@ -457,8 +439,7 @@ class ContentsControllerTest extends TestCase
 
         try {
             $this->get('/contents/file-image/test_image.jpg');
-            // 実装バグ: DashedRoute が file_image を fileImage に変換 → 404
-            $this->assertResponseCode(404);
+            $this->assertResponseOk();
         } finally {
             if (file_exists($testFile)) {
                 unlink($testFile);

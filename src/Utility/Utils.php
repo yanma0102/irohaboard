@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace App\Utility;
 
-use Cake\Utility\Configure;
+use Cake\Core\Configure;
 use DateTime;
 use SplFileObject;
 

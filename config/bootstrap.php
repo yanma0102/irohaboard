@@ -145,39 +145,74 @@ if (PHP_SAPI === 'cli') {
 }
 
 /*
- * Set the full base URL for the application.
+ * Set the full base URL used for URL generation (Router::fullBaseUrl).
  *
- * SECURITY: In production, App.fullBaseUrl MUST be explicitly configured to prevent
- * Host Header Injection attacks. The HostHeaderMiddleware enforces this requirement
- * and validates incoming Host headers against the configured value.
+ * NOTE: Controller::redirect() builds ABSOLUTE Location headers through
+ * Router::url($url, true). This value therefore decides the host browsers are
+ * sent to after login and on every other redirect, so it must follow the host
+ * the client actually used — otherwise e.g. logging in via a LAN address
+ * bounces the browser back to http://localhost.
+ *
+ * SECURITY: Configure('App.fullBaseUrl') (set via APP_FULL_BASE_URL) stays the
+ * VALIDATION basis used by HostHeaderMiddleware. A host derived from HTTP_HOST
+ * is written ONLY to Router and never back into Configure — writing an
+ * attacker-controlled host into Configure would make HostHeaderMiddleware
+ * compare the host against itself and disable Host Header Injection protection.
+ *
+ * When the request authority matches the configured one the configured URL is
+ * kept as-is so its scheme/port stay canonical (avoids https -> http
+ * downgrades behind proxies). When they differ, the request host is used: in
+ * production (debug=false) HostHeaderMiddleware has already rejected such a
+ * request with 400, so only debug mode / unconfigured setups reach that branch.
  *
  * Set APP_FULL_BASE_URL in your environment variables or configure App.fullBaseUrl
  * in config/app.php or config/app_local.php
  *
  * Example: APP_FULL_BASE_URL=https://example.com
  */
-$fullBaseUrl = Configure::read('App.fullBaseUrl');
-if (!$fullBaseUrl) {
-    $httpHost = env('HTTP_HOST');
-
-    /*
-     * Development mode fallback: Use HTTP_HOST for convenience.
-     * WARNING: This is ONLY safe in development. In production, the
-     * HostHeaderMiddleware will reject requests when fullBaseUrl is not configured.
-     */
-    if ($httpHost) {
-        $s = null;
-        if (env('HTTPS') || env('HTTP_X_FORWARDED_PROTO') === 'https') {
-            $s = 's';
-        }
-        $fullBaseUrl = 'http' . $s . '://' . $httpHost;
+$httpHost = (string)env('HTTP_HOST');
+$requestBaseUrl = null;
+$requestAuthority = '';
+if ($httpHost !== '') {
+    $s = null;
+    if (env('HTTPS') || env('HTTP_X_FORWARDED_PROTO') === 'https') {
+        $s = 's';
     }
-    unset($httpHost, $s);
+    $requestBaseUrl = 'http' . $s . '://' . $httpHost;
+    $requestAuthority = strtolower($httpHost);
 }
+
+$configuredBaseUrl = Configure::read('App.fullBaseUrl');
+$configuredAuthority = '';
+if ($configuredBaseUrl) {
+    $parsed = parse_url((string)$configuredBaseUrl);
+    if (is_array($parsed)) {
+        $configuredAuthority = strtolower((string)($parsed['host'] ?? ''));
+        if (isset($parsed['port'])) {
+            $configuredAuthority .= ':' . $parsed['port'];
+        }
+    }
+}
+
+$fullBaseUrl = $configuredBaseUrl ?: $requestBaseUrl;
+if ($configuredBaseUrl && $requestBaseUrl && $configuredAuthority !== $requestAuthority) {
+    // リクエスト Host が設定値と異なる（未設定・ポート差・開発環境の別ホストアクセス）
+    $fullBaseUrl = $requestBaseUrl;
+}
+
 if ($fullBaseUrl) {
     Router::fullBaseUrl($fullBaseUrl);
 }
-unset($fullBaseUrl);
+unset(
+    $httpHost,
+    $requestBaseUrl,
+    $requestAuthority,
+    $configuredBaseUrl,
+    $configuredAuthority,
+    $parsed,
+    $s,
+    $fullBaseUrl,
+);
 
 /*
  * Apply the loaded configuration settings to their respective systems.

@@ -433,7 +433,7 @@ class ContentsControllerTest extends TestCase
         // 拡張子・サイズ検証を通過したため、保存後の URL 配列が返る。
         $this->assertArrayHasKey(0, $decoded);
         $this->assertNotFalse($decoded[0], '許可画像は保存され URL が返ること');
-        $this->assertStringContainsString('/contents/file_image/', $decoded[0]);
+        $this->assertStringContainsString('/contents/file-image/', $decoded[0]);
 
         // 保存されたファイルのクリーンアップ
         $this->cleanupUploadedFile($decoded[0], $tmpFile);

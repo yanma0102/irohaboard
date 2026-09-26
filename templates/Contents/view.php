@@ -49,7 +49,7 @@
 
 			if(strpos($url, 'http') === false)
 			{
-				$url = $this->Url->build(['controller' => 'contents', 'action' => 'file_movie', $content['id']]);
+				$url = $this->Url->build(['controller' => 'contents', 'action' => 'fileMovie', $content['id']]);
 			}
 
 			$body = '<video src="'.$url.'" controls width="100%" oncontextmenu="return false;"></video>';
@@ -61,7 +61,7 @@
 			break;
 		case 'html': // リッチテキストコンテンツ
 			$body = $this->Markdown->html($content['body']);
-			//$body = str_replace('src="/uploads/', 'src="'. $this->Url->build(['controller' => 'contents', 'action' => 'file_image']).'/', $body);
+			//$body = str_replace('src="/uploads/', 'src="'. $this->Url->build(['controller' => 'contents', 'action' => 'fileImage']).'/', $body);
 			break;
 		case 'markdown': // Markdown コンテンツ
 			$body = $this->Markdown->text($content['body']);

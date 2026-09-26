@@ -97,15 +97,15 @@ return function (RouteBuilder $routes): void {
         ]);
         $builder->connect('/contents/file-download/{content_id}', [
             'controller' => 'Contents',
-            'action' => 'file_download',
+            'action' => 'fileDownload',
         ], ['pass' => ['content_id']]);
         $builder->connect('/contents/file-movie/{content_id}', [
             'controller' => 'Contents',
-            'action' => 'file_movie',
+            'action' => 'fileMovie',
         ], ['pass' => ['content_id']]);
         $builder->connect('/contents/file-image/{file_name}', [
             'controller' => 'Contents',
-            'action' => 'file_image',
+            'action' => 'fileImage',
         ], ['pass' => ['file_name']]);
         // Note: /contents/add is needed because the Contents view/preview template
         // generates a URL for Contents::add via Form->create(). The form is intercepted

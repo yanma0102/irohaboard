@@ -137,7 +137,7 @@ class ContentsController extends AppController
      * @param string|int $content_id コンテンツID
      * @return \Cake\Http\Response|null
      */
-    public function file_download($content_id): ?Response
+    public function fileDownload($content_id): ?Response
     {
         $content_id = (int)$content_id;
 
@@ -159,6 +159,10 @@ class ContentsController extends AppController
 
         if ($content->kind !== 'file') {
             throw new NotFoundException(__('Invalid content'));
+        }
+
+        if (empty($content->url)) {
+            throw new NotFoundException(__('File not found'));
         }
 
         $safe_file_name = basename($content->url);
@@ -186,7 +190,7 @@ class ContentsController extends AppController
      * @param string|int $content_id コンテンツID
      * @return \Cake\Http\Response|null
      */
-    public function file_movie($content_id): ?Response
+    public function fileMovie($content_id): ?Response
     {
         $content_id = (int)$content_id;
 
@@ -208,6 +212,10 @@ class ContentsController extends AppController
 
         if ($content->kind !== 'movie') {
             throw new NotFoundException(__('Invalid content'));
+        }
+
+        if (empty($content->url)) {
+            throw new NotFoundException(__('File not found'));
         }
 
         $safe_file_name = basename($content->url);
@@ -239,7 +247,7 @@ class ContentsController extends AppController
      * @param string $file_name ファイル名
      * @return \Cake\Http\Response|null
      */
-    public function file_image($file_name): ?Response
+    public function fileImage($file_name): ?Response
     {
         if (!$file_name) {
             throw new NotFoundException(__('Invalid content'));

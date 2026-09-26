@@ -17,8 +17,13 @@
 | W5 | P1 機能／非機能（a11y・静的解析） | [W5-a11y-static.md](W5/W5-a11y-static.md)<br>[W5-cause-analysis.md](W5/W5-cause-analysis.md)<br>[W5-fix-record.md](W5/W5-fix-record.md) | ❌ 不合格（→ 修正済） | D-13〜D-22 |
 | W6 | P2 網羅＋探索拡張＋負荷・並行 | [W6-execution-record.md](W6/W6-execution-record.md)<br>[W6-cause-analysis.md](W6/W6-cause-analysis.md)<br>[W6-fix-record.md](W6/W6-fix-record.md) | ❌ 不合格（→ 修正済） | D-31〜D-33 |
 | W7 | 回帰＋復元＋報告 | [W7-execution-record.md](W7/W7-execution-record.md) | ⚠️ 一部可 | — |
+| **R2** | **修正済み 8 不備の再試験（実 HTTP）** | [R2-retest-record.md](R2/R2-retest-record.md) | ❌ 不合格 | D-10 残留(P0)<br>D-12 残留(P1) |
+| **R3** | **P0 残存 2 件の再検証＋回帰** | [R3-retest-record.md](R3/R3-retest-record.md) | ❌ 不合格（→ 修正済） | D-10 / D-36 とも未修正（D-09 は追試で修正確認） |
+| **R3-fix** | **D-10／D-36／D-37／D-38 の修正と検証** | [R3-fix-record.md](R3/R3-fix-record.md) | ✅ 修正済 | D-37・D-38（修正中に新規発見） |
+| **R4** | **D-10／D-36／D-37／D-38 の修正確認（実 HTTP＋再作成での永続化実証）** | [R4-retest-record.md](R4/R4-retest-record.md) | ✅ **合格** | — |
 
 > **訂正記録**: [\_orchestrator-corrections.md](_orchestrator-corrections.md)（W4/W6/W7 の主張に対する独立再実測と、W7 の「修正済み」判定の訂正）
+> **R2 の訂正**: R2 レコード §4 の後片付け表は基準値（`ib_records`/`ib_records_questions`）を誤記していたため、検査係が真の基準（2／3）へ復元し直した。詳細は R2 レコード §4.1。
 
 ---
 
@@ -28,16 +33,17 @@
 |----|--------|------|------|------|
 | D-01 | S2 / P0 | API 全体にレート制限が存在しない | W1 | ✅ 修正済（120/min） |
 | D-02 | S2 / P0 | `file` 種別の許可拡張子が 0 件で常時拒否 | W1 | ✅ 修正済（汎用 `upload_extensions`/`upload_maxsize` へフォールバック。種別専用キーは image／movie のみ） |
-| D-03 | S2 / P0 | demo_mode 判定が管理 4 画面で欠落 | W1 | ✅ 修正済（管理4画面＋フロントの書き込み系3経路＝学習記録／アンケート送信／テスト採点） |
+| D-03 | S2 / P0 | demo_mode 判定が管理 4 画面で欠落 | W1 | ⚠️ **記載訂正（R2）**。Groups/ContentsQuestions/EnquetesQuestions はガード済。`Admin/RecordsController` は `index`（読取専用＋CSV 出力）のみで**ガード不要**。従来の「管理4画面 ✅ 修正済」は過大記載 |
 | D-04 | S3 | CSP／HSTS／Referrer-Policy／Permissions-Policy 未設定 | W1 | ✅ 修正済 |
 | D-05 | S3 | セキュリティヘッダがアプリ層でなく Apache 層のみ | W1 | ✅ 修正済 |
 | D-06 | S3 | Prelock がユーザー名単位＝ロックアウト DoS | W1 | ✅ 修正済（IP 併用） |
 | D-07 | 要判定 | セッション Cookie の `Secure` 不在 | W1 | 要判定（HTTPS 環境が必要） |
 | D-08 | S2 / P0 | `accessibleCourseIds()` に staff バイパスなし → Write が受講登録済み課程に限定 | W2 | ✅ 修正済（Write 側にも `isStaff()` バイパス） |
 | D-09 | S2 / P0 | MCP ツールのエラーが `isError: false` のまま JSON テキストで返る | W2 | ✅ 修正済（`ToolCallException` 送出 → `isError: true`） |
-| D-10 | S2 / P0 | ユーザー CSV インポートが機能しない（`getData('csvfile')` が `$_FILES` を読めない／テスト不在） | W2 | ✅ 修正済（`getUploadedFile` ＋ `import` の FormProtection 解除） |
+| D-10 | S2 / P0 | ユーザー CSV インポートが機能しない | W2 | ✅ **修正済（R3-fix）**。`src/Utility/Utils.php:11` を `use Cake\Core\Configure;` に変更（1 行）。CP932 CSV 取込でユーザー作成を実 HTTP 確認 |
 | D-11 | S3 | CSV が `charset=UTF-8` 宣言だが実体 CP932 | W2 | ✅ 修正済（SJIS-WIN） |
-| D-12 | S2 / P0 | `upload` が FormProtection で 302 拒否 → **file／movie アップロードが利用不可** | 再試験 | ✅ 修正済（`unlockActions` に `upload`） |
+| D-12 | S2 / P0 | `upload` が FormProtection で 302 拒否 → **file／movie アップロードが利用不可** | 再試験 | ✅ **解消（R3-fix）**。FormProtection は R2 で解消済。保存が完了しなかった真因 D-36 の修正により、ファイル生成を実 HTTP 確認 |
+| **D-36** | **S2 / P0** | **Apache ワーカー `www-data` が `webroot/uploads`／`files` に書けない（`root:root 755` の bind mount、compose に `chown` なし）。`uploadImage` を含む全アップロードが実環境で失敗** | **R2** | ✅ **修正済（R3-fix）**。即時 `chown -R www-data` ＋ compose の `command:` で起動時 chown を永続化。実 HTTP で `www-data` 所有のファイル生成を確認 |
 | D-13 | S3 | `<html lang>` 属性が全テンプレートで不在 | W5 | ✅ 修正済（6 ファイルに `lang="ja"`） |
 | D-14 | S2 | テスト／アンケート画面のラジオ・チェックボックスに `<label>` なし | W5 | ✅ 修正済（`id`＋`for` 付与。`answer_{qid}_{opt}` で一意） |
 | D-15 | S2 | モーダルに `role="dialog"`／`aria-modal`／フォーカストラップなし | W5 | ✅ 修正済（3 モーダルに ARIA、`common.js` にフォーカストラップ） |
@@ -61,8 +67,10 @@
 | D-33 | S4 | MCP の `OPTIONS` preflight が 401 を返し CORS ヘッダを伴わない | W6 | ✅ 修正済（preflight 判定で 204＋CORS ヘッダ。通常 OPTIONS は 401 維持） |
 | **D-34** | **S2 / P0** | `/install` のフォームに CSRF トークンが無く POST が 403（インストーラー使用不能） | W3 | ✅ 修正済（hidden input 追加） |
 | **D-35** | **S2 / P0** | install のフォーム送信値が常に空でバリデーションが必ず失敗（インストール永久に完了しない） | W3 | ✅ 修正済（`getData('data.User')`） |
+| **D-37** | **S2 / P0** | アップロード画像・ファイル配信が到達不能（snake_case アクション `file_download`/`file_movie`/`file_image` と `DashedRoute` の自動 inflect 不整合で `Missing Method` 404。`uploadImage` の返す URL もアンダースコア形式で不一致） | 再試験（R3-fix） | ✅ 修正済（3 メソッドを camelCase 化＋ルート・テンプレート・返却 URL を統一） |
+| **D-38** | **S2** | `fileDownload`/`fileMovie` が `content.url` 空（未登録ファイル）で `basename(null)` の TypeError → HTTP 500 | 再試験（R3-fix） | ✅ 修正済（空 URL を `NotFoundException` に変換し 404 化） |
 
-**未修正の P0 / S2: 0 件。**（W1〜W6 の P0／S2 はすべて修正済み）
+**未修正の P0 / S2: 0 件。**（W1〜W6 の P0／S2 および R2/R3 で残存した D-10／D-36／D-37／D-38 はすべて修正済み。**R4 で実 HTTP と自動テストにより修正を確認**。詳細は [R4-retest-record.md](R4/R4-retest-record.md)）
 
 **意図的に未修正（要判断）**: D-18（`date()` の `FrozenTime` 移行。タイムゾーン前提の変換リスクに対し機能価値が小さいため延期）、D-32（NULL byte は PHP SAPI がアプリ到達前に拒否するためサーバ層の既定動作。アプリ層の修正対象外）。
 

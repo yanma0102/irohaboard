@@ -358,7 +358,7 @@ class ContentsController extends AppController
                     $uri = $this->request->getUri();
                     $port = $uri->getPort() ? ':' . $uri->getPort() : '';
                     $file_url = $uri->getScheme() . '://' . $uri->getHost() . $port
-                        . '/contents/file_image/' . $new_name;
+                        . '/contents/file-image/' . $new_name;
                     $response = $result ? [$file_url] : [false];
                 }
             } else {

@@ -514,4 +514,37 @@ class ContentsQuestionsResultViewTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseCode(200);
     }
+
+    /**
+     * D-03: ContentsQuestionsController::index() の POST 採点処理に demo_mode ガードが
+     *       保存処理より前に存在すること
+     *
+     * Application::bootstrap() が毎リクエストで config/ib_config.php を再読込するため、
+     * 統合テストでは demo_mode を実行時に true にできない。よってガードの存在と位置を
+     * ソースコードで検証する。
+     */
+    public function testTestSubmitHasDemoModeGuard(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/ContentsQuestionsController.php');
+
+        // index メソッド部分を切り出し
+        preg_match('/public function index\b.*?^    \}/ms', $source, $match);
+        $this->assertNotEmpty($match, 'index メソッドが見つからない');
+
+        $methodSource = $match[0];
+
+        // demo_mode ガードの存在確認
+        $this->assertStringContainsString(
+            "Configure::read('demo_mode')",
+            $methodSource,
+            'index に demo_mode ガードが存在すること'
+        );
+
+        // 保存処理より前にガードがあること
+        $guardPos = strpos($methodSource, "Configure::read('demo_mode')");
+        $detailsPos = strpos($methodSource, '$details = []');
+        $this->assertNotFalse($guardPos, 'demo_mode ガードが見つからない');
+        $this->assertNotFalse($detailsPos, '保存処理 ($details = []) が見つからない');
+        $this->assertLessThan($detailsPos, $guardPos, 'demo_mode ガードは保存処理より前に位置すること');
+    }
 }

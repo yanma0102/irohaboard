@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 
 /**
@@ -94,6 +95,12 @@ class EnquetesQuestionsController extends AppController
 
         // 保存処理
         if ($this->request->is('post')) {
+            if (Configure::read('demo_mode')) {
+                $this->Flash->error(__('デモモードでは保存できません'));
+                $this->redirect(['action' => 'index', $content_id]);
+                return;
+            }
+
             $details = [];
 
             foreach ($contentsQuestions as $cq) {

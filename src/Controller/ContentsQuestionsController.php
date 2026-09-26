@@ -126,6 +126,12 @@ class ContentsQuestionsController extends AppController
 
         // 採点処理
         if ($this->request->is('post')) {
+            if (Configure::read('demo_mode')) {
+                $this->Flash->error(__('デモモードでは保存できません'));
+                $this->redirect(['action' => 'index', $content_id]);
+                return;
+            }
+
             $details = [];
             $full_score = 0;
             $pass_score = 0;

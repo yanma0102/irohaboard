@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use App\Controller\RecordsController;
+use Cake\Core\Configure;
+use Cake\Http\Response;
+use Cake\Http\ServerRequest;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -388,5 +392,79 @@ class RecordsSaveTest extends TestCase
         $this->get('/records/add/1');
 
         $this->assertResponseCode(405);
+    }
+
+    /**
+     * D-03: demo_mode 有効時に add() を直接呼び出すと、DB 書込なしで
+     *       Flash エラー + 空ボディ 200 が返されること
+     *
+     * Application::bootstrap() が毎リクエストで config/ib_config.php を再読込するため、
+     * 統合テスト（IntegrationTestTrait）では demo_mode を実行時に true にできない。
+     * したがってコントローラを直接生成して add() を呼び出し、ガードの実挙動を検証する。
+     *
+     * RecordsController::add() のガードは allowMethod(['post']) 直後・readAuthUser()
+     * や DB アクセスより前に return するため、認証・DB セットアップは不要。
+     */
+    public function testAddIsBlockedWhenDemoModeIsEnabled(): void
+    {
+        $request = new ServerRequest([
+            'url' => '/records/add/1',
+            'environment' => ['REQUEST_METHOD' => 'POST'],
+        ]);
+
+        $controller = new RecordsController($request);
+        $controller->setResponse(new Response());
+        $controller->loadComponent('Flash');
+
+        Configure::write('demo_mode', true);
+
+        try {
+            $controller->add(1);
+        } catch (\Exception $e) {
+            // allowMethod() が POST であれば例外は発生しない
+            $this->fail('add() で例外が発生: ' . $e->getMessage());
+        }
+
+        // レスポンスが 200（空ボディ）であること
+        // Controller::$response は protected なので公開アクセサ経由で取得する
+        $response = $controller->getResponse();
+        $this->assertSame(200, $response->getStatusCode(), 'demo_mode 時は 200 が返されること');
+        $this->assertSame('', (string)$response->getBody(), 'demo_mode 時は空ボディが返されること');
+
+        // Flash エラーメッセージがセッションに設定されること
+        $flash = $_SESSION['Flash']['flash'][0]['message'] ?? null;
+        $this->assertSame(__('デモモードでは保存できません'), $flash, 'Flash エラーメッセージが設定されること');
+
+        // ib_records にレコードが保存されないこと
+        $recordsTable = $this->getTableLocator()->get('Records');
+        $count = $recordsTable->find()->count();
+        $this->assertSame(0, $count, 'demo_mode で ib_records にレコードが保存されている');
+
+        Configure::write('demo_mode', false);
+    }
+
+    /**
+     * D-03: RecordsController::add() の demo_mode ガードが保存処理より前に位置すること
+     *
+     * ソース検査により、Configure::read('demo_mode') の出現位置が
+     * $recordsTable->save() より前であることを確認する。
+     * ガード位置が後なら回帰を見逃す。
+     */
+    public function testAddDemoModeGuardPositionBeforeSave(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/RecordsController.php');
+
+        // add メソッド部分を切り出し
+        preg_match('/public function add\b.*?^    \}/ms', $source, $match);
+        $this->assertNotEmpty($match, 'add メソッドが見つからない');
+
+        $methodSource = $match[0];
+
+        $guardPos = strpos($methodSource, "Configure::read('demo_mode')");
+        $savePos = strpos($methodSource, '$recordsTable->save(');
+
+        $this->assertNotFalse($guardPos, 'add に demo_mode ガードが存在すること');
+        $this->assertNotFalse($savePos, 'add に save() 呼び出しが存在すること');
+        $this->assertLessThan($savePos, $guardPos, 'demo_mode ガードは save() より前に位置すること');
     }
 }

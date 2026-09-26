@@ -48,6 +48,12 @@ class RecordsController extends AppController
         $this->autoRender = false;
         $this->request->allowMethod(['post']);
 
+        if (Configure::read('demo_mode')) {
+            $this->Flash->error(__('デモモードでは保存できません'));
+            $this->response = $this->response->withStringBody('');
+            return;
+        }
+
         $content_id = (int)$content_id;
 
         $contentsTable = $this->fetchTable('Contents');

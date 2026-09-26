@@ -6,12 +6,14 @@ namespace App\Test\TestCase\Middleware;
 use App\Controller\Api\ApiException;
 use App\Middleware\ApiErrorMiddleware;
 use Cake\Controller\Exception\InvalidParameterException;
+use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
 use Cake\TestSuite\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Throwable;
 
 /**
  * ApiErrorMiddleware Test
@@ -32,10 +34,10 @@ class ApiErrorMiddlewareTest extends TestCase
     /**
      * Helper: create a handler that throws the given exception
      */
-    private function createThrowingHandler(\Throwable $exception): RequestHandlerInterface
+    private function createThrowingHandler(Throwable $exception): RequestHandlerInterface
     {
-        return new class($exception) implements RequestHandlerInterface {
-            public function __construct(private \Throwable $exception)
+        return new class ($exception) implements RequestHandlerInterface {
+            public function __construct(private Throwable $exception)
             {
             }
 
@@ -208,11 +210,11 @@ class ApiErrorMiddlewareTest extends TestCase
      */
     public function testInternalErrorExceptionIsNotCaught(): void
     {
-        $exception = new \Cake\Http\Exception\InternalErrorException('Something broke');
+        $exception = new InternalErrorException('Something broke');
         $request = new ServerRequest(['url' => '/api/v1/users']);
         $handler = $this->createThrowingHandler($exception);
 
-        $this->expectException(\Cake\Http\Exception\InternalErrorException::class);
+        $this->expectException(InternalErrorException::class);
         $this->middleware->process($request, $handler);
     }
 

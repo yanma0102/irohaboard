@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -62,7 +63,7 @@ class ContentsQuestionsResultViewTest extends TestCase
     private function createUser(
         string $username = 'testuser',
         string $role = 'user',
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
             'username' => $username,
@@ -80,7 +81,7 @@ class ContentsQuestionsResultViewTest extends TestCase
     /**
      * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsUser(): \Cake\Datasource\EntityInterface
+    private function loginAsUser(): EntityInterface
     {
         $user = $this->createUser();
 
@@ -104,7 +105,7 @@ class ContentsQuestionsResultViewTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(int $userId, string $title = 'テストコース'): \Cake\Datasource\EntityInterface
+    private function createCourse(int $userId, string $title = 'テストコース'): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -138,7 +139,7 @@ class ContentsQuestionsResultViewTest extends TestCase
         int $courseId,
         int $userId,
         int $status = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $entity = $contentsTable->newEntity([
             'course_id' => $courseId,
@@ -162,7 +163,7 @@ class ContentsQuestionsResultViewTest extends TestCase
     private function createTextQuestion(
         int $contentId,
         int $sortNo = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $contentsQuestionsTable->newEntity([
             'content_id' => $contentId,
@@ -186,7 +187,7 @@ class ContentsQuestionsResultViewTest extends TestCase
     private function createSingleChoiceQuestion(
         int $contentId,
         int $sortNo = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $contentsQuestionsTable->newEntity([
             'content_id' => $contentId,
@@ -210,7 +211,7 @@ class ContentsQuestionsResultViewTest extends TestCase
     private function createMultiChoiceQuestion(
         int $contentId,
         int $sortNo = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $contentsQuestionsTable->newEntity([
             'content_id' => $contentId,
@@ -235,7 +236,7 @@ class ContentsQuestionsResultViewTest extends TestCase
         int $courseId,
         int $userId,
         int $contentId,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $recordsTable = $this->getTableLocator()->get('Records');
         $entity = $recordsTable->newEmptyEntity();
         $entity = $recordsTable->patchEntity($entity, [
@@ -265,7 +266,7 @@ class ContentsQuestionsResultViewTest extends TestCase
         string $correct = '',
         int $isCorrect = 1,
         int $score = 10,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $recordsQuestionsTable = $this->getTableLocator()->get('RecordsQuestions');
         $entity = $recordsQuestionsTable->newEmptyEntity();
         $entity = $recordsQuestionsTable->patchEntity($entity, [
@@ -408,9 +409,9 @@ class ContentsQuestionsResultViewTest extends TestCase
         $content = $this->createTestContent((int)$course->id, (int)$user->id);
 
         // 問題を3つ作成: 記述式、単一正解、複数正解
-        $textQuestion    = $this->createTextQuestion((int)$content->id, 1);
-        $singleQuestion  = $this->createSingleChoiceQuestion((int)$content->id, 2);
-        $multiQuestion   = $this->createMultiChoiceQuestion((int)$content->id, 3);
+        $textQuestion = $this->createTextQuestion((int)$content->id, 1);
+        $singleQuestion = $this->createSingleChoiceQuestion((int)$content->id, 2);
+        $multiQuestion = $this->createMultiChoiceQuestion((int)$content->id, 3);
 
         // テスト結果レコード作成
         $record = $this->createRecord((int)$course->id, (int)$user->id, (int)$content->id);
@@ -537,7 +538,7 @@ class ContentsQuestionsResultViewTest extends TestCase
         $this->assertStringContainsString(
             "Configure::read('demo_mode')",
             $methodSource,
-            'index に demo_mode ガードが存在すること'
+            'index に demo_mode ガードが存在すること',
         );
 
         // 保存処理より前にガードがあること

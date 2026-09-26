@@ -16,14 +16,13 @@ declare(strict_types=1);
  */
 namespace App;
 
-use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\ApiErrorMiddleware;
 use App\Middleware\ApiRateLimitMiddleware;
+use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
-use Authentication\Identifier\PasswordIdentifier;
 use Authentication\Middleware\AuthenticationMiddleware;
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
@@ -137,8 +136,9 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                     if (str_starts_with($uri, '/users/login') || str_starts_with($uri, '/users/logout')) {
                         return true;
                     }
+
                     return false;
-                })
+                }),
             );
 
         return $middlewareQueue;
@@ -154,7 +154,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
     {
         // admin プレフィックスの場合は管理画面ログインへリダイレクトする
         $prefix = $request->getAttribute('params')['prefix'] ?? null;
-        $loginUrl = ($prefix === 'Admin')
+        $loginUrl = $prefix === 'Admin'
             ? '/admin/users/login'
             : '/users/login';
 

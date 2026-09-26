@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use Cake\Http\Response;
+
 /**
  * ApiRecords Controller
  * 学習記録の一覧・詳細を提供する
@@ -25,7 +27,7 @@ class RecordsController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function index(): \Cake\Http\Response
+    public function index(): Response
     {
         $conditions = [];
         $recordsTable = $this->fetchTable('Records');
@@ -87,7 +89,7 @@ class RecordsController extends BaseController
      * @param int $id 記録ID
      * @return \Cake\Http\Response
      */
-    public function view(int $id): \Cake\Http\Response
+    public function view(int $id): Response
     {
         $recordsTable = $this->fetchTable('Records');
 

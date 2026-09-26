@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
-use Cake\ORM\Query;
 use Cake\Validation\Validator;
 
 /**
@@ -20,7 +19,6 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\CoursesTable&\Cake\ORM\Association\BelongsTo $Courses
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\ContentsTable&\Cake\ORM\Association\BelongsTo $Contents
- *
  * @method \App\Model\Entity\Record newEmptyEntity()
  * @method \App\Model\Entity\Record newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Record[] newEntities(array $data, array $options = [])

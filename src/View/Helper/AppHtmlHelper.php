@@ -26,8 +26,8 @@ class AppHtmlHelper extends HtmlHelper
     public function addCrumb(string $name, mixed $link = null, array $options = []): void
     {
         $this->_crumbs[] = [
-            'name'    => $name,
-            'url'     => $link,
+            'name' => $name,
+            'url' => $link,
             'options' => $options,
         ];
     }

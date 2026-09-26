@@ -17,7 +17,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\GroupsTable&\Cake\ORM\Association\BelongsTo $Groups
- *
  * @method \App\Model\Entity\UsersGroup newEmptyEntity()
  * @method \App\Model\Entity\UsersGroup newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\UsersGroup[] newEntities(array $data, array $options = [])

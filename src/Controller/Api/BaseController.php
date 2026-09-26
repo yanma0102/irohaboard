@@ -18,6 +18,9 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AppController;
+use Cake\Event\EventInterface;
+use Cake\Http\Response;
+use Cake\ORM\Table;
 
 /**
  * ApiBase Controller
@@ -71,7 +74,7 @@ class BaseController extends AppController
      * @param \Cake\Event\EventInterface $event
      * @return void
      */
-    public function beforeFilter(\Cake\Event\EventInterface $event): ?\Cake\Http\Response
+    public function beforeFilter(EventInterface $event): ?Response
     {
         parent::beforeFilter($event);
 
@@ -202,7 +205,7 @@ class BaseController extends AppController
      * @param int $status HTTPステータスコード
      * @return \Cake\Http\Response
      */
-    protected function respond(array $payload, int $status = 200): \Cake\Http\Response
+    protected function respond(array $payload, int $status = 200): Response
     {
         $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
@@ -226,7 +229,7 @@ class BaseController extends AppController
      * @param int $status HTTPステータスコード
      * @return \Cake\Http\Response
      */
-    protected function ok(mixed $data, int $status = 200): \Cake\Http\Response
+    protected function ok(mixed $data, int $status = 200): Response
     {
         return $this->respond(['data' => $data], $status);
     }
@@ -239,7 +242,7 @@ class BaseController extends AppController
      * @param int $status HTTPステータスコード
      * @return \Cake\Http\Response
      */
-    protected function okList(array $rows, array $meta = [], int $status = 200): \Cake\Http\Response
+    protected function okList(array $rows, array $meta = [], int $status = 200): Response
     {
         return $this->respond([
             'data' => array_values($rows),
@@ -348,7 +351,7 @@ class BaseController extends AppController
      * @param array $findOptions find オプション（conditions / fields / order）
      * @return array{0: array, 1: array} [rows, meta]
      */
-    protected function paginatedList(\Cake\ORM\Table $table, array $findOptions = []): array
+    protected function paginatedList(Table $table, array $findOptions = []): array
     {
         $paging = $this->pagination();
         $conditions = $findOptions['conditions'] ?? [];
@@ -434,7 +437,7 @@ EOF;
 
         $connection = $this->fetchTable('Users')->getConnection();
 
-        $sql = "SELECT group_id FROM ib_users_groups WHERE user_id = :user_id";
+        $sql = 'SELECT group_id FROM ib_users_groups WHERE user_id = :user_id';
         $rows = $connection->execute($sql, ['user_id' => $userId])->fetchAll('assoc');
 
         $ids = [];

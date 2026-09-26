@@ -48,7 +48,7 @@ class ContentsTableTest extends TestCase
         $conn = $this->Contents->getConnection();
         $conn->execute(
             'INSERT INTO ib_courses (title, user_id, created) VALUES (:title, :user_id, NOW())',
-            ['title' => $title, 'user_id' => $userId]
+            ['title' => $title, 'user_id' => $userId],
         );
 
         return (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
@@ -85,11 +85,11 @@ class ContentsTableTest extends TestCase
         $conn = $this->Contents->getConnection();
         $conn->execute(
             'INSERT INTO ib_records (course_id, user_id, content_id, study_sec, created) VALUES (:course_id, :user_id, :content_id, 100, NOW())',
-            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId]
+            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId],
         );
         $conn->execute(
             'INSERT INTO ib_records (course_id, user_id, content_id, study_sec, created) VALUES (:course_id, :user_id, :content_id, 50, NOW())',
-            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId]
+            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId],
         );
 
         $records = $this->Contents->getContentRecord($userId, $courseId);

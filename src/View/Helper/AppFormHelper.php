@@ -4,9 +4,10 @@ declare(strict_types=1);
 namespace App\View\Helper;
 
 use Cake\Core\Configure;
-use Cake\Datasource\FactoryLocator;
+use Cake\ORM\TableRegistry;
 use Cake\Utility\Inflector;
 use Cake\View\Helper\FormHelper;
+use Exception;
 
 /**
  * CakePHP 2 compatible form helper methods (inputExp, inputRadio, searchField, searchDate, inputDate).
@@ -52,9 +53,9 @@ class AppFormHelper extends FormHelper
                     $context = $entity;
                 } else {
                     try {
-                        $table = \Cake\ORM\TableRegistry::getTableLocator()->get($tableAlias);
+                        $table = TableRegistry::getTableLocator()->get($tableAlias);
                         $context = $table->newEmptyEntity();
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // TableRegistry lookup failed; leave $context as null.
                     }
                 }
@@ -106,7 +107,7 @@ class AppFormHelper extends FormHelper
         if ($afterHtml !== '') {
             $options['templateVars'] = array_merge(
                 $options['templateVars'] ?? [],
-                ['after' => $afterHtml]
+                ['after' => $afterHtml],
             );
         }
 
@@ -159,12 +160,12 @@ class AppFormHelper extends FormHelper
     public function inputRadio(string $fieldName, array $options = [], string $exp = ''): string
     {
         $defaults = [
-            'type'      => 'radio',
+            'type' => 'radio',
             'separator' => "\n",
-            'legend'    => false,
-            'class'     => false,
-            'before'    => '',
-            'div'       => false,
+            'legend' => false,
+            'class' => false,
+            'before' => '',
+            'div' => false,
         ];
 
         // Merge but don't overwrite explicitly-set options
@@ -197,7 +198,7 @@ class AppFormHelper extends FormHelper
         unset($options['separator'], $options['div']);
         $options['templates'] = array_merge(
             $options['templates'] ?? [],
-            ['radioWrapper' => '{{input}}{{label}}' . $separator]
+            ['radioWrapper' => '{{input}}{{label}}' . $separator],
         );
 
         $result = $this->control($fieldName, $options);
@@ -222,7 +223,7 @@ class AppFormHelper extends FormHelper
     public function searchField(string $fieldName, array $additional_options = []): string
     {
         $defaults = [
-            'class'    => 'form-control',
+            'class' => 'form-control',
             'required' => false,
         ];
 
@@ -264,12 +265,12 @@ class AppFormHelper extends FormHelper
     {
         $currentYear = (int)date('Y');
         $defaults = [
-            'class'     => 'form-control',
-            'required'  => false,
-            'minYear'   => $currentYear,
-            'maxYear'   => $currentYear,
+            'class' => 'form-control',
+            'required' => false,
+            'minYear' => $currentYear,
+            'maxYear' => $currentYear,
             'separator' => ' / ',
-            'style'     => 'width:initial; display: inline;',
+            'style' => 'width:initial; display: inline;',
         ];
 
         // Set label with " : " suffix — always append to match CakePHP 2 behavior
@@ -302,12 +303,12 @@ class AppFormHelper extends FormHelper
     {
         $currentYear = (int)date('Y');
         $defaults = [
-            'class'      => 'form-control',
-            'required'   => false,
-            'minYear'    => $currentYear - 5,
-            'maxYear'    => $currentYear + 5,
-            'separator'  => ' / ',
-            'style'      => 'width:initial; display: inline;',
+            'class' => 'form-control',
+            'required' => false,
+            'minYear' => $currentYear - 5,
+            'maxYear' => $currentYear + 5,
+            'separator' => ' / ',
+            'style' => 'width:initial; display: inline;',
         ];
 
         // Set label with " : " suffix unless label is '～'

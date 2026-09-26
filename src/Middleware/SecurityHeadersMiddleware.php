@@ -41,7 +41,7 @@ class SecurityHeadersMiddleware implements MiddlewareInterface
                 . "font-src 'self' data:; "
                 . "connect-src 'self'; "
                 . "frame-ancestors 'self'; "
-                . "base-uri 'self'"
+                . "base-uri 'self'",
             )
             ->withHeader('X-Frame-Options', 'SAMEORIGIN')
             ->withHeader('X-Content-Type-Options', 'nosniff');

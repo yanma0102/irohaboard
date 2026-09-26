@@ -52,7 +52,7 @@ class CoursesTableTest extends TestCase
         $conn = $this->Courses->getConnection();
         $conn->execute(
             'INSERT INTO ib_courses (title, user_id, created) VALUES (:title, :user_id, NOW())',
-            ['title' => $title, 'user_id' => $userId]
+            ['title' => $title, 'user_id' => $userId],
         );
 
         return (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
@@ -87,7 +87,7 @@ class CoursesTableTest extends TestCase
         $conn = $this->Courses->getConnection();
         $conn->execute(
             'INSERT INTO ib_users_courses (user_id, course_id, created) VALUES (:user_id, :course_id, NOW())',
-            ['user_id' => $userId, 'course_id' => $courseId]
+            ['user_id' => $userId, 'course_id' => $courseId],
         );
 
         $this->assertTrue($this->Courses->hasRight($userId, $courseId), '個人登録で権限あり');
@@ -101,7 +101,7 @@ class CoursesTableTest extends TestCase
 
         $conn = $this->Courses->getConnection();
         $conn->execute(
-            'INSERT INTO ib_groups (title, created) VALUES ("グループ1", NOW())'
+            'INSERT INTO ib_groups (title, created) VALUES ("グループ1", NOW())',
         );
         $groupId = (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
 
@@ -110,11 +110,11 @@ class CoursesTableTest extends TestCase
 
         $conn->execute(
             'INSERT INTO ib_users_groups (user_id, group_id, created) VALUES (:user_id, :group_id, NOW())',
-            ['user_id' => $userId, 'group_id' => $groupId]
+            ['user_id' => $userId, 'group_id' => $groupId],
         );
         $conn->execute(
             'INSERT INTO ib_groups_courses (group_id, course_id, created) VALUES (:group_id, :course_id, NOW())',
-            ['group_id' => $groupId, 'course_id' => $courseId]
+            ['group_id' => $groupId, 'course_id' => $courseId],
         );
 
         $this->assertTrue($this->Courses->hasRight($userId, $courseId), 'グループ経由で権限あり');
@@ -128,13 +128,13 @@ class CoursesTableTest extends TestCase
         $conn = $this->Courses->getConnection();
         $conn->execute(
             'INSERT INTO ib_contents (course_id, user_id, title, kind, created) VALUES (:course_id, :user_id, "コンテンツ", "html", NOW())',
-            ['course_id' => $courseId, 'user_id' => $userId]
+            ['course_id' => $courseId, 'user_id' => $userId],
         );
         $contentId = (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
 
         $conn->execute(
             'INSERT INTO ib_contents_questions (content_id, question_type, title, body, correct, score, created) VALUES (:content_id, "text", "問1", "設問", "A", 10, NOW())',
-            ['content_id' => $contentId]
+            ['content_id' => $contentId],
         );
 
         $this->Courses->deleteCourse($courseId);
@@ -150,11 +150,11 @@ class CoursesTableTest extends TestCase
         $conn = $this->Courses->getConnection();
         $conn->execute(
             'INSERT INTO ib_courses (title, user_id, sort_no, created) VALUES ("コースB", :user_id, 2, NOW())',
-            ['user_id' => $userId]
+            ['user_id' => $userId],
         );
         $conn->execute(
             'INSERT INTO ib_courses (title, user_id, sort_no, created) VALUES ("コースA", :user_id, 1, NOW())',
-            ['user_id' => $userId]
+            ['user_id' => $userId],
         );
 
         $titles = $this->Courses->find('ordered')->all()->extract('title')->toList();

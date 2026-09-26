@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace App\View;
 
+use App\View\Helper\AppFormHelper;
+use App\View\Helper\AppHtmlHelper;
+use App\View\Helper\AppNumberHelper;
 use Cake\View\View;
 
 /**
@@ -29,12 +32,12 @@ class AppView extends View
     {
         parent::initialize();
 
-        $this->loadHelper('Html', ['className' => \App\View\Helper\AppHtmlHelper::class]);
-        $this->loadHelper('Form', ['className' => \App\View\Helper\AppFormHelper::class]);
+        $this->loadHelper('Html', ['className' => AppHtmlHelper::class]);
+        $this->loadHelper('Form', ['className' => AppFormHelper::class]);
         $this->loadHelper('Flash');
         $this->loadHelper('Paginator');
         $this->loadHelper('Url');
-        $this->loadHelper('Number', ['className' => \App\View\Helper\AppNumberHelper::class]);
+        $this->loadHelper('Number', ['className' => AppNumberHelper::class]);
         $this->loadHelper('AppView');
         $this->loadHelper('Markdown');
     }

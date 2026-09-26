@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Authentication\Controller\Component\AuthenticationComponent;
+use Authentication\IdentityInterface;
 use Cake\Controller\Controller;
-use Cake\Core\Configure;
+use Cake\Controller\Exception\FormProtectionException;
 use Cake\Event\EventInterface;
 use Cake\Http\Cookie\Cookie;
+use Cake\Http\Response;
+use DateTimeImmutable;
 
 /**
  * Application Controller
@@ -48,7 +50,7 @@ class AppController extends Controller
         // FormProtection（CakePHP 5 の Security / AppSecurityComponent 代替）
         // ログイン画面のみトークンチェックエラーのハンドリング
         $this->loadComponent('FormProtection', [
-            'validationFailureCallback' => function (\Cake\Controller\Exception\FormProtectionException $exception) {
+            'validationFailureCallback' => function (FormProtectionException $exception) {
                 return $this->blackHole();
             },
         ]);
@@ -63,7 +65,7 @@ class AppController extends Controller
      * @param \Cake\Event\EventInterface $event イベント
      * @return \Cake\Http\Response|null always null — redirect responses are set via $event->setResult()
      */
-    public function beforeFilter(EventInterface $event): ?\Cake\Http\Response
+    public function beforeFilter(EventInterface $event): ?Response
     {
         $this->set('loginedUser', $this->readAuthUser()); // ログインユーザ情報（旧バージョン用）
 
@@ -125,7 +127,7 @@ class AppController extends Controller
      *
      * @return \Cake\Http\Response|null
      */
-    protected function blackHole(): ?\Cake\Http\Response
+    protected function blackHole(): ?Response
     {
         // CSRFエラー（トークン切れ）
         $this->Flash->error(__('トークンの有効期限が切れました。もう一度ログインしてください。'), ['key' => 'flash']);
@@ -240,7 +242,7 @@ class AppController extends Controller
             ->withValue($value)
             ->withPath(ini_get('session.cookie_path'))
             ->withHttpOnly(true)
-            ->withExpiry(new \DateTimeImmutable($expires));
+            ->withExpiry(new DateTimeImmutable($expires));
 
         $this->response = $this->response->withCookie($cookie);
     }
@@ -255,7 +257,7 @@ class AppController extends Controller
     {
         $identity = $this->Authentication->getIdentity();
 
-        if (!$identity instanceof \Authentication\IdentityInterface) {
+        if (!$identity instanceof IdentityInterface) {
             return null;
         }
 
@@ -412,6 +414,7 @@ class AppController extends Controller
         if (preg_match('/^\s*[=\+\-@]/', $value)) {
             return "'" . $value;
         }
+
         return $value;
     }
 

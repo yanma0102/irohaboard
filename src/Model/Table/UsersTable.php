@@ -21,7 +21,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CoursesTable&\Cake\ORM\Association\BelongsToMany $Courses
  * @property \App\Model\Table\GroupsTable&\Cake\ORM\Association\BelongsToMany $Groups
- *
  * @method \App\Model\Entity\User newEmptyEntity()
  * @method \App\Model\Entity\User newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\User[] newEntities(array $data, array $options = [])
@@ -169,13 +168,13 @@ class UsersTable extends AppTable
         // 学習履歴詳細レコードを先に削除
         $connection->execute(
             'DELETE FROM ib_records_questions WHERE record_id IN (SELECT id FROM ib_records WHERE user_id = :user_id)',
-            ['user_id' => $userId]
+            ['user_id' => $userId],
         );
 
         // 学習履歴レコードを削除
         $connection->execute(
             'DELETE FROM ib_records WHERE user_id = :user_id',
-            ['user_id' => $userId]
+            ['user_id' => $userId],
         );
     }
 

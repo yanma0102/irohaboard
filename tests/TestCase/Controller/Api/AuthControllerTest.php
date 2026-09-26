@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Api;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -38,7 +39,7 @@ class AuthControllerTest extends TestCase
     /**
      * テスト用ユーザを作成して返す（パスワードは bcrypt で自動ハッシュ化される）
      */
-    private function createUser(string $username = 'testuser', array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createUser(string $username = 'testuser', array $overrides = []): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $data = array_merge([

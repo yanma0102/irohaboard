@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Datasource\EntityInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
@@ -18,7 +19,6 @@ use Cake\Validation\Validator;
  * ContentsQuestions Model
  *
  * @property \App\Model\Table\ContentsTable&\Cake\ORM\Association\BelongsTo $Contents
- *
  * @method \App\Model\Entity\ContentsQuestion newEmptyEntity()
  * @method \App\Model\Entity\ContentsQuestion newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\ContentsQuestion[] newEntities(array $data, array $options = [])
@@ -91,14 +91,15 @@ class ContentsQuestionsTable extends AppTable
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add(
-            function (\Cake\Datasource\EntityInterface $entity) {
+            function (EntityInterface $entity) {
                 if ($entity->get('question_type') === 'single') {
                     return !empty($entity->get('correct'));
                 }
+
                 return true;
             },
             'correctRequired',
-            ['message' => '正解を選択してください']
+            ['message' => '正解を選択してください'],
         );
 
         return $rules;
@@ -116,7 +117,7 @@ class ContentsQuestionsTable extends AppTable
         foreach ($idList as $index => $id) {
             $connection->execute(
                 'UPDATE ib_contents_questions SET sort_no = :sort_no WHERE id = :id',
-                ['sort_no' => $index + 1, 'id' => $id]
+                ['sort_no' => $index + 1, 'id' => $id],
             );
         }
     }

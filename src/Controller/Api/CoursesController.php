@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use Cake\Http\Response;
+
 /**
  * ApiCourses Controller
  * コースの一覧・詳細・追加・更新・削除を提供する
@@ -25,7 +27,7 @@ class CoursesController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function index(): \Cake\Http\Response
+    public function index(): Response
     {
         $conditions = ['deleted IS NULL'];
         $coursesTable = $this->fetchTable('Courses');
@@ -83,7 +85,7 @@ class CoursesController extends BaseController
      * @param int $id コースID
      * @return \Cake\Http\Response
      */
-    public function view(int $id): \Cake\Http\Response
+    public function view(int $id): Response
     {
         $coursesTable = $this->fetchTable('Courses');
 
@@ -111,7 +113,7 @@ class CoursesController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function add(): \Cake\Http\Response
+    public function add(): Response
     {
         $this->requireManager();
 
@@ -147,6 +149,7 @@ class CoursesController extends BaseController
             $data['id'] = (int)$data['id'];
             $data['user_id'] = (int)$data['user_id'];
             $data['sort_no'] = (int)$data['sort_no'];
+
             return $this->ok($data, 201);
         }
 
@@ -159,7 +162,7 @@ class CoursesController extends BaseController
      * @param int $id コースID
      * @return \Cake\Http\Response
      */
-    public function edit(int $id): \Cake\Http\Response
+    public function edit(int $id): Response
     {
         $this->requireManager();
 
@@ -204,7 +207,7 @@ class CoursesController extends BaseController
      * @param int $id コースID
      * @return \Cake\Http\Response
      */
-    public function delete(int $id): \Cake\Http\Response
+    public function delete(int $id): Response
     {
         $this->requireManager();
 

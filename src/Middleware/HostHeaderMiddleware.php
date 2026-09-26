@@ -40,7 +40,7 @@ class HostHeaderMiddleware implements MiddlewareInterface
             Log::warning(
                 'SECURITY: App.fullBaseUrl is not configured. '
                 . 'Host header validation is disabled. '
-                . 'Set APP_FULL_BASE_URL environment variable to enable Host Header Injection protection.'
+                . 'Set APP_FULL_BASE_URL environment variable to enable Host Header Injection protection.',
             );
 
             return $handler->handle($request);

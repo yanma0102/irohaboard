@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Api;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -42,7 +43,7 @@ class ContentsControllerTest extends TestCase
     /**
      * テスト用ユーザを作成して返す
      */
-    private function createUser(string $username = 'testuser', array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createUser(string $username = 'testuser', array $overrides = []): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $data = array_merge([
@@ -79,7 +80,7 @@ class ContentsControllerTest extends TestCase
     /**
      * テスト用コースを作成して返す
      */
-    private function createCourse(string $title = 'テストコース', int $userId = 0, array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createCourse(string $title = 'テストコース', int $userId = 0, array $overrides = []): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $data = array_merge([
@@ -98,7 +99,7 @@ class ContentsControllerTest extends TestCase
     /**
      * テスト用コンテンツを作成して返す
      */
-    private function createContent(int $courseId, int $userId, array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createContent(int $courseId, int $userId, array $overrides = []): EntityInterface
     {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $data = array_merge([
@@ -112,7 +113,7 @@ class ContentsControllerTest extends TestCase
 
         $entity = $contentsTable->newEntity($data);
         $result = $contentsTable->save($entity);
-        $this->assertNotFalse($result, "コンテンツの作成に失敗");
+        $this->assertNotFalse($result, 'コンテンツの作成に失敗');
 
         return $result;
     }

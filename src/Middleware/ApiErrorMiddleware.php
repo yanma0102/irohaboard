@@ -5,6 +5,7 @@ namespace App\Middleware;
 
 use App\Controller\Api\ApiException;
 use Cake\Controller\Exception\InvalidParameterException;
+use Cake\Http\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -55,7 +56,8 @@ class ApiErrorMiddleware implements MiddlewareInterface
             $json = json_encode(['error' => ['code' => 500, 'message' => 'Failed to encode response']]);
         }
 
-        $response = new \Cake\Http\Response();
+        $response = new Response();
+
         return $response
             ->withStatus($statusCode)
             ->withType('application/json')

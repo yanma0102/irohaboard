@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -54,7 +55,7 @@ class GroupsControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -73,7 +74,7 @@ class GroupsControllerTest extends TestCase
     /**
      * admin ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -97,7 +98,7 @@ class GroupsControllerTest extends TestCase
     /**
      * テスト用グループを作成
      */
-    private function createGroup(string $title): \Cake\Datasource\EntityInterface
+    private function createGroup(string $title): EntityInterface
     {
         $groupsTable = $this->getTableLocator()->get('Groups');
         $entity = $groupsTable->newEntity([
@@ -167,7 +168,7 @@ class GroupsControllerTest extends TestCase
         $groupsTable = $this->getTableLocator()->get('Groups');
         $this->assertTrue(
             $groupsTable->exists(['title' => '新規グループ']),
-            'add でグループが DB に保存されること'
+            'add でグループが DB に保存されること',
         );
     }
 
@@ -323,7 +324,7 @@ class GroupsControllerTest extends TestCase
         $this->assertTrue(
             $this->getTableLocator()->get('GroupsCourses')
                 ->exists(['group_id' => $group->id, 'course_id' => $course->id]),
-            'グループにコースが紐付くこと'
+            'グループにコースが紐付くこと',
         );
     }
 

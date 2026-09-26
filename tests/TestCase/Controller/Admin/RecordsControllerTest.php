@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -53,7 +54,7 @@ class RecordsControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -72,7 +73,7 @@ class RecordsControllerTest extends TestCase
     /**
      * admin ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -96,7 +97,7 @@ class RecordsControllerTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(string $title, int $userId): \Cake\Datasource\EntityInterface
+    private function createCourse(string $title, int $userId): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -118,8 +119,8 @@ class RecordsControllerTest extends TestCase
         int $courseId,
         int $userId,
         string $title = 'テストコンテンツ',
-        string $kind = 'test'
-    ): \Cake\Datasource\EntityInterface {
+        string $kind = 'test',
+    ): EntityInterface {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $entity = $contentsTable->newEntity([
             'title' => $title,
@@ -138,7 +139,7 @@ class RecordsControllerTest extends TestCase
     /**
      * テスト用問題を作成
      */
-    private function createQuestion(int $contentId, string $title = 'テスト問題', string $questionType = 'single'): \Cake\Datasource\EntityInterface
+    private function createQuestion(int $contentId, string $title = 'テスト問題', string $questionType = 'single'): EntityInterface
     {
         $table = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $table->newEntity([
@@ -167,8 +168,8 @@ class RecordsControllerTest extends TestCase
         int $score = 80,
         int $passScore = 60,
         int $isPassed = 1,
-        ?string $created = null
-    ): \Cake\Datasource\EntityInterface {
+        ?string $created = null,
+    ): EntityInterface {
         $recordsTable = $this->getTableLocator()->get('Records');
         $entity = $recordsTable->newEntity([
             'course_id' => $courseId,
@@ -199,8 +200,8 @@ class RecordsControllerTest extends TestCase
         string $answer = '1',
         string $correct = '1',
         int $isCorrect = 1,
-        int $score = 10
-    ): \Cake\Datasource\EntityInterface {
+        int $score = 10,
+    ): EntityInterface {
         $table = $this->getTableLocator()->get('RecordsQuestions');
         $entity = $table->newEntity([
             'record_id' => $recordId,
@@ -426,7 +427,7 @@ class RecordsControllerTest extends TestCase
             '=SUM(1,2)',
             '',
             0,
-            0
+            0,
         );
 
         $this->get('/admin/records?cmd=csv_detail');
@@ -445,7 +446,7 @@ class RecordsControllerTest extends TestCase
             '1',
             '1',
             1,
-            10
+            10,
         );
 
         $this->get('/admin/records?cmd=csv_detail');
@@ -499,7 +500,7 @@ class RecordsControllerTest extends TestCase
                 $i,
                 60,
                 1,
-                date('Y-m-d H:i:s', strtotime("-{$i} days"))
+                date('Y-m-d H:i:s', strtotime("-{$i} days")),
             );
         }
 
@@ -602,7 +603,7 @@ class RecordsControllerTest extends TestCase
             '+SUM(1,2)',
             '',
             0,
-            0
+            0,
         );
 
         $this->get('/admin/records?cmd=csv_detail');
@@ -632,7 +633,7 @@ class RecordsControllerTest extends TestCase
             '@cmd',
             '',
             0,
-            0
+            0,
         );
 
         $this->get('/admin/records?cmd=csv_detail');

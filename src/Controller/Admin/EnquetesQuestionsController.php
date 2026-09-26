@@ -14,6 +14,7 @@ namespace App\Controller\Admin;
 use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 
 /**
  * EnquetesQuestions Controller (Admin)
@@ -34,8 +35,8 @@ class EnquetesQuestionsController extends AppController
     /**
      * テスト結果を表示
      *
-     * @param int|string $content_id コンテンツID
-     * @param int|string $record_id 履歴ID
+     * @param string|int $content_id コンテンツID
+     * @param string|int $record_id 履歴ID
      * @return void
      */
     public function record($content_id, $record_id): void
@@ -82,7 +83,7 @@ class EnquetesQuestionsController extends AppController
     /**
      * 問題一覧を表示
      *
-     * @param int|string $content_id コンテンツID
+     * @param string|int $content_id コンテンツID
      * @return void
      */
     public function index($content_id): void
@@ -104,10 +105,10 @@ class EnquetesQuestionsController extends AppController
     /**
      * 問題を追加
      *
-     * @param int|string $content_id コンテンツID
+     * @param string|int $content_id コンテンツID
      * @return \Cake\Http\Response|null
      */
-    public function add($content_id): ?\Cake\Http\Response
+    public function add($content_id): ?Response
     {
         $result = $this->edit($content_id);
         if ($result !== null) {
@@ -121,11 +122,11 @@ class EnquetesQuestionsController extends AppController
     /**
      * 問題を編集
      *
-     * @param int|string $content_id コンテンツID
-     * @param int|string|null $question_id 問題ID
+     * @param string|int $content_id コンテンツID
+     * @param string|int|null $question_id 問題ID
      * @return \Cake\Http\Response|null
      */
-    public function edit($content_id, $question_id = null): ?\Cake\Http\Response
+    public function edit($content_id, $question_id = null): ?Response
     {
         $content_id = (int)$content_id;
         $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
@@ -180,10 +181,10 @@ class EnquetesQuestionsController extends AppController
     /**
      * 問題を削除
      *
-     * @param int|string|null $question_id 問題ID
+     * @param string|int|null $question_id 問題ID
      * @return \Cake\Http\Response|null
      */
-    public function delete($question_id = null): ?\Cake\Http\Response
+    public function delete($question_id = null): ?Response
     {
         if (Configure::read('demo_mode')) {
             return null;
@@ -219,7 +220,7 @@ class EnquetesQuestionsController extends AppController
      *
      * @return string
      */
-    public function order(): \Cake\Http\Response
+    public function order(): Response
     {
         if (Configure::read('demo_mode')) {
             return $this->response->withStringBody('');

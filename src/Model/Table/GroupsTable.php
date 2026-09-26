@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Datasource\FactoryLocator;
 use Cake\ORM\Query;
 use Cake\Validation\Validator;
 
@@ -17,7 +18,6 @@ use Cake\Validation\Validator;
  * Groups Model
  *
  * @property \App\Model\Table\CoursesTable&\Cake\ORM\Association\BelongsToMany $Courses
- *
  * @method \App\Model\Entity\Group newEmptyEntity()
  * @method \App\Model\Entity\Group newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Group[] newEntities(array $data, array $options = [])
@@ -82,19 +82,19 @@ class GroupsTable extends AppTable
         // グループコース関連の削除
         $connection->execute(
             'DELETE FROM ib_groups_courses WHERE group_id = :group_id',
-            ['group_id' => $groupId]
+            ['group_id' => $groupId],
         );
 
         // ユーザグループ関連の削除
         $connection->execute(
             'DELETE FROM ib_users_groups WHERE group_id = :group_id',
-            ['group_id' => $groupId]
+            ['group_id' => $groupId],
         );
 
         // グループの削除
         $connection->execute(
             'DELETE FROM ib_groups WHERE id = :group_id',
-            ['group_id' => $groupId]
+            ['group_id' => $groupId],
         );
     }
 
@@ -106,7 +106,7 @@ class GroupsTable extends AppTable
      */
     public function getUserIdByGroupID(int $groupId): array
     {
-        $usersGroupsTable = \Cake\Datasource\FactoryLocator::get('Table')->get('UsersGroups');
+        $usersGroupsTable = FactoryLocator::get('Table')->get('UsersGroups');
 
         return $usersGroupsTable->find('list', keyField: 'user_id', valueField: 'user_id')
             ->where(['group_id' => $groupId])

@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Http\Response;
+
 /**
  * UsersCourses Controller
  *
@@ -23,7 +25,7 @@ class UsersCoursesController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function index(): ?\Cake\Http\Response
+    public function index(): ?Response
     {
         $user_id = $this->readAuthUser('id');
 

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 
 /**
@@ -40,7 +39,7 @@ class InfosController extends AppController
     /**
      * お知らせの内容を表示
      *
-     * @param int|string $info_id 表示するお知らせのID
+     * @param string|int $info_id 表示するお知らせのID
      * @return void
      */
     public function view($info_id): void

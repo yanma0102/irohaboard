@@ -13,9 +13,11 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Core\Configure;
+use Cake\Database\Connection;
 use Cake\Datasource\ConnectionManager;
+use Cake\Event\EventInterface;
 use Cake\Http\Exception\ForbiddenException;
-use Cake\Http\Exception\NotFoundException;
+use Exception;
 
 /**
  * Install Controller
@@ -37,7 +39,7 @@ class InstallController extends Controller
      *
      * @var \Cake\Database\Connection|null
      */
-    public ?\Cake\Database\Connection $db = null;
+    public ?Connection $db = null;
 
     /**
      * path
@@ -64,7 +66,7 @@ class InstallController extends Controller
      * @param \Cake\Event\EventInterface $event
      * @return void
      */
-    public function beforeFilter(\Cake\Event\EventInterface $event): void
+    public function beforeFilter(EventInterface $event): void
     {
         parent::beforeFilter($event);
 
@@ -89,6 +91,7 @@ class InstallController extends Controller
                 $this->err_msg = 'PHP モジュール mbstring がロードされていません';
                 $this->error();
                 $this->viewBuilder()->setTemplate('error');
+
                 return;
             }
 
@@ -97,12 +100,14 @@ class InstallController extends Controller
                 $this->err_msg = 'PHP モジュール pdo_mysql がロードされていません';
                 $this->error();
                 $this->viewBuilder()->setTemplate('error');
+
                 return;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->err_msg = '各種モジュールチェック中にエラーが発生いたしました。';
             $this->error();
             $this->viewBuilder()->setTemplate('error');
+
             return;
         }
 
@@ -115,10 +120,10 @@ class InstallController extends Controller
             try {
                 $dbConfig = ConnectionManager::getConfig('default');
                 $database = $dbConfig['database'] ?? 'irohaboard';
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $database = 'irohaboard';
             }
-            $sql = "SHOW TABLES FROM `" . $database . "` LIKE 'ib_users'";
+            $sql = 'SHOW TABLES FROM `' . $database . "` LIKE 'ib_users'";
             $data = $this->db->execute($sql)->fetchAll('assoc');
 
             $this->set('username', '');
@@ -140,26 +145,31 @@ class InstallController extends Controller
 
                     if (strlen($username) < 4 || strlen($username) > 32) {
                         $this->Flash->error('ログインIDは4文字以上32文字以内で入力して下さい');
+
                         return;
                     }
 
-                    if (!preg_match("/^[a-zA-Z0-9]+$/", $username)) {
+                    if (!preg_match('/^[a-zA-Z0-9]+$/', $username)) {
                         $this->Flash->error('ログインIDは英数字で入力して下さい');
+
                         return;
                     }
 
                     if (strlen($password) < 4 || strlen($password) > 32) {
                         $this->Flash->error('パスワードは4文字以上32文字以内で入力して下さい');
+
                         return;
                     }
 
                     if ($password !== $password2) {
                         $this->Flash->error('パスワードと確認用パスワードが一致しません');
+
                         return;
                     }
 
-                    if (!preg_match("/^[a-zA-Z0-9]+$/", $password)) {
+                    if (!preg_match('/^[a-zA-Z0-9]+$/', $password)) {
                         $this->Flash->error('パスワードは英数字で入力して下さい');
+
                         return;
                     }
 
@@ -167,7 +177,7 @@ class InstallController extends Controller
                     $this->_createRootAccount($username, $password);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->err_msg = 'データベースへの接続に失敗しました。設定ファイル(config/app_local.php)をご確認ください。';
             $this->error();
             $this->viewBuilder()->setTemplate('error');
@@ -238,7 +248,7 @@ class InstallController extends Controller
      * @param \Exception $e 例外
      * @return array<int, mixed> [SQLSTATE, ドライバエラーコード, メッセージ]
      */
-    private function _getSqlErrorInfo(\Exception $e): array
+    private function _getSqlErrorInfo(Exception $e): array
     {
         $errorInfo = $e->errorInfo ?? null;
         if (!is_array($errorInfo)) {
@@ -278,7 +288,7 @@ class InstallController extends Controller
             if (trim($statement) !== '') {
                 try {
                     $this->db->execute($statement);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $errorInfo = $this->_getSqlErrorInfo($e);
                     if (($errorInfo[0] ?? '') === '42S21') {
                         continue;
@@ -294,11 +304,12 @@ class InstallController extends Controller
                     if (($errorInfo[0] ?? '') === '23000') {
                         continue;
                     }
-                    $error_msg = sprintf("%s\n[Error Code]%s\n[Error Code2]%s\n[SQL]%s",
+                    $error_msg = sprintf(
+                        "%s\n[Error Code]%s\n[Error Code2]%s\n[SQL]%s",
                         $errorInfo[2] ?? $e->getMessage(),
                         $errorInfo[0] ?? '',
                         $errorInfo[1] ?? '',
-                        $statement
+                        $statement,
                     );
                     $err_statements[] = $error_msg;
                 }

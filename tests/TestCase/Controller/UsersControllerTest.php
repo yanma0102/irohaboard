@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -56,7 +57,7 @@ class UsersControllerTest extends TestCase
     private function createUser(
         string $username = 'testuser',
         string $role = 'user',
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
             'username' => $username,
@@ -78,7 +79,7 @@ class UsersControllerTest extends TestCase
      * AppController::beforeFilter() が設定する Setting.app_dir = ROOT は
      * 初回リクエスト時に自動的にセッションに格納される。
      */
-    private function loginAsUser(): \Cake\Datasource\EntityInterface
+    private function loginAsUser(): EntityInterface
     {
         $user = $this->createUser();
 
@@ -272,7 +273,7 @@ class UsersControllerTest extends TestCase
                 'name' => $username . 'の名前',
                 'role' => 'user',
                 'email' => $username . '@example.com',
-            ]
+            ],
         );
 
         return (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];

@@ -14,6 +14,8 @@ namespace App\Controller\Admin;
 use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
+use Exception;
 
 /**
  * Courses Controller (Admin)
@@ -69,7 +71,7 @@ class CoursesController extends AppController
 
         try {
             $courses = $this->paginate($query);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // 指定したページが存在しなかった場合、1ページ目を設定
             $this->request = $this->request->withParam('page', 1);
             $courses = $this->paginate($query);
@@ -83,7 +85,7 @@ class CoursesController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function add(): ?\Cake\Http\Response
+    public function add(): ?Response
     {
         $result = $this->edit();
         if ($result !== null) {
@@ -97,10 +99,10 @@ class CoursesController extends AppController
     /**
      * コースの編集
      *
-     * @param int|string|null $course_id コースID
+     * @param string|int|null $course_id コースID
      * @return \Cake\Http\Response|null
      */
-    public function edit($course_id = null): ?\Cake\Http\Response
+    public function edit($course_id = null): ?Response
     {
         $coursesTable = $this->fetchTable('Courses');
 
@@ -138,10 +140,10 @@ class CoursesController extends AppController
     /**
      * コースの削除
      *
-     * @param int|string|null $course_id コースID
+     * @param string|int|null $course_id コースID
      * @return \Cake\Http\Response|null
      */
-    public function delete($course_id = null): ?\Cake\Http\Response
+    public function delete($course_id = null): ?Response
     {
         if (Configure::read('demo_mode')) {
             return null;
@@ -168,7 +170,7 @@ class CoursesController extends AppController
      *
      * @return string
      */
-    public function order(): \Cake\Http\Response
+    public function order(): Response
     {
         if ($this->request->is('ajax')) {
             $this->fetchTable('Courses')->setOrder($this->request->getData('id_list'));

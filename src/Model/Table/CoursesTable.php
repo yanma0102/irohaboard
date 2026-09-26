@@ -17,7 +17,6 @@ use Cake\Validation\Validator;
  * Courses Model
  *
  * @property \App\Model\Table\ContentsTable&\Cake\ORM\Association\HasMany $Contents
- *
  * @method \App\Model\Entity\Course newEmptyEntity()
  * @method \App\Model\Entity\Course newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Course[] newEntities(array $data, array $options = [])
@@ -85,7 +84,7 @@ class CoursesTable extends AppTable
         foreach ($idList as $index => $id) {
             $connection->execute(
                 'UPDATE ib_courses SET sort_no = :sort_no WHERE id = :id',
-                ['sort_no' => $index + 1, 'id' => $id]
+                ['sort_no' => $index + 1, 'id' => $id],
             );
         }
     }
@@ -108,7 +107,7 @@ class CoursesTable extends AppTable
         // 個人受講登録チェック
         $data = $connection->execute(
             'SELECT COUNT(*) as cnt FROM ib_users_courses WHERE course_id = :course_id AND user_id = :user_id',
-            $params
+            $params,
         )->fetch('assoc');
 
         if ((int)($data['cnt'] ?? 0) > 0) {
@@ -121,7 +120,7 @@ class CoursesTable extends AppTable
                FROM ib_groups_courses gc
               INNER JOIN ib_users_groups ug ON gc.group_id = ug.group_id AND ug.user_id = :user_id
               WHERE gc.course_id = :course_id',
-            $params
+            $params,
         )->fetch('assoc');
 
         return (int)($data['cnt'] ?? 0) > 0;
@@ -139,19 +138,19 @@ class CoursesTable extends AppTable
         // テスト問題の削除
         $connection->execute(
             'DELETE FROM ib_contents_questions WHERE content_id IN (SELECT id FROM ib_contents WHERE course_id = :course_id)',
-            ['course_id' => $courseId]
+            ['course_id' => $courseId],
         );
 
         // コンテンツの削除
         $connection->execute(
             'DELETE FROM ib_contents WHERE course_id = :course_id',
-            ['course_id' => $courseId]
+            ['course_id' => $courseId],
         );
 
         // コースの削除
         $connection->execute(
             'DELETE FROM ib_courses WHERE id = :course_id',
-            ['course_id' => $courseId]
+            ['course_id' => $courseId],
         );
     }
 

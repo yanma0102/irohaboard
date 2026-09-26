@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Api;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -42,7 +43,7 @@ class GroupsControllerTest extends TestCase
     /**
      * テスト用ユーザを作成して返す
      */
-    private function createUser(string $username = 'testuser', array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createUser(string $username = 'testuser', array $overrides = []): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $data = array_merge([
@@ -79,7 +80,7 @@ class GroupsControllerTest extends TestCase
     /**
      * テスト用グループを作成して返す
      */
-    private function createGroup(string $title = 'テストグループ', array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createGroup(string $title = 'テストグループ', array $overrides = []): EntityInterface
     {
         $groupsTable = $this->getTableLocator()->get('Groups');
         $data = array_merge([
@@ -304,11 +305,11 @@ class GroupsControllerTest extends TestCase
         // 中間テーブルが削除されていることを確認
         $this->assertFalse(
             $groupsCoursesTable->exists(['group_id' => $group->id]),
-            'ib_groups_courses の該当行が削除されている'
+            'ib_groups_courses の該当行が削除されている',
         );
         $this->assertFalse(
             $usersGroupsTable->exists(['group_id' => $group->id]),
-            'ib_users_groups の該当行が削除されている'
+            'ib_users_groups の該当行が削除されている',
         );
     }
 
@@ -448,7 +449,7 @@ class GroupsControllerTest extends TestCase
         $usersGroupsTable = $this->getTableLocator()->get('UsersGroups');
         $this->assertTrue(
             $usersGroupsTable->exists(['user_id' => $user->id, 'group_id' => $group->id]),
-            'ib_users_groups にレコードが作成されている'
+            'ib_users_groups にレコードが作成されている',
         );
     }
 
@@ -477,7 +478,7 @@ class GroupsControllerTest extends TestCase
         $usersGroupsTable->save($ugEntity);
         $this->assertTrue(
             $usersGroupsTable->exists(['user_id' => $user->id, 'group_id' => $group->id]),
-            '事前確認: ib_users_groups にレコードが存在する'
+            '事前確認: ib_users_groups にレコードが存在する',
         );
 
         $this->delete('/api/v1/groups/' . $group->id . '/users/' . $user->id);
@@ -491,7 +492,7 @@ class GroupsControllerTest extends TestCase
         // DB からレコードが削除されたことを確認
         $this->assertFalse(
             $usersGroupsTable->exists(['user_id' => $user->id, 'group_id' => $group->id]),
-            'ib_users_groups の該当行が削除されている'
+            'ib_users_groups の該当行が削除されている',
         );
     }
 }

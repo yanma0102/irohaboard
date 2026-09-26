@@ -12,8 +12,11 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
+use App\Utility\MarkdownRenderer;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
+use Throwable;
 
 /**
  * Contents Controller (Admin)
@@ -34,7 +37,7 @@ class ContentsController extends AppController
     /**
      * コンテンツ一覧の表示
      *
-     * @param int|string $course_id コースID
+     * @param string|int $course_id コースID
      * @return void
      */
     public function index($course_id): void
@@ -57,10 +60,10 @@ class ContentsController extends AppController
     /**
      * コンテンツの追加
      *
-     * @param int|string $course_id コースID
+     * @param string|int $course_id コースID
      * @return \Cake\Http\Response|null
      */
-    public function add($course_id): ?\Cake\Http\Response
+    public function add($course_id): ?Response
     {
         $result = $this->edit($course_id);
         if ($result !== null) {
@@ -74,11 +77,11 @@ class ContentsController extends AppController
     /**
      * コンテンツの編集
      *
-     * @param int|string $course_id 所属するコースのID
-     * @param int|string|null $content_id 編集するコンテンツのID (指定しない場合、追加)
+     * @param string|int $course_id 所属するコースのID
+     * @param string|int|null $content_id 編集するコンテンツのID (指定しない場合、追加)
      * @return \Cake\Http\Response|null
      */
-    public function edit($course_id, $content_id = null): ?\Cake\Http\Response
+    public function edit($course_id, $content_id = null): ?Response
     {
         $course_id = (int)$course_id;
 
@@ -133,10 +136,10 @@ class ContentsController extends AppController
     /**
      * コンテンツの削除
      *
-     * @param int|string $content_id 削除するコンテンツのID
+     * @param string|int $content_id 削除するコンテンツのID
      * @return \Cake\Http\Response|null
      */
-    public function delete($content_id): ?\Cake\Http\Response
+    public function delete($content_id): ?Response
     {
         if (Configure::read('demo_mode')) {
             return null;
@@ -179,7 +182,7 @@ class ContentsController extends AppController
             $kind = $this->getData('content_kind');
 
             if ($kind === 'markdown') {
-                $body = \App\Utility\MarkdownRenderer::toHtml($body);
+                $body = MarkdownRenderer::toHtml($body);
             }
 
             $data = [
@@ -201,7 +204,7 @@ class ContentsController extends AppController
      * @param string $file_name ファイル名
      * @return \Cake\Http\Response|null
      */
-    public function previewMovie($file_name): ?\Cake\Http\Response
+    public function previewMovie($file_name): ?Response
     {
         if (!$file_name) {
             throw new NotFoundException(__('Invalid content'));
@@ -287,7 +290,7 @@ class ContentsController extends AppController
                     try {
                         $file->moveTo($dest);
                         $result = is_file($dest);
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         $result = false;
                     }
 
@@ -316,7 +319,7 @@ class ContentsController extends AppController
      *
      * @return \Cake\Http\Response
      */
-    public function uploadImage(): \Cake\Http\Response
+    public function uploadImage(): Response
     {
         $this->autoRender = false;
 
@@ -346,7 +349,7 @@ class ContentsController extends AppController
                     try {
                         $file->moveTo($dest);
                         $result = is_file($dest);
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         $result = false;
                     }
 
@@ -377,7 +380,7 @@ class ContentsController extends AppController
      *
      * @return string
      */
-    public function order(): \Cake\Http\Response
+    public function order(): Response
     {
         if ($this->request->is('ajax')) {
             $this->fetchTable('Contents')->setOrder($this->request->getData('id_list'));
@@ -391,8 +394,8 @@ class ContentsController extends AppController
     /**
      * 学習履歴の表示
      *
-     * @param int|string $course_id コースID
-     * @param int|string $user_id ユーザID
+     * @param string|int $course_id コースID
+     * @param string|int $user_id ユーザID
      * @return void
      */
     public function record($course_id, $user_id): void
@@ -421,11 +424,11 @@ class ContentsController extends AppController
     /**
      * コンテンツのコピー
      *
-     * @param int|string $course_id コピー先のコースのID
-     * @param int|string $content_id コピーするコンテンツのID
+     * @param string|int $course_id コピー先のコースのID
+     * @param string|int $content_id コピーするコンテンツのID
      * @return \Cake\Http\Response|null
      */
-    public function copy($course_id, $content_id): ?\Cake\Http\Response
+    public function copy($course_id, $content_id): ?Response
     {
         $this->request->allowMethod(['post']);
 

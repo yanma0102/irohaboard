@@ -54,6 +54,7 @@ class ApiRateLimitMiddlewareTest extends TestCase
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $response = new Response();
+
                 return $response->withStatus(200)
                     ->withHeader('Content-Type', 'application/json')
                     ->withStringBody('{"ok":true}');

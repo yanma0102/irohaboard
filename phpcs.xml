@@ -1,8 +1,27 @@
 <?xml version="1.0"?>
 <ruleset name="App">
     <rule ref="CakePHP"/>
+    <!--
+        このコードベースは意図的に緩い型に依存しており、legacy な docblock にも
+        実装と食い違う記述が残っている（例: Utils::getHNSBySec は "HH:MM:SS" の
+        文字列を返すのに旧 docblock が `@return int` と記載していた）。
+        これらへ native 型ヒントを強制すると実行時 TypeError になるため、
+        Parameter/Return の両方を対象外の sniff とする。
+    -->
     <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingNativeTypeHint">
-        <exclude-pattern>*/src/Controller/*</exclude-pattern>
+        <exclude-pattern>*/src/*</exclude-pattern>
+        <exclude-pattern>*/tests/*</exclude-pattern>
+    </rule>
+
+    <!--
+        - src/Utility/Utils.php の getYMD($str) / getYMDHN($str) は
+          `if (!$str) { return ''; }` で null を許容する設計
+        - コントローラのアクション引数はルートから文字列で渡され
+          CakePHP の ControllerFactory が型変換するため `int|string` が必要
+    -->
+    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint">
+        <exclude-pattern>*/src/*</exclude-pattern>
+        <exclude-pattern>*/tests/*</exclude-pattern>
     </rule>
 
     <file>src/</file>

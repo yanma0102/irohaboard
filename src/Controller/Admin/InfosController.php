@@ -15,6 +15,7 @@ use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 
 /**
  * Infos Controller (Admin)
@@ -47,7 +48,7 @@ class InfosController extends AppController
             ->select($infosTable)
             ->select([
                 'group_title' => new QueryExpression(
-                    "(SELECT GROUP_CONCAT(g.title ORDER BY g.id SEPARATOR ', ') AS group_title FROM ib_infos_groups ug INNER JOIN ib_groups g ON g.id = ug.group_id WHERE ug.info_id = Infos.id GROUP BY ug.info_id)"
+                    "(SELECT GROUP_CONCAT(g.title ORDER BY g.id SEPARATOR ', ') AS group_title FROM ib_infos_groups ug INNER JOIN ib_groups g ON g.id = ug.group_id WHERE ug.info_id = Infos.id GROUP BY ug.info_id)",
                 ),
             ])
             ->orderBy([$infosTable->aliasField('created') => 'DESC']);
@@ -66,7 +67,7 @@ class InfosController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function add(): ?\Cake\Http\Response
+    public function add(): ?Response
     {
         $result = $this->edit();
         if ($result !== null) {
@@ -80,10 +81,10 @@ class InfosController extends AppController
     /**
      * お知らせの編集
      *
-     * @param int|string|null $info_id 編集するお知らせのID
+     * @param string|int|null $info_id 編集するお知らせのID
      * @return \Cake\Http\Response|null
      */
-    public function edit($info_id = null): ?\Cake\Http\Response
+    public function edit($info_id = null): ?Response
     {
         $infosTable = $this->fetchTable('Infos');
 
@@ -124,10 +125,10 @@ class InfosController extends AppController
     /**
      * お知らせを削除
      *
-     * @param int|string|null $info_id 削除するお知らせのID
+     * @param string|int|null $info_id 削除するお知らせのID
      * @return \Cake\Http\Response|null
      */
-    public function delete($info_id = null): ?\Cake\Http\Response
+    public function delete($info_id = null): ?Response
     {
         $infosTable = $this->fetchTable('Infos');
 

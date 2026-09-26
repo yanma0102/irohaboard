@@ -5,6 +5,7 @@ namespace App\Test\TestCase\Utility;
 
 use App\Utility\MarkdownRenderer;
 use Cake\TestSuite\TestCase;
+use ReflectionProperty;
 
 class MarkdownRendererTest extends TestCase
 {
@@ -142,7 +143,7 @@ class MarkdownRendererTest extends TestCase
      */
     public function testUnsupportedElementsEmitNoPurifierWarnings(): void
     {
-        $property = new \ReflectionProperty(MarkdownRenderer::class, 'purifier');
+        $property = new ReflectionProperty(MarkdownRenderer::class, 'purifier');
         $property->setValue(null, null);
 
         $warnings = [];

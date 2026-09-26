@@ -99,7 +99,7 @@ class SettingsTable extends AppTable
         foreach ($settings as $key => $value) {
             $connection->execute(
                 'UPDATE ib_settings SET setting_value = :setting_value WHERE setting_key = :setting_key',
-                ['setting_key' => $key, 'setting_value' => $value]
+                ['setting_key' => $key, 'setting_value' => $value],
             );
         }
     }

@@ -19,7 +19,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CoursesTable&\Cake\ORM\Association\BelongsTo $Courses
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
- *
  * @method \App\Model\Entity\Content newEmptyEntity()
  * @method \App\Model\Entity\Content newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Content[] newEntities(array $data, array $options = [])
@@ -205,7 +204,7 @@ EOF;
         foreach ($idList as $index => $id) {
             $connection->execute(
                 'UPDATE ib_contents SET sort_no = :sort_no WHERE id = :id',
-                ['sort_no' => $index + 1, 'id' => $id]
+                ['sort_no' => $index + 1, 'id' => $id],
             );
         }
     }

@@ -16,7 +16,6 @@ use Cake\Validation\Validator;
  * Logs Model
  *
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
- *
  * @method \App\Model\Entity\Log newEmptyEntity()
  * @method \App\Model\Entity\Log newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Log[] newEntities(array $data, array $options = [])

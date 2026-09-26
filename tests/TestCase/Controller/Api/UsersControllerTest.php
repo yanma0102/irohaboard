@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Api;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -42,7 +43,7 @@ class UsersControllerTest extends TestCase
     /**
      * テスト用ユーザを作成して返す
      */
-    private function createUser(string $username = 'testuser', array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createUser(string $username = 'testuser', array $overrides = []): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $data = array_merge([
@@ -79,7 +80,7 @@ class UsersControllerTest extends TestCase
     /**
      * テスト用コースを作成して返す（user_id は NOT NULL）
      */
-    private function createCourse(string $title = 'テストコース', int $userId = 0, array $overrides = []): \Cake\Datasource\EntityInterface
+    private function createCourse(string $title = 'テストコース', int $userId = 0, array $overrides = []): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $data = array_merge([
@@ -1147,7 +1148,7 @@ class UsersControllerTest extends TestCase
                 'user_id' => $target->id,
                 'course_id' => $course->id,
             ]),
-            'ib_users_courses の該当行が削除されている'
+            'ib_users_courses の該当行が削除されている',
         );
     }
 

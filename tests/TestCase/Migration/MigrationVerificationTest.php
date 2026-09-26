@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Migration;
 
+use Cake\Database\Driver\Mysql;
 use Cake\Datasource\ConnectionManager;
 use Cake\TestSuite\TestCase;
 
@@ -48,12 +49,12 @@ class MigrationVerificationTest extends TestCase
 
         $db = ConnectionManager::get('test');
         $driver = $db->getDriver();
-        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
+        $isMysql = $driver instanceof Mysql;
 
         if ($isMysql) {
             $dbName = $db->config()['database'];
             $result = $db->execute(
-                "SHOW TABLES LIKE 'ib_%'"
+                "SHOW TABLES LIKE 'ib_%'",
             )->fetchAll('assoc');
             $actualTables = array_column($result, 'Tables_in_' . $dbName . ' (ib_%)');
             if (empty($actualTables)) {
@@ -61,7 +62,7 @@ class MigrationVerificationTest extends TestCase
             }
         } else {
             $result = $db->execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'ib_%'"
+                "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'ib_%'",
             )->fetchAll('assoc');
             $actualTables = array_column($result, 'name');
         }
@@ -72,7 +73,7 @@ class MigrationVerificationTest extends TestCase
         $this->assertEquals(
             $expectedTables,
             $actualTables,
-            '移行後のテーブル一覧が期待値と一致しません'
+            '移行後のテーブル一覧が期待値と一致しません',
         );
     }
 
@@ -243,7 +244,7 @@ class MigrationVerificationTest extends TestCase
         $this->assertEquals(
             'eラーニングシステム',
             $titleSetting->setting_value,
-            'B-2: title のデフォルト値が破損しています（updated_1789960516 等）'
+            'B-2: title のデフォルト値が破損しています（updated_1789960516 等）',
         );
     }
 
@@ -266,7 +267,7 @@ class MigrationVerificationTest extends TestCase
         $this->assertEquals(
             $expectedKeys,
             $actualKeys,
-            '設定キーのリストが期待値と一致しません'
+            '設定キーのリストが期待値と一致しません',
         );
     }
 
@@ -288,7 +289,7 @@ class MigrationVerificationTest extends TestCase
         foreach ($settings as $setting) {
             $this->assertNotEmpty(
                 $setting->setting_value,
-                "B-2: 設定キー '{$setting->setting_key}' の値が空文字です"
+                "B-2: 設定キー '{$setting->setting_key}' の値が空文字です",
             );
         }
     }
@@ -300,16 +301,16 @@ class MigrationVerificationTest extends TestCase
     {
         $db = ConnectionManager::get('test');
         $driver = $db->getDriver();
-        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
+        $isMysql = $driver instanceof Mysql;
 
         if ($isMysql) {
             $dbName = $db->config()['database'];
             $result = $db->execute(
-                "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME "
-                . "FROM INFORMATION_SCHEMA.STATISTICS "
+                'SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME '
+                . 'FROM INFORMATION_SCHEMA.STATISTICS '
                 . "WHERE TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME LIKE 'ib_%' "
                 . "AND INDEX_NAME != 'PRIMARY' "
-                . "ORDER BY TABLE_NAME, INDEX_NAME"
+                . 'ORDER BY TABLE_NAME, INDEX_NAME',
             )->fetchAll('assoc');
 
             $this->assertNotEmpty($result, 'インデックスが1つも存在しません');
@@ -336,7 +337,7 @@ class MigrationVerificationTest extends TestCase
                 $this->assertContains(
                     $expectedIndexes[$table],
                     $indexNames,
-                    "{$table} のインデックス {$expectedIndexes[$table]} が存在しません"
+                    "{$table} のインデックス {$expectedIndexes[$table]} が存在しません",
                 );
             }
         }
@@ -349,7 +350,7 @@ class MigrationVerificationTest extends TestCase
     {
         $db = ConnectionManager::get('test');
         $driver = $db->getDriver();
-        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
+        $isMysql = $driver instanceof Mysql;
 
         if (!$isMysql) {
             $this->markTestSkipped('SQLite では文字コード指定は不要です');
@@ -357,9 +358,9 @@ class MigrationVerificationTest extends TestCase
 
         $dbName = $db->config()['database'];
         $result = $db->execute(
-            "SELECT TABLE_NAME, TABLE_COLLATION "
-            . "FROM INFORMATION_SCHEMA.TABLES "
-            . "WHERE TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME LIKE 'ib_%'"
+            'SELECT TABLE_NAME, TABLE_COLLATION '
+            . 'FROM INFORMATION_SCHEMA.TABLES '
+            . "WHERE TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME LIKE 'ib_%'",
         )->fetchAll('assoc');
 
         $this->assertNotEmpty($result);
@@ -368,7 +369,7 @@ class MigrationVerificationTest extends TestCase
             $this->assertStringStartsWith(
                 'utf8mb4_',
                 $row['TABLE_COLLATION'],
-                "{$row['TABLE_NAME']} の文字コードが utf8mb4 ではありません（{$row['TABLE_COLLATION']}）"
+                "{$row['TABLE_NAME']} の文字コードが utf8mb4 ではありません（{$row['TABLE_COLLATION']}）",
             );
         }
     }
@@ -380,7 +381,7 @@ class MigrationVerificationTest extends TestCase
     {
         $db = ConnectionManager::get('test');
         $driver = $db->getDriver();
-        $isMysql = $driver instanceof \Cake\Database\Driver\Mysql;
+        $isMysql = $driver instanceof Mysql;
 
         if ($isMysql) {
             $result = $db->execute("SHOW COLUMNS FROM `{$table}`")->fetchAll('assoc');
@@ -396,7 +397,7 @@ class MigrationVerificationTest extends TestCase
         $this->assertEquals(
             $expectedColumns,
             $actualColumns,
-            "{$table} のカラム構造が期待値と一致しません"
+            "{$table} のカラム構造が期待値と一致しません",
         );
     }
 
@@ -428,6 +429,7 @@ class MigrationVerificationTest extends TestCase
     private function getTestDbName(): string
     {
         $config = ConnectionManager::get('test')->config();
+
         return $config['database'] ?? 'irohaboard_test';
     }
 }

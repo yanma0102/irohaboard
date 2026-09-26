@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use Cake\Http\Response;
+
 /**
  * ApiUsers Controller
  * ユーザの一覧・詳細・追加・更新・削除・コース割当を提供する
@@ -25,7 +27,7 @@ class UsersController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function index(): \Cake\Http\Response
+    public function index(): Response
     {
         $conditions = ['deleted IS NULL'];
         $currentUser = $this->currentUserId();
@@ -87,7 +89,7 @@ class UsersController extends BaseController
      * @param int $id ユーザID
      * @return \Cake\Http\Response
      */
-    public function view(int $id): \Cake\Http\Response
+    public function view(int $id): Response
     {
         // スタッフは誰でも参照可能、一般ユーザは自分のみ
         if (!$this->isStaff() && $id !== $this->currentUserId()) {
@@ -114,7 +116,7 @@ class UsersController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function add(): \Cake\Http\Response
+    public function add(): Response
     {
         $this->requireManager();
 
@@ -136,6 +138,7 @@ class UsersController extends BaseController
             $data = $entity->toArray();
             $data['id'] = (int)$data['id'];
             unset($data['password']);
+
             return $this->ok($data, 201);
         }
 
@@ -148,7 +151,7 @@ class UsersController extends BaseController
      * @param int $id ユーザID
      * @return \Cake\Http\Response
      */
-    public function edit(int $id): \Cake\Http\Response
+    public function edit(int $id): Response
     {
         $this->requireManager();
 
@@ -211,7 +214,7 @@ class UsersController extends BaseController
      * @param int $id ユーザID
      * @return \Cake\Http\Response
      */
-    public function changePassword(int $id): \Cake\Http\Response
+    public function changePassword(int $id): Response
     {
         $this->requireManager();
 
@@ -261,7 +264,7 @@ class UsersController extends BaseController
      * @param int $id ユーザID
      * @return \Cake\Http\Response
      */
-    public function delete(int $id): \Cake\Http\Response
+    public function delete(int $id): Response
     {
         $this->requireManager();
 
@@ -288,7 +291,7 @@ class UsersController extends BaseController
      * @param int $id ユーザID
      * @return \Cake\Http\Response
      */
-    public function courses(int $id): \Cake\Http\Response
+    public function courses(int $id): Response
     {
         // スタッフは誰でも参照可能、一般ユーザは自分のみ
         if (!$this->isStaff() && $id !== $this->currentUserId()) {
@@ -319,13 +322,13 @@ class UsersController extends BaseController
         foreach ($result as $row) {
             $courses[] = [
                 'id' => isset($row['id']) ? (int)$row['id'] : 0,
-                'title' => isset($row['title']) ? $row['title'] : '',
-                'introduction' => isset($row['introduction']) ? $row['introduction'] : null,
-                'opened' => isset($row['opened']) ? $row['opened'] : null,
+                'title' => $row['title'] ?? '',
+                'introduction' => $row['introduction'] ?? null,
+                'opened' => $row['opened'] ?? null,
                 'sort_no' => isset($row['sort_no']) ? (int)$row['sort_no'] : 0,
                 'user_id' => isset($row['user_id']) ? (int)$row['user_id'] : 0,
-                'created' => isset($row['created']) ? $row['created'] : null,
-                'modified' => isset($row['modified']) ? $row['modified'] : null,
+                'created' => $row['created'] ?? null,
+                'modified' => $row['modified'] ?? null,
             ];
         }
 
@@ -338,7 +341,7 @@ class UsersController extends BaseController
      * @param int $id ユーザID
      * @return \Cake\Http\Response
      */
-    public function assignCourse(int $id): \Cake\Http\Response
+    public function assignCourse(int $id): Response
     {
         $this->requireManager();
 
@@ -396,7 +399,7 @@ class UsersController extends BaseController
      * @param int $courseId コースID
      * @return \Cake\Http\Response
      */
-    public function unassignCourse(int $id, int $courseId): \Cake\Http\Response
+    public function unassignCourse(int $id, int $courseId): Response
     {
         $this->requireManager();
 

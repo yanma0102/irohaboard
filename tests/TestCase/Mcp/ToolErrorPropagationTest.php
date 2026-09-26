@@ -10,7 +10,9 @@ use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\TestCase;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\JsonRpc\Request;
 use Mcp\Server\RequestContext;
+use Mcp\Server\Session\SessionInterface;
 
 /**
  * D-09: MCP ツールのエラー伝達テスト
@@ -116,9 +118,9 @@ class ToolErrorPropagationTest extends TestCase
      */
     private function createMockContext(int $userId, string $role): RequestContext
     {
-        $session = $this->createMock(\Mcp\Server\Session\SessionInterface::class);
+        $session = $this->createMock(SessionInterface::class);
 
-        $request = $this->createMock(\Mcp\Schema\JsonRpc\Request::class);
+        $request = $this->createMock(Request::class);
         $request->method('getMeta')->willReturn([
             'oauth' => [
                 'oauth.user_id' => $userId,

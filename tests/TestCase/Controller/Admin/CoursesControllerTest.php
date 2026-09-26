@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -54,7 +55,7 @@ class CoursesControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -78,7 +79,7 @@ class CoursesControllerTest extends TestCase
      * Session 認証子はセッションキー 'Auth' から Identity を復元するため、
      * そこにユーザー情報をセットすれば認証済み状態になる。
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -103,7 +104,7 @@ class CoursesControllerTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(string $title, int $userId): \Cake\Datasource\EntityInterface
+    private function createCourse(string $title, int $userId): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([

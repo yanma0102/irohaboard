@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace App\View\Helper;
 
 use Cake\View\Helper;
-use Cake\View\View;
 
 /**
  * AppViewHelper - ビュー用ユーティリティヘルパー
@@ -41,6 +40,7 @@ class AppViewHelper extends Helper
     public function readSession(string $key): mixed
     {
         $request = $this->_View->getRequest();
+
         return $request->getSession()->read($key);
     }
 

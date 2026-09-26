@@ -35,8 +35,8 @@ class ContentsQuestionsController extends AppController
     /**
      * 問題を出題
      *
-     * @param int|string $content_id 表示するコンテンツ(テスト)のID
-     * @param int|string|null $record_id 履歴ID (テスト結果表示の場合、指定)
+     * @param string|int $content_id 表示するコンテンツ(テスト)のID
+     * @param string|int|null $record_id 履歴ID (テスト結果表示の場合、指定)
      * @return void
      */
     public function index($content_id, $record_id = null): void
@@ -46,7 +46,7 @@ class ContentsQuestionsController extends AppController
         $recordsTable = $this->fetchTable('Records');
 
         $content_id = (int)$content_id;
-        $record_id = ($record_id !== null) ? (int)$record_id : null;
+        $record_id = $record_id !== null ? (int)$record_id : null;
 
         // コンテンツ情報を取得
         $content = $contentsTable->get($content_id, contain: ['Courses']);
@@ -129,6 +129,7 @@ class ContentsQuestionsController extends AppController
             if (Configure::read('demo_mode')) {
                 $this->Flash->error(__('デモモードでは保存できません'));
                 $this->redirect(['action' => 'index', $content_id]);
+
                 return;
             }
 
@@ -150,7 +151,7 @@ class ContentsQuestionsController extends AppController
                     $is_correct = $this->isMultiCorrect($answer, $corrects) ? 1 : 0;
                     $answer = is_array($answer) ? implode(',', $answer) : null;
                 } else {
-                    $is_correct = ($answer == $correct) ? 1 : 0;
+                    $is_correct = $answer == $correct ? 1 : 0;
                 }
 
                 $full_score += $score;
@@ -167,8 +168,8 @@ class ContentsQuestionsController extends AppController
                 ];
             }
 
-            $pass_score = ($full_score * $pass_rate) / 100;
-            $is_passed = ($my_score >= $pass_score) ? 1 : 0;
+            $pass_score = $full_score * $pass_rate / 100;
+            $is_passed = $my_score >= $pass_score ? 1 : 0;
             $study_sec = $this->getData('ContentsQuestion')['study_sec'] ?? 0;
 
             $recordEntity = $recordsTable->newEmptyEntity();
@@ -209,8 +210,8 @@ class ContentsQuestionsController extends AppController
     /**
      * テスト結果を表示
      *
-     * @param int|string $content_id コンテンツID
-     * @param int|string $record_id 履歴ID
+     * @param string|int $content_id コンテンツID
+     * @param string|int $record_id 履歴ID
      * @return void
      */
     public function record($content_id, $record_id): void

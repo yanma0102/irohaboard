@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Core\Configure;
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -58,7 +60,7 @@ class InfosControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -77,7 +79,7 @@ class InfosControllerTest extends TestCase
     /**
      * admin ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -101,7 +103,7 @@ class InfosControllerTest extends TestCase
     /**
      * テスト用お知らせを作成
      */
-    private function createInfo(int $userId, string $title = 'テストお知らせ'): \Cake\Datasource\EntityInterface
+    private function createInfo(int $userId, string $title = 'テストお知らせ'): EntityInterface
     {
         $infosTable = $this->getTableLocator()->get('Infos');
         $entity = $infosTable->newEntity([
@@ -236,7 +238,7 @@ class InfosControllerTest extends TestCase
         $admin = $this->loginAsAdmin();
         $info = $this->createInfo((int)$admin->id, 'demo_modeテスト');
 
-        \Cake\Core\Configure::write('demo_mode', true);
+        Configure::write('demo_mode', true);
 
         $this->post("/admin/infos/edit/{$info->id}", [
             'id' => $info->id,
@@ -249,7 +251,7 @@ class InfosControllerTest extends TestCase
         // リダイレクト（302）になる（現状の挙動）
         $this->assertRedirect();
 
-        \Cake\Core\Configure::delete('demo_mode');
+        Configure::delete('demo_mode');
     }
 
     /**

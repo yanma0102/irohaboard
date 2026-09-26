@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace App\Test\TestCase\Controller;
 
 use App\Controller\InstallController;
+use Cake\Database\Connection;
 use Cake\Datasource\ConnectionManager;
 use Cake\Http\ServerRequest;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
+use Exception;
+use ReflectionMethod;
 
 /**
  * InstallControllerTest
@@ -23,7 +26,7 @@ class InstallControllerTest extends TestCase
     /**
      * @var \Cake\Database\Connection|null
      */
-    private ?\Cake\Database\Connection $testConn = null;
+    private ?Connection $testConn = null;
 
     public function setUp(): void
     {
@@ -77,8 +80,11 @@ class InstallControllerTest extends TestCase
         // テスト環境では 'irohaboard_test' が設定されているはず
         $this->assertNotEmpty($config['database'], 'database name should not be empty');
         // ハードコード 'irohaboard' にフォールバックしていないこと
-        $this->assertNotSame('irohaboard', $config['database'],
-            'DB name must come from ConnectionManager, not hardcoded fallback');
+        $this->assertNotSame(
+            'irohaboard',
+            $config['database'],
+            'DB name must come from ConnectionManager, not hardcoded fallback',
+        );
     }
 
     /**
@@ -95,13 +101,16 @@ class InstallControllerTest extends TestCase
         try {
             $dbConfig = ConnectionManager::getConfig('default');
             $database = $dbConfig['database'] ?? 'irohaboard';
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $database = 'irohaboard';
         }
 
         $this->assertNotEmpty($database, 'database name should not be empty');
-        $this->assertNotSame('irohaboard', $database,
-            'Should get actual DB name from ConnectionManager, not fallback');
+        $this->assertNotSame(
+            'irohaboard',
+            $database,
+            'Should get actual DB name from ConnectionManager, not fallback',
+        );
     }
 
     /**
@@ -121,7 +130,7 @@ class InstallControllerTest extends TestCase
         $body = (string)$this->_response->getBody();
         $this->assertTrue(
             str_contains($body, 'インストール') || str_contains($body, 'installed') || str_contains($body, '<form'),
-            'Response should contain install-related content'
+            'Response should contain install-related content',
         );
     }
 
@@ -163,7 +172,7 @@ SQL;
             $controller->path = $tmpFile;
 
             // Reflection で private メソッドを呼び出す
-            $method = new \ReflectionMethod($controller, '_executeSQLScript');
+            $method = new ReflectionMethod($controller, '_executeSQLScript');
 
             // 1回目: CREATE TABLE + INSERT → エラーなし
             $errors1 = $method->invoke($controller);
@@ -176,7 +185,7 @@ SQL;
             // クリーンアップ: テーブル削除 + 一時ファイル削除
             try {
                 $this->testConn->execute("DROP TABLE IF EXISTS `{$testTable}`");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // クリーンアップ失敗は無視
             }
             if (is_string($tmpFile) && file_exists($tmpFile)) {
@@ -212,7 +221,7 @@ SQL;
             $this->assertNotFalse($tmpFile1, 'tempnam should succeed');
             file_put_contents($tmpFile1, $sqlCreate . ";\n" . $sqlInsert1 . ";\n");
             $controller->path = $tmpFile1;
-            $method = new \ReflectionMethod($controller, '_executeSQLScript');
+            $method = new ReflectionMethod($controller, '_executeSQLScript');
             $errors1 = $method->invoke($controller);
             $this->assertEmpty($errors1, 'First run (CREATE + INSERT) should succeed: ' . implode('; ', $errors1));
 
@@ -232,7 +241,7 @@ SQL;
             }
             try {
                 $this->testConn->execute("DROP TABLE IF EXISTS `{$testTable}`");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // ignore
             }
         }
@@ -254,7 +263,7 @@ SQL;
             $controller->db = $this->testConn;
             $controller->path = $tmpFile;
 
-            $method = new \ReflectionMethod($controller, '_executeSQLScript');
+            $method = new ReflectionMethod($controller, '_executeSQLScript');
             $errors = $method->invoke($controller);
             $this->assertNotEmpty($errors, 'Invalid SQL should still produce errors');
         } finally {
@@ -269,7 +278,7 @@ SQL;
     // ----------------------------------------------------------------
 
     /**
-     * D-34: インストールフォームに _csrfToken の hidden 	input が存在すること
+     * D-34: インストールフォームに _csrfToken の hidden    input が存在すること
      *
      * /install は CsrfProtectionMiddleware の除外パスに含まれないため、
      * トークンを送らない POST は 403 で拒否される。
@@ -289,12 +298,12 @@ SQL;
         $this->assertStringContainsString(
             'name="_csrfToken"',
             $source,
-            'D-34: インストールフォームに _csrfToken の hidden input が必要です（無いと POST が 403）'
+            'D-34: インストールフォームに _csrfToken の hidden input が必要です（無いと POST が 403）',
         );
         $this->assertStringContainsString(
             "getAttribute('csrfToken')",
             $source,
-            'D-34: トークンはリクエスト属性 csrfToken から取得してください'
+            'D-34: トークンはリクエスト属性 csrfToken から取得してください',
         );
     }
 
@@ -330,7 +339,7 @@ SQL;
         // 旧実装（'User.username'）では NULL になることを確認する（回帰検知の前提）
         $this->assertNull(
             $request->getData('User.username'),
-            'CakePHP 5 では getData("User.username") は解決されない（D-35 の原因）'
+            'CakePHP 5 では getData("User.username") は解決されない（D-35 の原因）',
         );
 
         // 修正後: 'data.User' 経由で取得できる
@@ -349,18 +358,18 @@ SQL;
     public function testIndexDoesNotReadUnprefixedUserDataKeys(): void
     {
         $source = (string)file_get_contents(
-            ROOT . DS . 'src' . DS . 'Controller' . DS . 'InstallController.php'
+            ROOT . DS . 'src' . DS . 'Controller' . DS . 'InstallController.php',
         );
 
         $this->assertStringNotContainsString(
             "getData('User.",
             $source,
-            'D-35: getData("User.username") 等の生キーはCakePHP 5 で解決されません。data.User を使用してください'
+            'D-35: getData("User.username") 等の生キーはCakePHP 5 で解決されません。data.User を使用してください',
         );
         $this->assertStringContainsString(
             "getData('data.User'",
             $source,
-            'D-35: data.User 経由でフォーム値を読み取る必要があります'
+            'D-35: data.User 経由でフォーム値を読み取る必要があります',
         );
     }
 

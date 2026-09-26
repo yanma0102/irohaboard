@@ -15,7 +15,7 @@ class AppNumberHelper extends NumberHelper
      * Matches legacy CakePHP 2 NumberHelper::toReadableSize().
      * Uses 1024-based units, 1 decimal place.
      *
-     * @param int|float|string $size Size in bytes.
+     * @param string|float|int $size Size in bytes.
      * @return string Human-readable size string.
      */
     public function toReadableSize(int|float|string|null $size): string

@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
+use Laminas\Diactoros\UploadedFile;
 
 /**
  * Admin ContentsController の統合テスト
@@ -52,7 +54,7 @@ class ContentsControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -71,7 +73,7 @@ class ContentsControllerTest extends TestCase
     /**
      * admin ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -95,7 +97,7 @@ class ContentsControllerTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(string $title, int $userId): \Cake\Datasource\EntityInterface
+    private function createCourse(string $title, int $userId): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -113,7 +115,7 @@ class ContentsControllerTest extends TestCase
     /**
      * テスト用コンテンツを作成
      */
-    private function createContent(int $courseId, int $userId, string $title = 'テストコンテンツ'): \Cake\Datasource\EntityInterface
+    private function createContent(int $courseId, int $userId, string $title = 'テストコンテンツ'): EntityInterface
     {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $entity = $contentsTable->newEntity([
@@ -329,11 +331,11 @@ class ContentsControllerTest extends TestCase
         $this->loginAsAdmin();
 
         $tmpFile = $this->createTempFile('php', 100);
-        $uploadedFile = new \Laminas\Diactoros\UploadedFile(
+        $uploadedFile = new UploadedFile(
             $tmpFile,
             filesize($tmpFile),
             UPLOAD_ERR_OK,
-            'malicious.php'
+            'malicious.php',
         );
 
         // uploadImage() は is('ajax') をチェック
@@ -366,11 +368,11 @@ class ContentsControllerTest extends TestCase
         // 2MB + 1 バイトのファイルを作成
         $oversize = 1024 * 1024 * 2 + 1;
         $tmpFile = $this->createTempFile('png', $oversize);
-        $uploadedFile = new \Laminas\Diactoros\UploadedFile(
+        $uploadedFile = new UploadedFile(
             $tmpFile,
             filesize($tmpFile),
             UPLOAD_ERR_OK,
-            'large_image.png'
+            'large_image.png',
         );
 
         $this->configRequest([
@@ -409,11 +411,11 @@ class ContentsControllerTest extends TestCase
 
         // 100 バイトのダミー PNG ファイル
         $tmpFile = $this->createTempFile('png', 100);
-        $uploadedFile = new \Laminas\Diactoros\UploadedFile(
+        $uploadedFile = new UploadedFile(
             $tmpFile,
             filesize($tmpFile),
             UPLOAD_ERR_OK,
-            'test_image.png'
+            'test_image.png',
         );
 
         $this->configRequest([
@@ -799,11 +801,11 @@ class ContentsControllerTest extends TestCase
         $tmpFile = tempnam(sys_get_temp_dir(), 'test_upload_');
         file_put_contents($tmpFile, str_repeat('x', 100));
 
-        $uploadedFile = new \Laminas\Diactoros\UploadedFile(
+        $uploadedFile = new UploadedFile(
             $tmpFile,
             filesize($tmpFile),
             UPLOAD_ERR_OK,
-            'malicious.php'
+            'malicious.php',
         );
 
         $this->configRequest([
@@ -832,7 +834,7 @@ class ContentsControllerTest extends TestCase
         $this->assertMatchesRegularExpression(
             "/unlockActions\(\[[^\]]*'upload'[^\]]*\]\)/",
             $source,
-            'unlockActions に upload が含まれていること'
+            'unlockActions に upload が含まれていること',
         );
     }
 }

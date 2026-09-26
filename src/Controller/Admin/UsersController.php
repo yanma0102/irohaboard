@@ -17,6 +17,8 @@ use App\Controller\Trait\UserLoginTrait;
 use App\Utility\Utils;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
+use Exception;
 
 /**
  * Users Controller (管理画面)
@@ -51,7 +53,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function index(): ?\Cake\Http\Response
+    public function index(): ?Response
     {
         $usersTable = $this->fetchTable('Users');
         $groupsTable = $this->fetchTable('Groups');
@@ -90,14 +92,14 @@ class UsersController extends AppController
         // 所属グループ一覧 ※パフォーマンス改善
         $query->select([
             'group_title' => $query->expr(
-                "(SELECT group_concat(g.title ORDER BY g.id SEPARATOR ', ') FROM ib_users_groups ug INNER JOIN ib_groups g ON g.id = ug.group_id WHERE ug.user_id = Users.id)"
+                "(SELECT group_concat(g.title ORDER BY g.id SEPARATOR ', ') FROM ib_users_groups ug INNER JOIN ib_groups g ON g.id = ug.group_id WHERE ug.user_id = Users.id)",
             ),
         ]);
 
         // 受講コース一覧 ※パフォーマンス改善
         $query->select([
             'course_title' => $query->expr(
-                "(SELECT group_concat(c.title ORDER BY c.id SEPARATOR ', ') FROM ib_users_courses uc INNER JOIN ib_courses c ON c.id = uc.course_id WHERE uc.user_id = Users.id)"
+                "(SELECT group_concat(c.title ORDER BY c.id SEPARATOR ', ') FROM ib_users_courses uc INNER JOIN ib_courses c ON c.id = uc.course_id WHERE uc.user_id = Users.id)",
             ),
         ]);
 
@@ -107,7 +109,7 @@ class UsersController extends AppController
 
         try {
             $users = $this->paginate($query);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // 指定したページが存在しなかった場合（主に検索条件変更時に発生）、1ページ目を設定
             $this->request = $this->request->withParam('page', 1);
             $users = $this->paginate($query);
@@ -126,7 +128,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function add(): ?\Cake\Http\Response
+    public function add(): ?Response
     {
         $result = $this->edit();
         if ($result !== null) {
@@ -140,10 +142,10 @@ class UsersController extends AppController
     /**
      * ユーザ情報編集
      *
-     * @param int|string|null $user_id 編集対象のユーザのID
+     * @param string|int|null $user_id 編集対象のユーザのID
      * @return \Cake\Http\Response|null
      */
-    public function edit($user_id = null): ?\Cake\Http\Response
+    public function edit($user_id = null): ?Response
     {
         $usersTable = $this->fetchTable('Users');
 
@@ -185,12 +187,13 @@ class UsersController extends AppController
                         : (int)$user_id;
                     try {
                         $this->fetchTable('UserTokens')->revokeAllForUser($target_user_id);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // ib_user_tokens 未作成（/update 前）など
                     }
                 }
 
                 $this->Flash->success(__('ユーザ情報が保存されました'));
+
                 return $this->redirect(['action' => 'index']);
             } else {
                 $this->Flash->error(__('ユーザ情報が保存できませんでした'));
@@ -214,10 +217,10 @@ class UsersController extends AppController
     /**
      * ユーザの削除
      *
-     * @param int|string|null $user_id 削除するユーザのID
+     * @param string|int|null $user_id 削除するユーザのID
      * @return \Cake\Http\Response
      */
-    public function delete($user_id = null): \Cake\Http\Response
+    public function delete($user_id = null): Response
     {
         if (Configure::read('demo_mode')) {
             return $this->redirect(['action' => 'index']);
@@ -245,14 +248,15 @@ class UsersController extends AppController
     /**
      * ユーザの学習履歴のクリア
      *
-     * @param int|string $user_id 学習履歴をクリアするユーザのID
+     * @param string|int $user_id 学習履歴をクリアするユーザのID
      * @return \Cake\Http\Response
      */
-    public function clear($user_id): \Cake\Http\Response
+    public function clear($user_id): Response
     {
         $this->request->allowMethod(['post', 'delete']);
         $this->fetchTable('Users')->deleteUserRecords((int)$user_id);
         $this->Flash->success(__('学習履歴を削除しました'));
+
         return $this->redirect(['action' => 'edit', $user_id]);
     }
 
@@ -261,7 +265,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function setting(): ?\Cake\Http\Response
+    public function setting(): ?Response
     {
         $usersTable = $this->fetchTable('Users');
 
@@ -277,11 +281,13 @@ class UsersController extends AppController
 
             if (empty($data['new_password'])) {
                 $this->Flash->error(__('パスワードを入力して下さい'));
+
                 return null;
             }
 
             if ($data['new_password'] !== $data['new_password2']) {
                 $this->Flash->error(__('入力された「パスワード」と「パスワード（確認用）」が一致しません'));
+
                 return null;
             }
 
@@ -294,7 +300,7 @@ class UsersController extends AppController
                 // パスワード変更時は旧 Remember Me トークンを無効化
                 try {
                     $this->fetchTable('UserTokens')->revokeAllForUser((int)$this->readAuthUser('id'));
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // ib_user_tokens 未作成（/update 前）など
                 }
                 $this->Flash->success(__('パスワードが変更されました'));
@@ -314,7 +320,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function login(): ?\Cake\Http\Response
+    public function login(): ?Response
     {
         return $this->performLogin();
     }
@@ -324,12 +330,12 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response
      */
-    public function logout(): \Cake\Http\Response
+    public function logout(): Response
     {
         if ($this->hasCookie('CookieAuth')) {
             try {
                 $this->fetchTable('UserTokens')->revokeByCookie($this->readCookie('CookieAuth'));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // ib_user_tokens 未作成（/update 前）など
             }
             $this->deleteCookie('CookieAuth');
@@ -340,6 +346,7 @@ class UsersController extends AppController
         $this->deleteCookie('LoginStatus');
 
         $logoutRedirect = $this->Authentication->logout();
+
         return $this->redirect($logoutRedirect ?? '/users/login');
     }
 
@@ -348,36 +355,36 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function import(): ?\Cake\Http\Response
+    public function import(): ?Response
     {
         if (Configure::read('demo_mode')) {
             return null;
         }
 
-        $group_count  = Configure::read('import_group_count');     // 所属グループの列数
-        $course_count = Configure::read('import_course_count');     // 受講コースの列数
+        $group_count = Configure::read('import_group_count'); // 所属グループの列数
+        $course_count = Configure::read('import_course_count'); // 受講コースの列数
 
         $err_msg = '';
 
         if ($this->request->is(['post', 'put'])) {
             //------------------------------//
-            //	列番号の定義				//
+            //  列番号の定義              //
             //------------------------------//
             // 旧実装は define() でグローバル定数を定義していたが、
             // 同一プロセス内で import() が複数回呼ばれると定数再定義警告が発生し、
             // ワーカー/CLI 長寿命プロセスでは他リクエストへ状態を持ち込む。
             // このメソッド内だけで有効なローカル変数へ置き換える。
-            $COL_LOGINID   = 0;
-            $COL_PASSWORD  = 1;
-            $COL_NAME      = 2;
-            $COL_ROLE      = 3;
-            $COL_EMAIL     = 4;
-            $COL_COMMENT   = 5;
-            $COL_GROUP     = 6;
-            $COL_COURSE    = 6 + $group_count;
+            $COL_LOGINID = 0;
+            $COL_PASSWORD = 1;
+            $COL_NAME = 2;
+            $COL_ROLE = 3;
+            $COL_EMAIL = 4;
+            $COL_COMMENT = 5;
+            $COL_GROUP = 6;
+            $COL_COURSE = 6 + $group_count;
 
             //------------------------------//
-            //	CSVファイルの読み込み		//
+            //  CSVファイルの読み込み        //
             //------------------------------//
             // 制限時間を120秒に設定（CLIでは max_execution_time が無制限のため変更しない）
             if (PHP_SAPI !== 'cli') {
@@ -390,6 +397,7 @@ class UsersController extends AppController
             if ($csvfile === null || $csvfile->getError() !== UPLOAD_ERR_OK) {
                 $this->Flash->error(__('インポートファイルが指定されていません'));
                 $this->set(compact('err_msg'));
+
                 return null;
             }
 
@@ -405,8 +413,8 @@ class UsersController extends AppController
             try {
                 $is_error = false;
 
-                $group_list  = $this->fetchTable('Groups')->find('list');   // 所属グループ
-                $course_list = $this->fetchTable('Courses')->find('list');  // 受講コース
+                $group_list = $this->fetchTable('Groups')->find('list'); // 所属グループ
+                $course_list = $this->fetchTable('Courses')->find('list'); // 受講コース
 
                 // 1行ごとにデータを登録
                 foreach ($csv as $row) {
@@ -423,7 +431,7 @@ class UsersController extends AppController
                     $is_new = false;
 
                     //------------------------------//
-                    //	ユーザ情報の作成			//
+                    //  ユーザ情報の作成            //
                     //------------------------------//
                     $existingUser = $usersTable->find()->where(['username' => $row[$COL_LOGINID]])->first();
 
@@ -442,15 +450,15 @@ class UsersController extends AppController
                         $saveData['password'] = $row[$COL_PASSWORD];
                     }
 
-                    $saveData['name']    = $row[$COL_NAME];                                     // 氏名
-                    $saveData['role']    = Utils::getKeyByValue('user_role', $row[$COL_ROLE]); // 権限
-                    $saveData['email']   = $row[$COL_EMAIL];                                    // メールアドレス
-                    $saveData['comment'] = Utils::issetOr($row[$COL_COMMENT]);                 // 備考
+                    $saveData['name'] = $row[$COL_NAME]; // 氏名
+                    $saveData['role'] = Utils::getKeyByValue('user_role', $row[$COL_ROLE]); // 権限
+                    $saveData['email'] = $row[$COL_EMAIL]; // メールアドレス
+                    $saveData['comment'] = Utils::issetOr($row[$COL_COMMENT]); // 備考
 
                     //----------------------------------//
-                    //	所属グループ・受講コースの割当	//
+                    //  所属グループ・受講コースの割当 //
                     //----------------------------------//
-                    $groupIds  = [];
+                    $groupIds = [];
                     $courseIds = [];
 
                     // 所属グループの割当
@@ -487,11 +495,11 @@ class UsersController extends AppController
                         $courseIds[] = $course;
                     }
 
-                    $saveData['groups']   = ['_ids' => $groupIds];
-                    $saveData['courses']  = ['_ids' => $courseIds];
+                    $saveData['groups'] = ['_ids' => $groupIds];
+                    $saveData['courses'] = ['_ids' => $courseIds];
 
                     //------------------------------//
-                    //	保存						//
+                    //  保存                      //
                     //------------------------------//
                     if ($is_new) {
                         $entity = $usersTable->newEntity($saveData);
@@ -515,7 +523,7 @@ class UsersController extends AppController
                 }
 
                 //------------------------------//
-                //	エラー処理					//
+                //  エラー処理                   //
                 //------------------------------//
                 if ($is_error) {
                     $connection->rollback();
@@ -523,9 +531,10 @@ class UsersController extends AppController
                 } else {
                     $connection->commit();
                     $this->Flash->success(__('インポートが完了しました'));
+
                     return $this->redirect(['action' => 'index']);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $connection->rollback();
                 $this->Flash->error(__('インポートに失敗しました'));
             }
@@ -542,10 +551,10 @@ class UsersController extends AppController
      * @param array $conditions 検索条件
      * @return \Cake\Http\Response
      */
-    protected function _exportCsv(array $conditions): \Cake\Http\Response
+    protected function _exportCsv(array $conditions): Response
     {
-        $group_count  = Configure::read('import_group_count');     // 所属グループの列数
-        $course_count = Configure::read('import_course_count');     // 受講コースの列数
+        $group_count = Configure::read('import_group_count'); // 所属グループの列数
+        $course_count = Configure::read('import_course_count'); // 受講コースの列数
 
         $this->autoRender = false;
         Configure::write('debug', 0);
@@ -553,7 +562,7 @@ class UsersController extends AppController
         $usersTable = $this->fetchTable('Users');
 
         //------------------------------//
-        //	ヘッダー行の作成			//
+        //  ヘッダー行の作成            //
         //------------------------------//
         $header = [
             __('ログインID'),
@@ -573,13 +582,13 @@ class UsersController extends AppController
         }
 
         //------------------------------//
-        //	ユーザ情報の取得			//
+        //  ユーザ情報の取得            //
         //------------------------------//
 
         // パフォーマンスの改善の為、一定件数に分割してデータを取得
-        $limit      = 500;
+        $limit = 500;
         $user_count = $usersTable->find()->where($conditions)->count(); // ユーザ数を取得
-        $page_size  = (int)ceil($user_count / $limit);                 // ページ数（ユーザ数 / ページ単位）
+        $page_size = (int)ceil($user_count / $limit); // ページ数（ユーザ数 / ページ単位）
 
         // CSV内容をバッファリング（CakePHP 5 では headers 送信後に php://output へ直接書き込めない）
         $csvContent = '';
@@ -600,9 +609,9 @@ class UsersController extends AppController
 
             foreach ($rows as $row) {
                 //------------------------------//
-                //	出力するデータを作成		//
+                //  出力するデータを作成      //
                 //------------------------------//
-                $groups  = array_fill(0, $group_count, '');
+                $groups = array_fill(0, $group_count, '');
                 $courses = array_fill(0, $course_count, '');
 
                 $i = 0;
@@ -623,12 +632,12 @@ class UsersController extends AppController
 
                 // 出力行を作成
                 $line = [
-                    $row->username,                                             // ユーザ名
-                    '',                                                         // パスワード
-                    $this->sanitizeCsvValue($row->name),                       // 氏名
-                    Configure::read('user_role.' . $row->role),                // 権限
-                    $this->sanitizeCsvValue($row->email),                      // メールアドレス
-                    $this->sanitizeCsvValue($row->comment),                    // 備考
+                    $row->username, // ユーザ名
+                    '', // パスワード
+                    $this->sanitizeCsvValue($row->name), // 氏名
+                    Configure::read('user_role.' . $row->role), // 権限
+                    $this->sanitizeCsvValue($row->email), // メールアドレス
+                    $this->sanitizeCsvValue($row->comment), // 備考
                 ];
 
                 // 所属グループを出力
@@ -669,6 +678,7 @@ class UsersController extends AppController
         rewind($fp);
         $csv = stream_get_contents($fp);
         fclose($fp);
+
         return $csv;
     }
 }

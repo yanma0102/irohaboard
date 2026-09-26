@@ -18,7 +18,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use Cake\Core\Configure;
-use Cake\I18n\Time;
+use Cake\Http\Response;
 
 /**
  * ApiAuth Controller
@@ -55,7 +55,7 @@ class AuthController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function issueToken(): \Cake\Http\Response
+    public function issueToken(): Response
     {
         $data = $this->input();
 
@@ -115,7 +115,7 @@ class AuthController extends BaseController
             $expires = self::PERMANENT_EXPIRED;
             $token = $userTokensTable->issueApiToken((int)$user->id, null, true);
         } else {
-            $days = (int)\Cake\Core\Configure::read('api_token_expired_days');
+            $days = (int)Configure::read('api_token_expired_days');
             if ($days <= 0) {
                 $days = 30;
             }
@@ -149,7 +149,7 @@ class AuthController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function revokeToken(): \Cake\Http\Response
+    public function revokeToken(): Response
     {
         if (!empty($this->apiToken)) {
             $userTokensTable = $this->fetchTable('UserTokens');
@@ -188,7 +188,7 @@ class AuthController extends BaseController
             ])
             ->count();
 
-        return ($count >= self::MAX_LOGIN_ATTEMPTS);
+        return $count >= self::MAX_LOGIN_ATTEMPTS;
     }
 
     /**
@@ -207,7 +207,7 @@ class AuthController extends BaseController
             'log_content' => $username,
             'user_id' => null,
             'user_ip' => $ip,
-            'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
         ]);
         $logsTable->save($log);
     }
@@ -224,6 +224,7 @@ class AuthController extends BaseController
     {
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+
             return trim($ips[0]);
         }
 

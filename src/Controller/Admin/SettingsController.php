@@ -13,6 +13,7 @@ namespace App\Controller\Admin;
 
 use App\Controller\AppController;
 use Cake\Core\Configure;
+use Cake\Http\Response;
 
 /**
  * Settings Controller (Admin)
@@ -37,7 +38,7 @@ class SettingsController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function index(): ?\Cake\Http\Response
+    public function index(): ?Response
     {
         $settingsTable = $this->fetchTable('Settings');
 

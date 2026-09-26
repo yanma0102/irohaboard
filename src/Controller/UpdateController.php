@@ -13,8 +13,11 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Core\Configure;
+use Cake\Database\Connection;
 use Cake\Datasource\ConnectionManager;
+use Cake\Event\EventInterface;
 use Cake\Http\Exception\ForbiddenException;
+use Exception;
 
 /**
  * Update Controller
@@ -35,7 +38,7 @@ class UpdateController extends Controller
      *
      * @var \Cake\Database\Connection|null
      */
-    public ?\Cake\Database\Connection $db = null;
+    public ?Connection $db = null;
 
     /**
      * path
@@ -62,7 +65,7 @@ class UpdateController extends Controller
      * @param \Cake\Event\EventInterface $event
      * @return void
      */
-    public function beforeFilter(\Cake\Event\EventInterface $event): void
+    public function beforeFilter(EventInterface $event): void
     {
         parent::beforeFilter($event);
 
@@ -108,9 +111,10 @@ class UpdateController extends Controller
                 $this->log($log);
                 $this->error();
                 $this->viewBuilder()->setTemplate('error');
+
                 return;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->err_msg = 'データベースへの接続に失敗しました。設定ファイル(config/app_local.php)をご確認ください。';
             $this->error();
             $this->viewBuilder()->setTemplate('error');
@@ -136,7 +140,7 @@ class UpdateController extends Controller
      * @param \Exception $e 例外
      * @return array<int, mixed> [SQLSTATE, ドライバエラーコード, メッセージ]
      */
-    private function _getSqlErrorInfo(\Exception $e): array
+    private function _getSqlErrorInfo(Exception $e): array
     {
         $errorInfo = $e->errorInfo ?? null;
         if (!is_array($errorInfo)) {
@@ -184,7 +188,7 @@ class UpdateController extends Controller
 
             try {
                 $this->db->execute($statement);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errorInfo = $this->_getSqlErrorInfo($e);
 
                 // レコード重複追加エラー
@@ -204,11 +208,12 @@ class UpdateController extends Controller
                     continue;
                 }
 
-                $error_msg = sprintf("%s\n[Error Code]%s\n[Error Code2]%s\n[SQL]%s",
+                $error_msg = sprintf(
+                    "%s\n[Error Code]%s\n[Error Code2]%s\n[SQL]%s",
                     $errorInfo[2] ?? $e->getMessage(),
                     $errorInfo[0] ?? '',
                     $errorInfo[1] ?? '',
-                    $statement
+                    $statement,
                 );
                 $err_statements[] = $error_msg;
             }

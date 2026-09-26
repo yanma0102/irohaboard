@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Datasource\FactoryLocator;
 use Cake\ORM\Query;
 use Cake\Validation\Validator;
 
@@ -17,7 +18,6 @@ use Cake\Validation\Validator;
  * Infos Model
  *
  * @property \App\Model\Table\GroupsTable&\Cake\ORM\Association\BelongsToMany $Groups
- *
  * @method \App\Model\Entity\Info newEmptyEntity()
  * @method \App\Model\Entity\Info newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Info[] newEntities(array $data, array $options = [])
@@ -94,13 +94,13 @@ class InfosTable extends AppTable
     /**
      * お知らせ一覧クエリを取得（フロント用）
      *
-     *CakePHP 5: SelectQuery を返し、コントローラで $this->paginate($query) に渡す
+     * CakePHP 5: SelectQuery を返し、コントローラで $this->paginate($query) に渡す
      *
      * @param int $userId ユーザID
      * @param int|null $limit 取得件数
      * @return \Cake\ORM\Query
      */
-    public function getInfoOption(int $userId, ?int $limit = null): \Cake\ORM\Query
+    public function getInfoOption(int $userId, ?int $limit = null): Query
     {
         $infoIdList = $this->getInfoIdList($userId, $limit);
 
@@ -139,7 +139,7 @@ class InfosTable extends AppTable
      */
     private function getInfoIdList(int $userId, ?int $limit = null): array
     {
-        $usersGroupsTable = \Cake\Datasource\FactoryLocator::get('Table')->get('UsersGroups');
+        $usersGroupsTable = FactoryLocator::get('Table')->get('UsersGroups');
 
         $userGroupIds = $usersGroupsTable->find('list', keyField: 'group_id', valueField: 'group_id')
             ->where(['user_id' => $userId])

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\UsersTable;
+use Cake\I18n\DateTime;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -79,7 +80,7 @@ class UsersTableTest extends TestCase
         $this->assertStringStartsWith('$2y$', $found->password);
 
         // 削除済みユーザは除外される
-        $deleted = $this->Users->newEntity($this->getUserData('authuser02', ['deleted' => new \Cake\I18n\DateTime()]));
+        $deleted = $this->Users->newEntity($this->getUserData('authuser02', ['deleted' => new DateTime()]));
         $this->Users->save($deleted);
 
         $search = $this->Users->find('auth')->where(['username' => 'authuser02'])->first();
@@ -129,23 +130,23 @@ class UsersTableTest extends TestCase
         $conn = $this->Users->getConnection();
         $conn->execute(
             'INSERT INTO ib_courses (title, user_id, created) VALUES (:title, :user_id, NOW())',
-            ['title' => 'コースA', 'user_id' => $userId]
+            ['title' => 'コースA', 'user_id' => $userId],
         );
         $courseId = (int)$conn->execute(
-            'SELECT LAST_INSERT_ID() AS id'
+            'SELECT LAST_INSERT_ID() AS id',
         )->fetch('assoc')['id'];
 
         $conn->execute(
             'INSERT INTO ib_records (course_id, user_id, content_id, created) VALUES (:course_id, :user_id, 1, NOW())',
-            ['course_id' => $courseId, 'user_id' => $userId]
+            ['course_id' => $courseId, 'user_id' => $userId],
         );
         $recordId = (int)$conn->execute(
-            'SELECT LAST_INSERT_ID() AS id'
+            'SELECT LAST_INSERT_ID() AS id',
         )->fetch('assoc')['id'];
 
         $conn->execute(
             'INSERT INTO ib_records_questions (record_id, answer, created) VALUES (:record_id, "A", NOW())',
-            ['record_id' => $recordId]
+            ['record_id' => $recordId],
         );
 
         $this->assertSame(1, (int)$conn->execute('SELECT COUNT(*) c FROM ib_records WHERE user_id = :uid', ['uid' => $userId])->fetch('assoc')['c']);
@@ -193,7 +194,7 @@ class UsersTableTest extends TestCase
                 'name' => $username . 'の名前',
                 'role' => 'user',
                 'email' => $username . '@example.com',
-            ]
+            ],
         );
 
         return (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];

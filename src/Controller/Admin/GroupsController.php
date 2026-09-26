@@ -15,6 +15,7 @@ use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 
 /**
  * Groups Controller (Admin)
@@ -47,7 +48,7 @@ class GroupsController extends AppController
             ->select($groupsTable)
             ->select([
                 'course_title' => new QueryExpression(
-                    "(SELECT GROUP_CONCAT(c.title ORDER BY c.id SEPARATOR ', ') AS course_title FROM ib_groups_courses gc INNER JOIN ib_courses c ON c.id = gc.course_id WHERE gc.group_id = Groups.id GROUP BY gc.group_id)"
+                    "(SELECT GROUP_CONCAT(c.title ORDER BY c.id SEPARATOR ', ') AS course_title FROM ib_groups_courses gc INNER JOIN ib_courses c ON c.id = gc.course_id WHERE gc.group_id = Groups.id GROUP BY gc.group_id)",
                 ),
             ])
             ->where([$groupsTable->aliasField('deleted IS NULL')])
@@ -66,7 +67,7 @@ class GroupsController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function add(): ?\Cake\Http\Response
+    public function add(): ?Response
     {
         $result = $this->edit();
         if ($result !== null) {
@@ -80,10 +81,10 @@ class GroupsController extends AppController
     /**
      * グループの編集
      *
-     * @param int|string|null $group_id 編集するグループのID
+     * @param string|int|null $group_id 編集するグループのID
      * @return \Cake\Http\Response|null
      */
-    public function edit($group_id = null): ?\Cake\Http\Response
+    public function edit($group_id = null): ?Response
     {
         $groupsTable = $this->fetchTable('Groups');
 
@@ -121,10 +122,10 @@ class GroupsController extends AppController
     /**
      * グループの削除
      *
-     * @param int|string|null $group_id 削除するグループのID
+     * @param string|int|null $group_id 削除するグループのID
      * @return \Cake\Http\Response|null
      */
-    public function delete($group_id = null): ?\Cake\Http\Response
+    public function delete($group_id = null): ?Response
     {
         if (Configure::read('demo_mode')) {
             return null;

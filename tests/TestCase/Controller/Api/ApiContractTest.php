@@ -354,11 +354,11 @@ class ApiContractTest extends TestCase
     public static function addUserRoleProvider(): array
     {
         return [
-            'admin'   => ['admin', 201],
+            'admin' => ['admin', 201],
             'manager' => ['manager', 201],
-            'editor'  => ['editor', 403],
+            'editor' => ['editor', 403],
             'teacher' => ['teacher', 403],
-            'user'    => ['user', 403],
+            'user' => ['user', 403],
         ];
     }
 
@@ -399,11 +399,11 @@ class ApiContractTest extends TestCase
     public static function deleteUserRoleProvider(): array
     {
         return [
-            'admin'   => ['admin', 200],
+            'admin' => ['admin', 200],
             'manager' => ['manager', 200],
-            'editor'  => ['editor', 403],
+            'editor' => ['editor', 403],
             'teacher' => ['teacher', 403],
-            'user'    => ['user', 403],
+            'user' => ['user', 403],
         ];
     }
 
@@ -466,11 +466,11 @@ class ApiContractTest extends TestCase
     public static function contentsCreateRoleProvider(): array
     {
         return [
-            'admin'   => ['admin', 201],
+            'admin' => ['admin', 201],
             'manager' => ['manager', 201],
-            'editor'  => ['editor', 201],
+            'editor' => ['editor', 201],
             'teacher' => ['teacher', 201],
-            'user'    => ['user', 403],
+            'user' => ['user', 403],
         ];
     }
 
@@ -485,11 +485,11 @@ class ApiContractTest extends TestCase
     public static function contentsWriteRoleProvider(): array
     {
         return [
-            'admin'   => ['admin', 200],
+            'admin' => ['admin', 200],
             'manager' => ['manager', 200],
-            'editor'  => ['editor', 200],
+            'editor' => ['editor', 200],
             'teacher' => ['teacher', 200],
-            'user'    => ['user', 403],
+            'user' => ['user', 403],
         ];
     }
 

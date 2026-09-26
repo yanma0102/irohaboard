@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -64,7 +65,7 @@ class ContentsControllerTest extends TestCase
     private function createUser(
         string $username = 'testuser',
         string $role = 'user',
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
             'username' => $username,
@@ -82,7 +83,7 @@ class ContentsControllerTest extends TestCase
     /**
      * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsUser(): \Cake\Datasource\EntityInterface
+    private function loginAsUser(): EntityInterface
     {
         $user = $this->createUser();
 
@@ -106,7 +107,7 @@ class ContentsControllerTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(int $userId, string $title = 'テストコース'): \Cake\Datasource\EntityInterface
+    private function createCourse(int $userId, string $title = 'テストコース'): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -142,7 +143,7 @@ class ContentsControllerTest extends TestCase
         string $kind = 'html',
         int $status = 1,
         ?string $url = null,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $data = [
             'course_id' => $courseId,
@@ -343,7 +344,7 @@ class ContentsControllerTest extends TestCase
 
         $testFile = ROOT . DS . 'files' . DS . 'test_action_bug.png';
         $pngData = base64_decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRUEFTkSuQmCC'
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRUEFTkSuQmCC',
         );
         file_put_contents($testFile, $pngData);
 
@@ -372,7 +373,7 @@ class ContentsControllerTest extends TestCase
 
         // 最小限の PNG ファイルを生成（1x1 ピクセルの透過 PNG）
         $pngData = base64_decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRUEFTkSuQmCC'
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRUEFTkSuQmCC',
         );
         file_put_contents($testFile, $pngData);
 
@@ -450,7 +451,7 @@ class ContentsControllerTest extends TestCase
 
         // 最小限の JPEG ファイルを生成
         $jpgData = base64_decode(
-            '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2f/2wBDARESEhgVGC8aGC9nQTtBZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2f/wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AKwA//9k='
+            '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2f/2wBDARESEhgVGC8aGC9nQTtBZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2f/wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AKwA//9k=',
         );
         file_put_contents($testFile, $jpgData);
 

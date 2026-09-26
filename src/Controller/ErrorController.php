@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Event\EventInterface;
+use Cake\Http\Response;
 
 /**
  * Error Handling Controller
@@ -41,7 +42,7 @@ class ErrorController extends AppController
      * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event Event.
      * @return void
      */
-    public function beforeFilter(EventInterface $event): ?\Cake\Http\Response
+    public function beforeFilter(EventInterface $event): ?Response
     {
         return null;
     }

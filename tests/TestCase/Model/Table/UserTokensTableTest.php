@@ -84,7 +84,7 @@ class UserTokensTableTest extends TestCase
     public function testAuthenticateRememberCookieUnknownToken(): void
     {
         $this->assertNull(
-            $this->UserTokens->authenticateRememberCookie(str_repeat('a', 32) . ':' . str_repeat('b', 64))
+            $this->UserTokens->authenticateRememberCookie(str_repeat('a', 32) . ':' . str_repeat('b', 64)),
         );
     }
 

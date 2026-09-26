@@ -14,6 +14,8 @@ namespace App\Controller;
 
 use App\Controller\Trait\UserLoginTrait;
 use Cake\Core\Configure;
+use Cake\Http\Response;
+use Exception;
 
 /**
  * Users Controller
@@ -42,7 +44,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response
      */
-    public function index(): \Cake\Http\Response
+    public function index(): Response
     {
         return $this->redirect(['controller' => 'UsersCourses', 'action' => 'index']);
     }
@@ -52,7 +54,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function login(): ?\Cake\Http\Response
+    public function login(): ?Response
     {
         return $this->performLogin();
     }
@@ -62,12 +64,12 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response
      */
-    public function logout(): \Cake\Http\Response
+    public function logout(): Response
     {
         if ($this->hasCookie('CookieAuth')) {
             try {
                 $this->fetchTable('UserTokens')->revokeByCookie($this->readCookie('CookieAuth'));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // ib_user_tokens 未作成（/update 前）など
             }
             $this->deleteCookie('CookieAuth');
@@ -78,6 +80,7 @@ class UsersController extends AppController
         $this->deleteCookie('LoginStatus');
 
         $logoutRedirect = $this->Authentication->logout();
+
         return $this->redirect($logoutRedirect ?? '/users/login');
     }
 
@@ -86,7 +89,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function setting(): ?\Cake\Http\Response
+    public function setting(): ?Response
     {
         $usersTable = $this->fetchTable('Users');
 
@@ -99,11 +102,13 @@ class UsersController extends AppController
 
             if (empty($data['new_password'])) {
                 $this->Flash->error(__('パスワードを入力して下さい'));
+
                 return null;
             }
 
             if ($data['new_password'] !== $data['new_password2']) {
                 $this->Flash->error(__('入力された「パスワード」と「パスワード（確認用）」が一致しません'));
+
                 return null;
             }
 
@@ -116,7 +121,7 @@ class UsersController extends AppController
                 // パスワード変更時は旧 Remember Me トークンを無効化
                 try {
                     $this->fetchTable('UserTokens')->revokeAllForUser((int)$this->readAuthUser('id'));
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // ib_user_tokens 未作成（/update 前）など
                 }
                 $this->Flash->success(__('パスワードが変更されました'));
@@ -137,10 +142,10 @@ class UsersController extends AppController
      * @param array $conditions 検索条件
      * @return \Cake\Http\Response
      */
-    protected function _exportCsv(array $conditions): \Cake\Http\Response
+    protected function _exportCsv(array $conditions): Response
     {
-        $group_count  = Configure::read('import_group_count');     // 所属グループの列数
-        $course_count = Configure::read('import_course_count');     // 受講コースの列数
+        $group_count = Configure::read('import_group_count'); // 所属グループの列数
+        $course_count = Configure::read('import_course_count'); // 受講コースの列数
 
         $this->autoRender = false;
         Configure::write('debug', 0);
@@ -148,7 +153,7 @@ class UsersController extends AppController
         $usersTable = $this->fetchTable('Users');
 
         //------------------------------//
-        //	ヘッダー行の作成			//
+        //  ヘッダー行の作成            //
         //------------------------------//
         $header = [
             __('ログインID'),
@@ -168,13 +173,13 @@ class UsersController extends AppController
         }
 
         //------------------------------//
-        //	ユーザ情報の取得			//
+        //  ユーザ情報の取得            //
         //------------------------------//
 
         // パフォーマンスの改善の為、一定件数に分割してデータを取得
-        $limit      = 500;
+        $limit = 500;
         $user_count = $usersTable->find()->where($conditions)->count(); // ユーザ数を取得
-        $page_size  = (int)ceil($user_count / $limit);                 // ページ数（ユーザ数 / ページ単位）
+        $page_size = (int)ceil($user_count / $limit); // ページ数（ユーザ数 / ページ単位）
 
         $fp = fopen('php://output', 'w');
 
@@ -194,9 +199,9 @@ class UsersController extends AppController
 
             foreach ($rows as $row) {
                 //------------------------------//
-                //	出力するデータを作成		//
+                //  出力するデータを作成      //
                 //------------------------------//
-                $groups  = array_fill(0, $group_count, '');
+                $groups = array_fill(0, $group_count, '');
                 $courses = array_fill(0, $course_count, '');
 
                 $i = 0;
@@ -217,12 +222,12 @@ class UsersController extends AppController
 
                 // 出力行を作成
                 $line = [
-                    $row->username,                                             // ユーザ名
-                    '',                                                         // パスワード
-                    $this->sanitizeCsvValue($row->name),                       // 氏名
-                    Configure::read('user_role.' . $row->role),                // 権限
-                    $this->sanitizeCsvValue($row->email),                      // メールアドレス
-                    $this->sanitizeCsvValue($row->comment),                    // 備考
+                    $row->username, // ユーザ名
+                    '', // パスワード
+                    $this->sanitizeCsvValue($row->name), // 氏名
+                    Configure::read('user_role.' . $row->role), // 権限
+                    $this->sanitizeCsvValue($row->email), // メールアドレス
+                    $this->sanitizeCsvValue($row->comment), // 備考
                 ];
 
                 // 所属グループを出力

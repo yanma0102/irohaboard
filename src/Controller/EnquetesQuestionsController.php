@@ -35,8 +35,8 @@ class EnquetesQuestionsController extends AppController
     /**
      * 問題を出題
      *
-     * @param int|string $content_id コンテンツID
-     * @param int|string|null $record_id 履歴ID
+     * @param string|int $content_id コンテンツID
+     * @param string|int|null $record_id 履歴ID
      * @return void
      */
     public function index($content_id, $record_id = null): void
@@ -46,7 +46,7 @@ class EnquetesQuestionsController extends AppController
         $recordsTable = $this->fetchTable('Records');
 
         $content_id = (int)$content_id;
-        $record_id = ($record_id !== null) ? (int)$record_id : null;
+        $record_id = $record_id !== null ? (int)$record_id : null;
 
         $content = $contentsTable->get($content_id, contain: ['Courses']);
 
@@ -98,6 +98,7 @@ class EnquetesQuestionsController extends AppController
             if (Configure::read('demo_mode')) {
                 $this->Flash->error(__('デモモードでは保存できません'));
                 $this->redirect(['action' => 'index', $content_id]);
+
                 return;
             }
 
@@ -148,6 +149,7 @@ class EnquetesQuestionsController extends AppController
 
                 if (!$savedAll) {
                     $this->redirect(['action' => 'index', $content_id]);
+
                     return;
                 }
 
@@ -168,8 +170,8 @@ class EnquetesQuestionsController extends AppController
     /**
      * テスト結果を表示
      *
-     * @param int|string $content_id コンテンツID
-     * @param int|string $record_id 履歴ID
+     * @param string|int $content_id コンテンツID
+     * @param string|int $record_id 履歴ID
      * @return void
      */
     public function record($content_id, $record_id): void

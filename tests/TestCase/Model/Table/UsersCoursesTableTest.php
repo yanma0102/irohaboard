@@ -54,7 +54,7 @@ class UsersCoursesTableTest extends TestCase
         $conn = $Courses->getConnection();
         $conn->execute(
             'INSERT INTO ib_courses (title, user_id, created) VALUES (:title, :user_id, NOW())',
-            ['title' => $title, 'user_id' => $userId]
+            ['title' => $title, 'user_id' => $userId],
         );
 
         return (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
@@ -93,7 +93,7 @@ class UsersCoursesTableTest extends TestCase
         $conn = $this->UsersCourses->getConnection();
         $conn->execute(
             'INSERT INTO ib_users_courses (user_id, course_id, created) VALUES (:user_id, :course_id, NOW())',
-            ['user_id' => $userId, 'course_id' => $courseId]
+            ['user_id' => $userId, 'course_id' => $courseId],
         );
 
         $result = $this->UsersCourses->getCourseRecord($userId);
@@ -113,11 +113,11 @@ class UsersCoursesTableTest extends TestCase
         $groupId = (int)$conn->execute('SELECT LAST_INSERT_ID() AS id')->fetch('assoc')['id'];
         $conn->execute(
             'INSERT INTO ib_users_groups (user_id, group_id, created) VALUES (:user_id, :group_id, NOW())',
-            ['user_id' => $userId, 'group_id' => $groupId]
+            ['user_id' => $userId, 'group_id' => $groupId],
         );
         $conn->execute(
             'INSERT INTO ib_groups_courses (group_id, course_id, created) VALUES (:group_id, :course_id, NOW())',
-            ['group_id' => $groupId, 'course_id' => $courseId]
+            ['group_id' => $groupId, 'course_id' => $courseId],
         );
 
         $result = $this->UsersCourses->getCourseRecord($userId);
@@ -136,7 +136,7 @@ class UsersCoursesTableTest extends TestCase
         $conn = $this->UsersCourses->getConnection();
         $conn->execute(
             'INSERT INTO ib_users_courses (user_id, course_id, created) VALUES (:user_id, :course_id, NOW())',
-            ['user_id' => $userId, 'course_id' => $courseId]
+            ['user_id' => $userId, 'course_id' => $courseId],
         );
 
         // 未学習時: left_cnt = 2 (html 1件 + test 1件)
@@ -146,7 +146,7 @@ class UsersCoursesTableTest extends TestCase
         // html を完了 → left_cnt = 1
         $conn->execute(
             'INSERT INTO ib_records (course_id, user_id, content_id, is_complete, created) VALUES (:course_id, :user_id, :content_id, 1, NOW())',
-            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId1]
+            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId1],
         );
         $result = $this->UsersCourses->getCourseRecord($userId);
         $this->assertEquals(1, (int)$result[0]['left_cnt']);
@@ -156,7 +156,7 @@ class UsersCoursesTableTest extends TestCase
         // test を合格 → left_cnt = 0
         $conn->execute(
             'INSERT INTO ib_records (course_id, user_id, content_id, is_passed, created) VALUES (:course_id, :user_id, :content_id, 1, NOW())',
-            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId2]
+            ['course_id' => $courseId, 'user_id' => $userId, 'content_id' => $contentId2],
         );
         $result = $this->UsersCourses->getCourseRecord($userId);
         $this->assertEquals(0, (int)$result[0]['left_cnt']);

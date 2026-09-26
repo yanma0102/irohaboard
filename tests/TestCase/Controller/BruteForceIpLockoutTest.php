@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Datasource\EntityInterface;
 use Cake\I18n\DateTime;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
@@ -18,7 +19,9 @@ class BruteForceIpLockoutTest extends TestCase
 {
     use IntegrationTestTrait;
 
-    /** @var array<string, mixed> 前回の $_SERVER 状態を退避 */
+    /**
+     * @var array<string, mixed> 前回の $_SERVER 状態を退避
+     */
     private array $savedServerKeys = [];
 
     public function setUp(): void
@@ -57,7 +60,7 @@ class BruteForceIpLockoutTest extends TestCase
     /**
      * テスト用ユーザを作成
      */
-    private function createUser(string $username = 'testuser'): \Cake\Datasource\EntityInterface
+    private function createUser(string $username = 'testuser'): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([

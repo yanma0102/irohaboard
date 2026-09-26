@@ -17,7 +17,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\GroupsTable&\Cake\ORM\Association\BelongsTo $Groups
  * @property \App\Model\Table\CoursesTable&\Cake\ORM\Association\BelongsTo $Courses
- *
  * @method \App\Model\Entity\GroupsCourse newEmptyEntity()
  * @method \App\Model\Entity\GroupsCourse newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\GroupsCourse[] newEntities(array $data, array $options = [])

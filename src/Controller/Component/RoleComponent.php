@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Component;
 
+use Authentication\IdentityInterface;
 use Cake\Controller\Component;
 use Cake\Http\Exception\ForbiddenException;
 
@@ -60,7 +61,7 @@ class RoleComponent extends Component
         $controller = $this->getController();
         $identity = $controller->Authentication->getIdentity();
 
-        if (!$identity instanceof \Authentication\IdentityInterface) {
+        if (!$identity instanceof IdentityInterface) {
             return null;
         }
 

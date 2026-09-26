@@ -68,7 +68,7 @@ class UserTokensTable extends AppTable
         try {
             $this->getSchema();
             $this->_tableReady = true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
         }
 
@@ -148,8 +148,9 @@ class UserTokensTable extends AppTable
             if (!$this->save($entity)) {
                 return null;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
+
             return null;
         }
 
@@ -191,10 +192,11 @@ class UserTokensTable extends AppTable
                 // 不正な Cookie の可能性 → トークン無効化
                 $token->revoked = date('Y-m-d H:i:s');
                 $this->save($token);
+
                 return null;
             }
 
-            $usersTable = \Cake\Datasource\FactoryLocator::get('Table')->get('Users');
+            $usersTable = FactoryLocator::get('Table')->get('Users');
             $user = $usersTable->find()
                 ->where(['id' => $token->user_id, 'deleted IS NULL'])
                 ->first();
@@ -207,8 +209,9 @@ class UserTokensTable extends AppTable
             $this->save($token);
 
             return $user->toArray();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
+
             return null;
         }
     }
@@ -243,7 +246,7 @@ class UserTokensTable extends AppTable
                 $token->revoked = date('Y-m-d H:i:s');
                 $this->save($token);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
         }
     }
@@ -273,7 +276,7 @@ class UserTokensTable extends AppTable
                     'revoked IS NULL',
                 ])
                 ->execute();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
         }
     }
@@ -332,8 +335,9 @@ class UserTokensTable extends AppTable
             if (!$this->save($entity)) {
                 return null;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
+
             return null;
         }
 
@@ -375,10 +379,11 @@ class UserTokensTable extends AppTable
                 // 不正なトークンの可能性 → 無効化
                 $token->revoked = date('Y-m-d H:i:s');
                 $this->save($token);
+
                 return null;
             }
 
-            $usersTable = \Cake\Datasource\FactoryLocator::get('Table')->get('Users');
+            $usersTable = FactoryLocator::get('Table')->get('Users');
             $user = $usersTable->find()
                 ->where(['id' => $token->user_id, 'deleted IS NULL'])
                 ->first();
@@ -397,8 +402,9 @@ class UserTokensTable extends AppTable
                 'user' => $userArray,
                 'token_id' => (int)$token->id,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
+
             return null;
         }
     }
@@ -498,8 +504,9 @@ class UserTokensTable extends AppTable
             $token->revoked = date('Y-m-d H:i:s');
 
             return (bool)$this->save($token);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
+
             return false;
         }
     }
@@ -529,7 +536,7 @@ class UserTokensTable extends AppTable
                     'revoked IS NULL',
                 ])
                 ->execute();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_tableReady = false;
         }
     }

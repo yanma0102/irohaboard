@@ -5,10 +5,12 @@ namespace App\Test\TestCase\Controller;
 
 use App\Controller\RecordsController;
 use Cake\Core\Configure;
+use Cake\Datasource\EntityInterface;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
+use Exception;
 
 /**
  * D-29 回帰テスト: RecordsController::add() の学習記録保存
@@ -61,7 +63,7 @@ class RecordsSaveTest extends TestCase
     private function createUser(
         string $username = 'testuser',
         string $role = 'user',
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
             'username' => $username,
@@ -79,7 +81,7 @@ class RecordsSaveTest extends TestCase
     /**
      * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsUser(): \Cake\Datasource\EntityInterface
+    private function loginAsUser(): EntityInterface
     {
         $user = $this->createUser();
 
@@ -103,7 +105,7 @@ class RecordsSaveTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(int $userId, string $title = 'テストコース'): \Cake\Datasource\EntityInterface
+    private function createCourse(int $userId, string $title = 'テストコース'): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -137,7 +139,7 @@ class RecordsSaveTest extends TestCase
         int $courseId,
         int $userId,
         int $status = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $entity = $contentsTable->newEntity([
             'course_id' => $courseId,
@@ -420,7 +422,7 @@ class RecordsSaveTest extends TestCase
 
         try {
             $controller->add(1);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // allowMethod() が POST であれば例外は発生しない
             $this->fail('add() で例外が発生: ' . $e->getMessage());
         }

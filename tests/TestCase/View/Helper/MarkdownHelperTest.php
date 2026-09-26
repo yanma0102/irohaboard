@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Test\TestCase\View\Helper;
 
 use App\View\Helper\MarkdownHelper;
-use Cake\View\View;
 use Cake\TestSuite\TestCase;
+use Cake\View\View;
 
 class MarkdownHelperTest extends TestCase
 {

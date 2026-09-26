@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use Cake\Http\Response;
+
 /**
  * ApiGroups Controller
  * グループの一覧・詳細・追加・更新・削除・ユーザ割当を提供する
@@ -25,7 +27,7 @@ class GroupsController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function index(): \Cake\Http\Response
+    public function index(): Response
     {
         $conditions = ['deleted IS NULL'];
         $groupsTable = $this->fetchTable('Groups');
@@ -92,7 +94,7 @@ class GroupsController extends BaseController
      *
      * @return \Cake\Http\Response
      */
-    public function add(): \Cake\Http\Response
+    public function add(): Response
     {
         $this->requireManager();
 
@@ -113,6 +115,7 @@ class GroupsController extends BaseController
         if ($groupsTable->save($entity)) {
             $data = $entity->toArray();
             $data['id'] = (int)$data['id'];
+
             return $this->ok($data, 201);
         }
 
@@ -125,7 +128,7 @@ class GroupsController extends BaseController
      * @param int $id グループID
      * @return \Cake\Http\Response
      */
-    public function edit(int $id): \Cake\Http\Response
+    public function edit(int $id): Response
     {
         $this->requireManager();
 
@@ -168,7 +171,7 @@ class GroupsController extends BaseController
      * @param int $id グループID
      * @return \Cake\Http\Response
      */
-    public function delete(int $id): \Cake\Http\Response
+    public function delete(int $id): Response
     {
         $this->requireManager();
 
@@ -189,7 +192,7 @@ class GroupsController extends BaseController
      * @param int $id グループID
      * @return \Cake\Http\Response
      */
-    public function view(int $id): \Cake\Http\Response
+    public function view(int $id): Response
     {
         $groupsTable = $this->fetchTable('Groups');
 
@@ -218,7 +221,7 @@ class GroupsController extends BaseController
      * @param int $id グループID
      * @return \Cake\Http\Response
      */
-    public function users(int $id): \Cake\Http\Response
+    public function users(int $id): Response
     {
         $groupsTable = $this->fetchTable('Groups');
 
@@ -252,10 +255,10 @@ class GroupsController extends BaseController
         foreach ($result as $row) {
             $users[] = [
                 'id' => isset($row['id']) ? (int)$row['id'] : 0,
-                'username' => isset($row['username']) ? $row['username'] : '',
-                'name' => isset($row['name']) ? $row['name'] : '',
-                'role' => isset($row['role']) ? $row['role'] : '',
-                'email' => isset($row['email']) ? $row['email'] : '',
+                'username' => $row['username'] ?? '',
+                'name' => $row['name'] ?? '',
+                'role' => $row['role'] ?? '',
+                'email' => $row['email'] ?? '',
             ];
         }
 
@@ -268,7 +271,7 @@ class GroupsController extends BaseController
      * @param int $id グループID
      * @return \Cake\Http\Response
      */
-    public function assignUser(int $id): \Cake\Http\Response
+    public function assignUser(int $id): Response
     {
         $this->requireManager();
 
@@ -326,7 +329,7 @@ class GroupsController extends BaseController
      * @param int $userId ユーザID
      * @return \Cake\Http\Response
      */
-    public function unassignUser(int $id, int $userId): \Cake\Http\Response
+    public function unassignUser(int $id, int $userId): Response
     {
         $this->requireManager();
 

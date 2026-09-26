@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -60,7 +61,7 @@ class EnquetesQuestionsRecordSaveTest extends TestCase
     private function createUser(
         string $username = 'testuser',
         string $role = 'user',
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
             'username' => $username,
@@ -78,7 +79,7 @@ class EnquetesQuestionsRecordSaveTest extends TestCase
     /**
      * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsUser(): \Cake\Datasource\EntityInterface
+    private function loginAsUser(): EntityInterface
     {
         $user = $this->createUser();
 
@@ -102,7 +103,7 @@ class EnquetesQuestionsRecordSaveTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(int $userId, string $title = 'テストコース'): \Cake\Datasource\EntityInterface
+    private function createCourse(int $userId, string $title = 'テストコース'): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -136,7 +137,7 @@ class EnquetesQuestionsRecordSaveTest extends TestCase
         int $courseId,
         int $userId,
         int $status = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $entity = $contentsTable->newEntity([
             'course_id' => $courseId,
@@ -158,7 +159,7 @@ class EnquetesQuestionsRecordSaveTest extends TestCase
         int $contentId,
         string $questionType = 'single',
         int $sortNo = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $contentsQuestionsTable->newEntity([
             'content_id' => $contentId,
@@ -330,7 +331,7 @@ class EnquetesQuestionsRecordSaveTest extends TestCase
         $this->assertRedirect();
         $this->assertSession(
             __('回答内容を送信しました'),
-            'Flash.flash.0.message'
+            'Flash.flash.0.message',
         );
     }
 
@@ -381,7 +382,7 @@ class EnquetesQuestionsRecordSaveTest extends TestCase
         $this->assertStringContainsString(
             "Configure::read('demo_mode')",
             $methodSource,
-            'index に demo_mode ガードが存在すること'
+            'index に demo_mode ガードが存在すること',
         );
 
         // 保存処理より前にガードがあること

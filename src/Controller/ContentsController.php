@@ -13,8 +13,7 @@ namespace App\Controller;
 
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
-use Cake\ORM\TableRegistry;
+use Cake\Http\Response;
 
 /**
  * Contents Controller
@@ -36,14 +35,14 @@ class ContentsController extends AppController
     /**
      * 学習コンテンツ一覧を表示
      *
-     * @param int|string $course_id コースID
-     * @param int|string|null $user_id 学習履歴を表示するユーザのID
+     * @param string|int $course_id コースID
+     * @param string|int|null $user_id 学習履歴を表示するユーザのID
      * @return void
      */
     public function index($course_id, $user_id = null): void
     {
         $course_id = (int)$course_id;
-        $user_id = ($user_id !== null) ? (int)$user_id : null;
+        $user_id = $user_id !== null ? (int)$user_id : null;
 
         $coursesTable = $this->fetchTable('Courses');
         $contentsTable = $this->fetchTable('Contents');
@@ -75,7 +74,7 @@ class ContentsController extends AppController
     /**
      * コンテンツの表示
      *
-     * @param int|string $content_id 表示するコンテンツのID
+     * @param string|int $content_id 表示するコンテンツのID
      * @return void
      */
     public function view($content_id): void
@@ -135,10 +134,10 @@ class ContentsController extends AppController
     /**
      * ファイルのダウンロード
      *
-     * @param int|string $content_id コンテンツID
+     * @param string|int $content_id コンテンツID
      * @return \Cake\Http\Response|null
      */
-    public function file_download($content_id): ?\Cake\Http\Response
+    public function file_download($content_id): ?Response
     {
         $content_id = (int)$content_id;
 
@@ -184,10 +183,10 @@ class ContentsController extends AppController
     /**
      * 動画ファイルの表示
      *
-     * @param int|string $content_id コンテンツID
+     * @param string|int $content_id コンテンツID
      * @return \Cake\Http\Response|null
      */
-    public function file_movie($content_id): ?\Cake\Http\Response
+    public function file_movie($content_id): ?Response
     {
         $content_id = (int)$content_id;
 
@@ -240,7 +239,7 @@ class ContentsController extends AppController
      * @param string $file_name ファイル名
      * @return \Cake\Http\Response|null
      */
-    public function file_image($file_name): ?\Cake\Http\Response
+    public function file_image($file_name): ?Response
     {
         if (!$file_name) {
             throw new NotFoundException(__('Invalid content'));

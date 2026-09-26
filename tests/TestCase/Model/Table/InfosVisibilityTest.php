@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\InfosTable;
-use Cake\I18n\FrozenTime;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -104,7 +103,7 @@ class InfosVisibilityTest extends TestCase
     public function testDraftInfoIsExcludedFromGetInfos(): void
     {
         $adminId = $this->saveUser('admin1', 'admin');
-        $userId  = $this->saveUser('user1');
+        $userId = $this->saveUser('user1');
 
         $now = date('Y-m-d H:i:s');
 
@@ -124,12 +123,12 @@ class InfosVisibilityTest extends TestCase
     public function testDraftInfoIsExcludedFromGetInfoOption(): void
     {
         $adminId = $this->saveUser('admin2', 'admin');
-        $userId  = $this->saveUser('user2');
+        $userId = $this->saveUser('user2');
 
         $now = date('Y-m-d H:i:s');
 
         $publicId = $this->saveInfo('公開Option', $adminId, $now);
-        $draftId  = $this->saveInfo('下書きOption', $adminId, null);
+        $draftId = $this->saveInfo('下書きOption', $adminId, null);
 
         $query = $this->Infos->getInfoOption($userId);
         $rows = $query->all()->toArray();
@@ -142,12 +141,12 @@ class InfosVisibilityTest extends TestCase
     public function testDraftInfoIsExcludedFromHasRight(): void
     {
         $adminId = $this->saveUser('admin3', 'admin');
-        $userId  = $this->saveUser('user3');
+        $userId = $this->saveUser('user3');
 
         $now = date('Y-m-d H:i:s');
 
         $publicId = $this->saveInfo('公開Right', $adminId, $now);
-        $draftId  = $this->saveInfo('下書きRight', $adminId, null);
+        $draftId = $this->saveInfo('下書きRight', $adminId, null);
 
         $this->assertTrue($this->Infos->hasRight($userId, $publicId), '公開中にはhasRight=true');
         $this->assertFalse($this->Infos->hasRight($userId, $draftId), '下書きにはhasRight=false');
@@ -158,7 +157,7 @@ class InfosVisibilityTest extends TestCase
     public function testPublishedInfoWithPastOpenedIsVisible(): void
     {
         $adminId = $this->saveUser('admin4', 'admin');
-        $userId  = $this->saveUser('user4');
+        $userId = $this->saveUser('user4');
 
         $past = date('Y-m-d H:i:s', strtotime('-1 day'));
 
@@ -175,7 +174,7 @@ class InfosVisibilityTest extends TestCase
     public function testFutureOpenedInfoIsNotVisible(): void
     {
         $adminId = $this->saveUser('admin5', 'admin');
-        $userId  = $this->saveUser('user5');
+        $userId = $this->saveUser('user5');
 
         $future = date('Y-m-d H:i:s', strtotime('+1 day'));
 
@@ -190,7 +189,7 @@ class InfosVisibilityTest extends TestCase
     public function testFutureOpenedInfoHasRightReturnsFalse(): void
     {
         $adminId = $this->saveUser('admin6', 'admin');
-        $userId  = $this->saveUser('user6');
+        $userId = $this->saveUser('user6');
 
         $future = date('Y-m-d H:i:s', strtotime('+1 day'));
 
@@ -204,7 +203,7 @@ class InfosVisibilityTest extends TestCase
     public function testClosedInfoIsNotVisible(): void
     {
         $adminId = $this->saveUser('admin7', 'admin');
-        $userId  = $this->saveUser('user7');
+        $userId = $this->saveUser('user7');
 
         $past = date('Y-m-d H:i:s', strtotime('-2 days'));
         $pastClosed = date('Y-m-d H:i:s', strtotime('-1 day'));
@@ -222,7 +221,7 @@ class InfosVisibilityTest extends TestCase
     public function testFutureClosedInfoIsVisible(): void
     {
         $adminId = $this->saveUser('admin8', 'admin');
-        $userId  = $this->saveUser('user8');
+        $userId = $this->saveUser('user8');
 
         $past = date('Y-m-d H:i:s', strtotime('-1 day'));
         $futureClosed = date('Y-m-d H:i:s', strtotime('+7 days'));
@@ -240,7 +239,7 @@ class InfosVisibilityTest extends TestCase
     public function testGroupRestrictedDraftIsNotVisible(): void
     {
         $adminId = $this->saveUser('admin9', 'admin');
-        $userId  = $this->saveUser('user9');
+        $userId = $this->saveUser('user9');
         $groupId = $this->saveGroup('テストグループ');
 
         $this->linkUserToGroup($userId, $groupId);
@@ -264,7 +263,7 @@ class InfosVisibilityTest extends TestCase
     public function testNonMemberCannotSeeGroupRestrictedInfo(): void
     {
         $adminId = $this->saveUser('admin10', 'admin');
-        $userId  = $this->saveUser('user10');
+        $userId = $this->saveUser('user10');
         $groupId = $this->saveGroup(' restricted');
 
         $now = date('Y-m-d H:i:s');
@@ -281,7 +280,7 @@ class InfosVisibilityTest extends TestCase
     public function testMemberCanSeeGroupRestrictedPublishedInfo(): void
     {
         $adminId = $this->saveUser('admin11', 'admin');
-        $userId  = $this->saveUser('user11');
+        $userId = $this->saveUser('user11');
         $groupId = $this->saveGroup('テストグループ2');
 
         $this->linkUserToGroup($userId, $groupId);
@@ -301,7 +300,7 @@ class InfosVisibilityTest extends TestCase
     public function testPublicInfoWithoutGroupAndWithOpenedIsVisible(): void
     {
         $adminId = $this->saveUser('admin12', 'admin');
-        $userId  = $this->saveUser('user12');
+        $userId = $this->saveUser('user12');
 
         $now = date('Y-m-d H:i:s');
         $infoId = $this->saveInfo('全体公開', $adminId, $now);
@@ -316,7 +315,7 @@ class InfosVisibilityTest extends TestCase
     public function testPublicInfoWithoutGroupButDraftIsNotVisible(): void
     {
         $adminId = $this->saveUser('admin13', 'admin');
-        $userId  = $this->saveUser('user13');
+        $userId = $this->saveUser('user13');
 
         // グループ紐づけなし + 下書き
         $infoId = $this->saveInfo('全体下書き', $adminId, null);
@@ -338,8 +337,8 @@ class InfosVisibilityTest extends TestCase
         $adminUserId = $this->saveUser('adminAsStudent', 'admin');
 
         $now = date('Y-m-d H:i:s');
-        $publicId  = $this->saveInfo('公開管理用', $adminId, $now);
-        $draftId   = $this->saveInfo('下書き管理用', $adminId, null);
+        $publicId = $this->saveInfo('公開管理用', $adminId, $now);
+        $draftId = $this->saveInfo('下書き管理用', $adminId, null);
 
         $infos = $this->Infos->getInfos($adminUserId);
         $ids = array_map(fn($i) => $i->id, $infos);
@@ -357,16 +356,16 @@ class InfosVisibilityTest extends TestCase
     public function testMultipleInfosMixedVisibility(): void
     {
         $adminId = $this->saveUser('admin15', 'admin');
-        $userId  = $this->saveUser('user15');
+        $userId = $this->saveUser('user15');
         $groupId = $this->saveGroup('テストグループ3');
 
         $this->linkUserToGroup($userId, $groupId);
 
-        $now         = date('Y-m-d H:i:s');
-        $yesterday   = date('Y-m-d H:i:s', strtotime('-1 day'));
-        $tomorrow    = date('Y-m-d H:i:s', strtotime('+1 day'));
+        $now = date('Y-m-d H:i:s');
+        $yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
+        $tomorrow = date('Y-m-d H:i:s', strtotime('+1 day'));
         $futureClose = date('Y-m-d H:i:s', strtotime('+30 days'));
-        $pastClose   = date('Y-m-d H:i:s', strtotime('-1 day'));
+        $pastClose = date('Y-m-d H:i:s', strtotime('-1 day'));
 
         // 1. 全体公開 + 公開中 → 表示
         $id1 = $this->saveInfo('全体公開中', $adminId, $yesterday);
@@ -404,7 +403,7 @@ class InfosVisibilityTest extends TestCase
     public function testLimitRespectsVisibilityFilter(): void
     {
         $adminId = $this->saveUser('admin16', 'admin');
-        $userId  = $this->saveUser('user16');
+        $userId = $this->saveUser('user16');
 
         $yesterday = date('Y-m-d H:i:s', strtotime('-3 days'));
 
@@ -425,14 +424,14 @@ class InfosVisibilityTest extends TestCase
     public function testGetInfoOptionExcludesDraftsAndClosed(): void
     {
         $adminId = $this->saveUser('admin17', 'admin');
-        $userId  = $this->saveUser('user17');
+        $userId = $this->saveUser('user17');
 
         $yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
         $pastClose = date('Y-m-d H:i:s', strtotime('-1 day'));
 
-        $visibleId   = $this->saveInfo('表示', $adminId, $yesterday);
-        $draftId     = $this->saveInfo('下書き', $adminId, null);
-        $closedId    = $this->saveInfo('閉鎖', $adminId, $yesterday, $pastClose);
+        $visibleId = $this->saveInfo('表示', $adminId, $yesterday);
+        $draftId = $this->saveInfo('下書き', $adminId, null);
+        $closedId = $this->saveInfo('閉鎖', $adminId, $yesterday, $pastClose);
 
         $rows = $this->Infos->getInfoOption($userId)->all()->toArray();
         $ids = array_map(fn($r) => (int)$r->id, $rows);

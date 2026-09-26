@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -58,7 +59,7 @@ class ContentsQuestionsControllerTest extends TestCase
     private function createUser(
         string $username = 'testuser',
         string $role = 'user',
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
             'username' => $username,
@@ -76,7 +77,7 @@ class ContentsQuestionsControllerTest extends TestCase
     /**
      * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsUser(): \Cake\Datasource\EntityInterface
+    private function loginAsUser(): EntityInterface
     {
         $user = $this->createUser();
 
@@ -100,7 +101,7 @@ class ContentsQuestionsControllerTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(int $userId, string $title = 'テストコース'): \Cake\Datasource\EntityInterface
+    private function createCourse(int $userId, string $title = 'テストコース'): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -135,7 +136,7 @@ class ContentsQuestionsControllerTest extends TestCase
         int $userId,
         int $status = 1,
         int $questionCount = 0,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $entity = $contentsTable->newEntity([
             'course_id' => $courseId,
@@ -159,7 +160,7 @@ class ContentsQuestionsControllerTest extends TestCase
         int $contentId,
         string $questionType = 'choice',
         int $sortNo = 1,
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $contentsQuestionsTable->newEntity([
             'content_id' => $contentId,

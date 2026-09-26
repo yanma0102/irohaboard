@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Controller\Trait;
 
 use Cake\Core\Configure;
+use Cake\Http\Response;
+use Exception;
 
 /**
  * ログイン共通ロジックTrait
@@ -27,7 +29,7 @@ trait UserLoginTrait
      *
      * @return \Cake\Http\Response|null
      */
-    protected function performLogin(): ?\Cake\Http\Response
+    protected function performLogin(): ?Response
     {
         $username = '';
         $password = '';
@@ -43,7 +45,7 @@ trait UserLoginTrait
             $user = null;
             try {
                 $user = $this->fetchTable('UserTokens')->authenticateRememberCookie($cookie_value);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // ib_user_tokens 未作成（/update 前）など
             }
 
@@ -62,6 +64,7 @@ trait UserLoginTrait
                 if ($this->isAdminPage()) {
                     return $this->redirect(['controller' => 'Users', 'action' => 'index', 'prefix' => 'Admin']);
                 }
+
                 return $this->redirect(['controller' => 'UsersCourses', 'action' => 'index']);
             }
 
@@ -90,6 +93,7 @@ trait UserLoginTrait
             ) {
                 $this->set(compact('username', 'password'));
                 $this->Flash->error(__('ログインID、もしくはパスワードの形式が正しくありません'));
+
                 return null;
             }
 
@@ -98,6 +102,7 @@ trait UserLoginTrait
                 $this->writeLog('login_blocked', $inputUsername);
                 $this->Flash->error(__('ログイン試行回数が上限に達しました。1時間後に再度お試しください。'));
                 $this->set(compact('username', 'password'));
+
                 return null;
             }
 
@@ -116,7 +121,7 @@ trait UserLoginTrait
                             if ($token) {
                                 $this->writeCookie('CookieAuth', $token, false, '+' . $days . ' days');
                             }
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             // テーブル未作成・モデル未配置時は Remember Me のみスキップ
                         }
                     } else {
@@ -136,6 +141,7 @@ trait UserLoginTrait
                 if ($this->isAdminPage()) {
                     return $this->redirect(['controller' => 'Users', 'action' => 'index', 'prefix' => 'Admin']);
                 }
+
                 return $this->redirect(['controller' => 'UsersCourses', 'action' => 'index']);
             } else {
                 // ブルートフォース速度低下のため、失敗時のみランダムスリープ（1.5〜2.5秒）
@@ -156,6 +162,7 @@ trait UserLoginTrait
         }
 
         $this->set(compact('username', 'password'));
+
         return null;
     }
 
@@ -193,6 +200,7 @@ trait UserLoginTrait
             }
 
             $this->Authentication->setIdentity($user->toArray());
+
             return true;
         }
 
@@ -231,18 +239,18 @@ trait UserLoginTrait
         $ip = $this->_getClientIp();
 
         $threshold_time = date('Y-m-d H:i:s', strtotime('-1 hour'));
-        $max_attempts   = 10;
+        $max_attempts = 10;
 
         $count = $this->fetchTable('Logs')->find()
             ->where([
-                'log_type'    => 'login_error',
+                'log_type' => 'login_error',
                 'log_content' => $username,
-                'user_ip'     => $ip,
-                'created >='  => $threshold_time,
+                'user_ip' => $ip,
+                'created >=' => $threshold_time,
             ])
             ->count();
 
-        return ($count >= $max_attempts);
+        return $count >= $max_attempts;
     }
 
     /**
@@ -257,6 +265,7 @@ trait UserLoginTrait
     {
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+
             return trim($ips[0]);
         }
 

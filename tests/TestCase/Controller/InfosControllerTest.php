@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -65,7 +66,7 @@ class InfosControllerTest extends TestCase
     private function createUser(
         string $username = 'testuser',
         string $role = 'user',
-    ): \Cake\Datasource\EntityInterface {
+    ): EntityInterface {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
             'username' => $username,
@@ -86,7 +87,7 @@ class InfosControllerTest extends TestCase
      * ユーザに紐づくお知らせ（user_id 必須）。InfosGroups に紐付けしない場合、
      * 全ユーザに公開される。
      */
-    private function createInfo(int $userId, string $title = 'テストお知らせ'): \Cake\Datasource\EntityInterface
+    private function createInfo(int $userId, string $title = 'テストお知らせ'): EntityInterface
     {
         $infosTable = $this->getTableLocator()->get('Infos');
         $entity = $infosTable->newEntity([
@@ -104,7 +105,7 @@ class InfosControllerTest extends TestCase
     /**
      * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsUser(): \Cake\Datasource\EntityInterface
+    private function loginAsUser(): EntityInterface
     {
         $user = $this->createUser();
 

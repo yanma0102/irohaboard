@@ -40,7 +40,7 @@ class RecordsController extends AppController
     /**
      * 学習履歴を追加
      *
-     * @param int|string $content_id コンテンツID
+     * @param string|int $content_id コンテンツID
      * @return void
      */
     public function add($content_id): void
@@ -51,6 +51,7 @@ class RecordsController extends AppController
         if (Configure::read('demo_mode')) {
             $this->Flash->error(__('デモモードでは保存できません'));
             $this->response = $this->response->withStringBody('');
+
             return;
         }
 

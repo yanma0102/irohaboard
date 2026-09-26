@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
+use Laminas\Diactoros\UploadedFile;
 
 /**
  * Admin UsersController の統合テスト
@@ -53,7 +55,7 @@ class UsersControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -72,7 +74,7 @@ class UsersControllerTest extends TestCase
     /**
      * admin ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -96,7 +98,7 @@ class UsersControllerTest extends TestCase
     /**
      * テスト用ユーザーを作成（admin ロール以外）
      */
-    private function createUser(string $username, string $role = 'user'): \Cake\Datasource\EntityInterface
+    private function createUser(string $username, string $role = 'user'): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -272,7 +274,7 @@ class UsersControllerTest extends TestCase
         $this->assertStringNotContainsString(
             'required',
             $inputTag,
-            'new_password に required 属性が付与されている（編集時にパスワードが必須になっている）'
+            'new_password に required 属性が付与されている（編集時にパスワードが必須になっている）',
         );
 
         // 対象 form-group を抽出し、required クラスが無いことを確認（CSS で必須ラベルが出る）
@@ -281,7 +283,7 @@ class UsersControllerTest extends TestCase
         $this->assertStringNotContainsString(
             'required',
             $divTag,
-            'new_password の form-group に required クラスが付与されている（必須ラベルが表示される）'
+            'new_password の form-group に required クラスが付与されている（必須ラベルが表示される）',
         );
     }
 
@@ -336,20 +338,20 @@ class UsersControllerTest extends TestCase
         $connection = $this->getTableLocator()->get('Users')->getConnection();
         $connection->execute(
             'INSERT INTO ib_courses (title, sort_no, user_id, created, modified) VALUES (:title, 0, :user_id, NOW(), NOW())',
-            ['title' => 'テストコース', 'user_id' => (int)$user->id]
+            ['title' => 'テストコース', 'user_id' => (int)$user->id],
         );
         $courseId = (int)$connection->execute('SELECT LAST_INSERT_ID()')->fetch()[0];
 
         $connection->execute(
             'INSERT INTO ib_contents (course_id, user_id, title, kind, body, sort_no, comment, created, modified) VALUES (:course_id, :user_id, :title, :kind, :body, 0, :comment, NOW(), NOW())',
-            ['course_id' => $courseId, 'user_id' => (int)$user->id, 'title' => 'テストコンテンツ', 'kind' => 'text', 'body' => 'テスト内容', 'comment' => '']
+            ['course_id' => $courseId, 'user_id' => (int)$user->id, 'title' => 'テストコンテンツ', 'kind' => 'text', 'body' => 'テスト内容', 'comment' => ''],
         );
         $contentId = (int)$connection->execute('SELECT LAST_INSERT_ID()')->fetch()[0];
 
         $recordsTable = $this->getTableLocator()->get('Records');
         $connection->execute(
             'INSERT INTO ib_records (user_id, course_id, content_id, created) VALUES (:user_id, :course_id, :content_id, NOW())',
-            ['user_id' => (int)$user->id, 'course_id' => $courseId, 'content_id' => $contentId]
+            ['user_id' => (int)$user->id, 'course_id' => $courseId, 'content_id' => $contentId],
         );
         $this->assertTrue($recordsTable->exists(['user_id' => $user->id]), '学習履歴が存在する');
 
@@ -360,7 +362,7 @@ class UsersControllerTest extends TestCase
         // Records が削除されていることを確認
         $this->assertFalse(
             $recordsTable->exists(['user_id' => $user->id]),
-            '学習履歴がクリアされていない'
+            '学習履歴がクリアされていない',
         );
     }
 
@@ -465,7 +467,7 @@ class UsersControllerTest extends TestCase
         $updated = $usersTable->get((int)$admin->id);
         $this->assertTrue(
             password_verify('newadminpass', $updated->password),
-            'パスワードが更新されていない'
+            'パスワードが更新されていない',
         );
     }
 
@@ -539,11 +541,11 @@ class UsersControllerTest extends TestCase
         $tmpFile = tempnam(sys_get_temp_dir(), 'test_csv_');
         file_put_contents($tmpFile, "ログインID,パスワード,氏名,権限,メールアドレス\n");
 
-        $uploadedFile = new \Laminas\Diactoros\UploadedFile(
+        $uploadedFile = new UploadedFile(
             $tmpFile,
             filesize($tmpFile),
             UPLOAD_ERR_OK,
-            'users.csv'
+            'users.csv',
         );
 
         $this->configRequest([

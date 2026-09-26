@@ -113,6 +113,7 @@ class ApiRateLimitMiddleware implements MiddlewareInterface
         $forwardedFor = $request->getHeaderLine('X-Forwarded-For');
         if ($forwardedFor !== '') {
             $ips = array_map('trim', explode(',', $forwardedFor));
+
             return $ips[0] ?: '127.0.0.1';
         }
 
@@ -123,6 +124,7 @@ class ApiRateLimitMiddleware implements MiddlewareInterface
 
         // Fall back to server params
         $serverParams = $request->getServerParams();
+
         return $serverParams['REMOTE_ADDR'] ?? '127.0.0.1';
     }
 }

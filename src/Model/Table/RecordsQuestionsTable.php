@@ -17,7 +17,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\RecordsTable&\Cake\ORM\Association\BelongsTo $Records
  * @property \App\Model\Table\ContentsQuestionsTable&\Cake\ORM\Association\BelongsTo $ContentsQuestions
- *
  * @method \App\Model\Entity\RecordsQuestion newEmptyEntity()
  * @method \App\Model\Entity\RecordsQuestion newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\RecordsQuestion[] newEntities(array $data, array $options = [])

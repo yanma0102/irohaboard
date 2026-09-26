@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -54,7 +55,7 @@ class WorkflowControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -73,7 +74,7 @@ class WorkflowControllerTest extends TestCase
     /**
      * admin ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -97,7 +98,7 @@ class WorkflowControllerTest extends TestCase
     /**
      * 指定ロールのユーザーをログイン状態にする
      */
-    private function loginAsUser(string $role = 'user'): \Cake\Datasource\EntityInterface
+    private function loginAsUser(string $role = 'user'): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -130,7 +131,7 @@ class WorkflowControllerTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(string $title, int $userId): \Cake\Datasource\EntityInterface
+    private function createCourse(string $title, int $userId): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -148,7 +149,7 @@ class WorkflowControllerTest extends TestCase
     /**
      * テスト用グループを作成
      */
-    private function createGroup(string $title): \Cake\Datasource\EntityInterface
+    private function createGroup(string $title): EntityInterface
     {
         $groupsTable = $this->getTableLocator()->get('Groups');
         $entity = $groupsTable->newEntity([
@@ -164,7 +165,7 @@ class WorkflowControllerTest extends TestCase
     /**
      * テスト用お知らせを作成
      */
-    private function createInfo(int $userId, string $title = 'テストお知らせ'): \Cake\Datasource\EntityInterface
+    private function createInfo(int $userId, string $title = 'テストお知らせ'): EntityInterface
     {
         $infosTable = $this->getTableLocator()->get('Infos');
         $entity = $infosTable->newEntity([
@@ -475,7 +476,7 @@ class WorkflowControllerTest extends TestCase
         $coursesTable = $this->getTableLocator()->get('Courses');
         $this->assertTrue(
             $coursesTable->exists(['title' => 'リトライコース']),
-            'バリデーションリトライ後にコースがDBに保存されていること'
+            'バリデーションリトライ後にコースがDBに保存されていること',
         );
     }
 

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller\Admin;
 
+use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -54,7 +55,7 @@ class EnquetesQuestionsControllerTest extends TestCase
     /**
      * admin ロールのユーザーを作成
      */
-    private function createAdminUser(): \Cake\Datasource\EntityInterface
+    private function createAdminUser(): EntityInterface
     {
         $usersTable = $this->getTableLocator()->get('Users');
         $entity = $usersTable->newEntity([
@@ -73,7 +74,7 @@ class EnquetesQuestionsControllerTest extends TestCase
     /**
      * admin ログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsAdmin(): \Cake\Datasource\EntityInterface
+    private function loginAsAdmin(): EntityInterface
     {
         $admin = $this->createAdminUser();
 
@@ -97,7 +98,7 @@ class EnquetesQuestionsControllerTest extends TestCase
     /**
      * テスト用コースを作成
      */
-    private function createCourse(string $title, int $userId): \Cake\Datasource\EntityInterface
+    private function createCourse(string $title, int $userId): EntityInterface
     {
         $coursesTable = $this->getTableLocator()->get('Courses');
         $entity = $coursesTable->newEntity([
@@ -115,7 +116,7 @@ class EnquetesQuestionsControllerTest extends TestCase
     /**
      * テスト用コンテンツを作成
      */
-    private function createContent(int $courseId, int $userId, string $title = 'テストコンテンツ', string $kind = 'enquete'): \Cake\Datasource\EntityInterface
+    private function createContent(int $courseId, int $userId, string $title = 'テストコンテンツ', string $kind = 'enquete'): EntityInterface
     {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $entity = $contentsTable->newEntity([
@@ -135,7 +136,7 @@ class EnquetesQuestionsControllerTest extends TestCase
     /**
      * テスト用アンケート問題を作成
      */
-    private function createQuestion(int $contentId, string $title = 'テスト問題', int $sortNo = 1, string $questionType = 'single'): \Cake\Datasource\EntityInterface
+    private function createQuestion(int $contentId, string $title = 'テスト問題', int $sortNo = 1, string $questionType = 'single'): EntityInterface
     {
         $table = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $table->newEntity([

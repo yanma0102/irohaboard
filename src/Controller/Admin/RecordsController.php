@@ -16,6 +16,8 @@ use App\Utility\Utils;
 use Cake\Core\Configure;
 use Cake\Database\Expression\BetweenExpression;
 use Cake\Database\Expression\QueryExpression;
+use Cake\Http\Response;
+use Exception;
 
 /**
  * Records Controller (Admin)
@@ -40,7 +42,7 @@ class RecordsController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function index(): ?\Cake\Http\Response
+    public function index(): ?Response
     {
         $recordsTable = $this->fetchTable('Records');
 
@@ -66,17 +68,17 @@ class RecordsController extends AppController
         }
 
         // 対象日時による絞り込み
-        $from_date = ($this->hasQuery('from_date'))
+        $from_date = $this->hasQuery('from_date')
             ? implode('-', (array)$this->getQuery('from_date'))
             : date('Y-m-d', strtotime('-1 month'));
-        $to_date = ($this->hasQuery('to_date'))
+        $to_date = $this->hasQuery('to_date')
             ? implode('-', (array)$this->getQuery('to_date'))
             : date('Y-m-d');
 
         $conditions[] = new BetweenExpression(
             $recordsTable->aliasField('created'),
             $from_date,
-            $to_date . ' 23:59:59'
+            $to_date . ' 23:59:59',
         );
 
         // CSV出力モード
@@ -100,12 +102,12 @@ class RecordsController extends AppController
 
         try {
             $records = $this->paginate($query);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // 不正な page パラメータ（範囲外・非数値等）が指定された場合は 1 ページ目にリセットする。
             // CakePHP 5 の Paginator はクエリパラメータ page を参照するため、
             // ルートパラメータ（withParam）ではなくクエリパラメータを上書きする必要がある。
             $this->request = $this->request->withQueryParams(
-                array_merge($this->request->getQueryParams(), ['page' => 1])
+                array_merge($this->request->getQueryParams(), ['page' => 1]),
             );
             $records = $this->paginate($query);
         }
@@ -124,7 +126,7 @@ class RecordsController extends AppController
      * @param array $conditions 検索条件
      * @return \Cake\Http\Response
      */
-    protected function _exportCsv(array $conditions): \Cake\Http\Response
+    protected function _exportCsv(array $conditions): Response
     {
         $this->autoRender = false;
 
@@ -189,7 +191,7 @@ class RecordsController extends AppController
      * @param array $conditions 検索条件
      * @return \Cake\Http\Response
      */
-    protected function _exportCsvDetail(array $conditions): \Cake\Http\Response
+    protected function _exportCsvDetail(array $conditions): Response
     {
         $this->autoRender = false;
 
@@ -303,6 +305,7 @@ class RecordsController extends AppController
         rewind($fp);
         $csv = stream_get_contents($fp);
         fclose($fp);
+
         return $csv;
     }
 }

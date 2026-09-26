@@ -329,9 +329,13 @@
 </div>
 
 <!--ファイルアップロードダイアログ-->
-<div class="modal fade" id="uploadDialog">
+<div class="modal fade" id="uploadDialog" role="dialog" aria-modal="true" aria-labelledby="uploadDialogLabel">
 	<div class="modal-dialog">
 		<div class="modal-content" style="width:660px;">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">閉じる</span></button>
+				<h4 class="modal-title" id="uploadDialogLabel">ファイルアップロード</h4>
+			</div>
 			<div class="modal-body">
 				<iframe id="uploadFrame" width="100%" style="height: 440px;" scrolling="no" frameborder="no"></iframe>
 			</div>

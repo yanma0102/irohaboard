@@ -102,8 +102,9 @@
 							$is_checked = ($answer_list[0] == $option_index) ? 'checked' : '';
 
 						// 選択肢ラジオボタン
-						$option_tag .= sprintf('<input type="radio" value="%s" name="answer_%s" %s %s> %s<br>',
-								$option_index, $question_id, $is_checked, $is_disabled, h($option));
+						$option_id = sprintf('answer_%s_%d', $question_id, $option_index);
+						$option_tag .= sprintf('<label for="%s"><input type="radio" id="%s" value="%s" name="answer_%s" %s %s> %s</label><br>',
+								$option_id, $option_id, $option_index, $question_id, $is_checked, $is_disabled, h($option));
 						
 						$option_index++;
 					}
@@ -148,16 +149,16 @@
 </div>
 	
 <!--送信確認ダイアログ-->
-<div class="modal fade" id="confirmModal">
+<div class="modal fade" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalLabel" aria-describedby="confirmModalDesc">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-				<h4 class="modal-title"><?= __('送信確認');?></h4>
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">閉じる</span></button>
+				<h4 class="modal-title" id="confirmModalLabel"><?= __('送信確認');?></h4>
 			</div>
 			<div class="modal-body">
 				<p class="answer-incomplete text-danger"><b>※未回答の項目があります。</b></p>
-				<p><?= __('送信してよろしいですか？');?></p>
+				<p id="confirmModalDesc"><?= __('送信してよろしいですか？');?></p>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal"><?= __('キャンセル');?></button>

@@ -145,15 +145,32 @@ class InfosTable extends AppTable
             ->where(['user_id' => $userId])
             ->toArray();
 
-        $conditions = ['IbInfosGroups.group_id IS NULL'];
+        // グループ条件: グループ未設定（全体公開）または所属グループに紐づくもの
+        $groupConditions = ['IbInfosGroups.group_id IS NULL'];
         if (!empty($userGroupIds)) {
-            $conditions[] = ['IbInfosGroups.group_id IN' => $userGroupIds];
+            $groupConditions[] = ['IbInfosGroups.group_id IN' => $userGroupIds];
         }
+
+        // 公開状態条件: opened が設定済みかつ公開日時が過去～現在、かつ closed 未設定または閉鎖日時が未来
+        // - opened IS NOT NULL  … 下書き（未公開）を除外
+        // - opened <= NOW()     … 未来の公開予定を除外
+        // - closed IS NULL OR closed > NOW() … 閉鎖済みを除外
+        $now = date('Y-m-d H:i:s');
 
         $query = $this->find()
             ->select(['Infos.id'])
             ->leftJoinWith('Groups')
-            ->where(['OR' => $conditions])
+            ->where(['OR' => $groupConditions])
+            ->where([
+                'Infos.opened IS NOT NULL',
+                'Infos.opened <=' => $now,
+            ])
+            ->where([
+                'OR' => [
+                    'Infos.closed IS NULL',
+                    'Infos.closed >' => $now,
+                ],
+            ])
             ->groupBy(['Infos.id'])
             ->orderBy(['Infos.created' => 'DESC']);
 

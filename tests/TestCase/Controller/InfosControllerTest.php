@@ -93,6 +93,7 @@ class InfosControllerTest extends TestCase
             'title' => $title,
             'body' => $title . 'の本文',
             'user_id' => $userId,
+            'opened' => date('Y-m-d H:i:s'),
         ]);
         $result = $infosTable->save($entity);
         $this->assertNotFalse($result, 'お知らせの保存に失敗');

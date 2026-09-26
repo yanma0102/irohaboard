@@ -99,11 +99,13 @@ class EnquetesQuestionsController extends AppController
             foreach ($contentsQuestions as $cq) {
                 $question_id = $cq->id;
                 $answer = $this->getData('answer_' . $question_id);
+                $score = $cq->score;
 
                 $details[] = [
                     'question_id' => $question_id,
                     'answer' => $answer,
                     'is_correct' => -1,
+                    'score' => $score,
                 ];
             }
 
@@ -123,10 +125,23 @@ class EnquetesQuestionsController extends AppController
                 $newRecordId = $recordEntity->id;
                 $recordsQuestionsTable = $this->fetchTable('RecordsQuestions');
 
+                $savedAll = true;
+
                 foreach ($details as $detail) {
                     $rq = $recordsQuestionsTable->newEmptyEntity();
                     $rq = $recordsQuestionsTable->patchEntity($rq, $detail + ['record_id' => $newRecordId]);
-                    $recordsQuestionsTable->save($rq);
+
+                    if (!$recordsQuestionsTable->save($rq)) {
+                        $this->Flash->error(__('アンケート回答の保存に失敗しました'));
+                        $this->log('EnquetesQuestions: failed to save RecordsQuestions for record_id=' . $newRecordId . ' question_id=' . $detail['question_id'], 'error');
+                        $savedAll = false;
+                        break;
+                    }
+                }
+
+                if (!$savedAll) {
+                    $this->redirect(['action' => 'index', $content_id]);
+                    return;
                 }
 
                 $this->deleteSession('Iroha.RondomQuestions.' . $content_id . '.id_list');

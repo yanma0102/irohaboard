@@ -22,6 +22,22 @@ use Cake\Http\Exception\NotFoundException;
 class RecordsController extends AppController
 {
     /**
+     * Initialization hook method.
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        // add アクションは JS 動的フォームから POST されるため
+        // FormProtection のフィールド一致検証を除外する。
+        // CSRF 防御は CsrfProtectionMiddleware が別途担当し、
+        // /records/add/* はスキップ対象外なので引き続き有効。
+        $this->FormProtection->unlockActions(['add']);
+    }
+
+    /**
      * 学習履歴を追加
      *
      * @param int|string $content_id コンテンツID

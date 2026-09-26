@@ -59,6 +59,7 @@ class InfosTableTest extends TestCase
             'title' => $title,
             'body' => '本文',
             'user_id' => $userId,
+            'opened' => date('Y-m-d H:i:s'),
         ]));
         $this->assertNotFalse($info);
 

@@ -1,3 +1,28 @@
+<?php
+/**
+ * 解説（explain）の表示タグを組み立てるクロージャ。
+ *
+ * テンプレート内で global 関数を宣言すると、このテンプレートが同一 PHP
+ * プロセス内で複数回レンダリングされた場合（テストで連続リクエストする等）に
+ * "Cannot redeclare function ..." で fatal になる。また条件付き宣言は
+ * 実行時評価されるため、宣言位置より前の呼び出しで undefined function になる。
+ * どちらも避けるため、ローカル変数にクロージャとして保持する。
+ */
+$getExplain = function ($explain) {
+	$tag = '';
+
+	// 解説（explain）が未入力の設問では NULL が渡るため、文字列に正規化する
+	$explain = (string)$explain;
+	$check = str_replace(['<p>', '</p>', '<br>'], '', $explain);
+
+	// pタグ、brタグのみの場合、解説を表示しない
+	if ($check != '') {
+		$tag = sprintf('<div class="correct-text bg-danger">%s : %s</div>', __('解説'), $explain);
+	}
+
+	return $tag;
+};
+?>
 <?php $this->start('css-embedded'); ?>
 <style type='text/css'>
 	<?php if($is_admin_record) { // 管理者による学習履歴表示モードの場合、ロゴのリンクを無効化 ?>
@@ -100,8 +125,10 @@
 			//------------------------------//
 			$option_tag		= '';										// 選択肢用の出力タグ
 			$option_index	= 1;										// 選択肢番号
-			$option_list	= explode('|', $question['options']);		// 選択肢リスト
-			$correct_list	= explode(',', $question['correct']);		// 正解リスト
+			// 選択肢（options）と正解（correct）は未入力の設問では NULL になり得るため、
+			// explode() に渡す前に文字列へ正規化する
+			$option_list	= explode('|', (string)$question['options']);	// 選択肢リスト
+			$correct_list	= explode(',', (string)$question['correct']);	// 正解リスト
 			$answer_list	= [];										// 選択した解答リスト
 			
 			// 解答済みの場合、解答リストを作成
@@ -157,18 +184,25 @@
 				$wrong_mode	= $content->wrong_mode;
 				
 				// 正解番号から正解ラベルへ変換
+				// 記述式等で correct が空文字の場合、explode で [''] になるため
+				// 数値として有効な正解番号のみを対象にする
 				$correct_label = ''; // 正解ラベル
 				
-				foreach($correct_list as $correct_no)
+				$numeric_corrects = array_filter($correct_list, fn($v) => $v !== '' && ctype_digit((string)$v));
+				foreach($numeric_corrects as $correct_no)
 				{
-					$correct_label .= ($correct_label == '') ? $option_list[$correct_no - 1] : ', '.$option_list[$correct_no - 1];
+					$idx = (int)$correct_no - 1;
+					if(isset($option_list[$idx]))
+					{
+						$correct_label .= ($correct_label == '') ? $option_list[$idx] : ', '.$option_list[$idx];
+					}
 				}
 				
 				// 正解時は、解説のみを表示
 				if($is_correct)
 				{
 					$result_tag  = sprintf('<p>%s<span class="result-currect">%s</span></p>', $this->Html->image('correct.png', ['width'=>'60','height'=>'60']), __('正解'));
-					$explain_tag = getExplain($question['explain']);
+					$explain_tag = $getExplain($question['explain']);
 				}
 				else
 				{
@@ -181,10 +215,10 @@
 							break;
 						case 1: // 正解と解説を表示する
 							$correct_tag = sprintf('<p class="correct-text bg-success">%s : %s</p>',__('正解'), $correct_label);
-							$explain_tag = getExplain($question['explain']);
+							$explain_tag = $getExplain($question['explain']);
 							break;
 						case 2: // 解説のみ表示する
-							$explain_tag = getExplain($question['explain']);
+							$explain_tag = $getExplain($question['explain']);
 							break;
 					}
 				}
@@ -232,22 +266,6 @@
 		?>
 	<br>
 </div>
-<?php 
-function getExplain($explain)
-{
-	$tag = '';
-	
-	$check = str_replace(['<p>','</p>','<br>'], '', $explain);
-	
-	// pタグ、brタグのみの場合、解説を表示しない
-	if($check != '')
-	{
-		$tag = sprintf('<div class="correct-text bg-danger">%s : %s</div>', __('解説'), $explain);
-	}
-	
-	return $tag;
-}
-?>
 <!--採点確認ダイアログ-->
 <div class="modal fade" id="confirmModal">
 	<div class="modal-dialog">

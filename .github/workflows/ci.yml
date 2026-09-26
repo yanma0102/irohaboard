@@ -16,8 +16,12 @@ jobs:
         env:
           MARIADB_ROOT_PASSWORD: rootpass
           MARIADB_DATABASE: irohaboard_test
+        # mariadb:11.4 は mysqladmin を持たないため、存在しないコマンドを
+        # ヘルスチェックにすると exit 127 で常に unhealthy になり、
+        # 「Failed to initialize container mariadb」で全ジョブが停止する。
+        # 同梱の healthcheck.sh（公式推奨）を使う。
         options: >-
-          --health-cmd "mysqladmin ping -h 127.0.0.1 --silent"
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5

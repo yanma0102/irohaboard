@@ -109,8 +109,15 @@ class InstallController extends Controller
         try {
             $this->db = ConnectionManager::get('default');
 
-            $config = Configure::read('Datasources');
-            $database = $config['default']['database'] ?? 'irohaboard';
+            // D-23: Configure::consume('Datasources') により bootstrap 時に除去済みのため、
+            // 実際に登録済みの接続設定から DB 名を取得する。
+            // getConfig() が例外を投げた場合はフォールバック値 'irohaboard' を使用。
+            try {
+                $dbConfig = ConnectionManager::getConfig('default');
+                $database = $dbConfig['database'] ?? 'irohaboard';
+            } catch (\Exception $e) {
+                $database = 'irohaboard';
+            }
             $sql = "SHOW TABLES FROM `" . $database . "` LIKE 'ib_users'";
             $data = $this->db->execute($sql)->fetchAll('assoc');
 
@@ -120,9 +127,14 @@ class InstallController extends Controller
                 $this->viewBuilder()->setTemplate('installed');
             } else {
                 if ($this->request->is('post')) {
-                    $username = $this->request->getData('User.username', '');
-                    $password = $this->request->getData('User.password', '');
-                    $password2 = $this->request->getData('User.password2', '');
+                    // D-35: テンプレートの入力 name は data[User][...] だが、
+                    // CakePHP 5 の ServerRequest::getData() はトップレベルの
+                    // キー（'data'）を起点に解釈するため、'User.username' では
+                    // 一致せず常に既定値 '' になっていた（インストール不能）。
+                    $userData = (array)$this->request->getData('data.User', []);
+                    $username = (string)($userData['username'] ?? '');
+                    $password = (string)($userData['password'] ?? '');
+                    $password2 = (string)($userData['password2'] ?? '');
 
                     $this->set('username', $username);
 
@@ -272,6 +284,14 @@ class InstallController extends Controller
                         continue;
                     }
                     if (($errorInfo[0] ?? '') === '42S01') {
+                        continue;
+                    }
+                    // D-24: スキーマ・初期データ投入の再実行のため、
+                    // UNIQUE/PRIMARY 制約違反（例: ib_settings の固定 PK 1〜4）を無視する。
+                    // UpdateController:191 と挙動を統一。
+                    // ※ ユーザデータ側の本物の重複違反は _createRootAccount() 経由で発生するため、
+                    //    このスクリプト実行コンテキストでは握り潰しても安全。
+                    if (($errorInfo[0] ?? '') === '23000') {
                         continue;
                     }
                     $error_msg = sprintf("%s\n[Error Code]%s\n[Error Code2]%s\n[SQL]%s",

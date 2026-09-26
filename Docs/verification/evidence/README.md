@@ -12,7 +12,7 @@
 | W0 | 環境準備・スモーク・ユニットテスト | [W0-execution-record.md](W0/W0-execution-record.md) | ✅ 合格 | — |
 | W1 | P0 セキュリティ／権限 | [W1-execution-record.md](W1/W1-execution-record.md)<br>[W1-cause-analysis.md](W1/W1-cause-analysis.md) | ❌ 不合格 | D-01〜D-07 |
 | W2 | P0 API／MCP／データ整合 | [W2-execution-record.md](W2/W2-execution-record.md)<br>[W2-retest-record.md](W2/W2-retest-record.md)<br>[W2-cause-analysis.md](W2/W2-cause-analysis.md)<br>[W2-fix-record.md](W2/W2-fix-record.md) | ❌ 不合格（→ 修正済） | D-08〜D-12 |
-| W3 | P0 運用／移行（install・update・復旧） | [W3-execution-record.md](W3/W3-execution-record.md)<br>[W3-cause-analysis.md](W3/W3-cause-analysis.md) | ⚠️ 一部可 | D-23〜D-26 |
+| W3 | P0 運用／移行（install・update・復旧） | [W3-execution-record.md](W3/W3-execution-record.md)<br>[W3-cause-analysis.md](W3/W3-cause-analysis.md)<br>[W3-fix-record.md](W3/W3-fix-record.md) | ❌ 不合格（→ 修正済） | D-23〜D-26<br>＋D-34／D-35（新規発見） |
 | W4 | 核心ジャーニー探索 | [W4-execution-record.md](W4/W4-execution-record.md)<br>[W4-cause-analysis.md](W4/W4-cause-analysis.md) | ❌ 不合格 | D-27〜D-30 |
 | W5 | P1 機能／非機能（a11y・静的解析） | [W5-a11y-static.md](W5/W5-a11y-static.md)<br>[W5-cause-analysis.md](W5/W5-cause-analysis.md) | ⚠️ 一部可 | D-13〜D-22 |
 | W6 | P2 網羅＋探索拡張＋負荷・並行 | [W6-execution-record.md](W6/W6-execution-record.md)<br>[W6-cause-analysis.md](W6/W6-cause-analysis.md) | ⚠️ 一部可 | D-31〜D-33 |
@@ -48,10 +48,10 @@
 | D-20 | S4 | 13 テーブル中 12 に `<caption>` なし | W5 | ❌ 未修正 |
 | D-21 | S4 | 見出しレベルの飛び | W5 | ❌ 未修正 |
 | D-22 | S4 | phpcs 違反 997 件 | W5 | ❌ 未修正 |
-| D-23 | S2 | `InstallController` の DB 名検出が `Configure::consume` で常に既定へフォールバック | W3 | ❌ 未修正 |
-| D-24 | S3 | `_executeSQLScript()` が 23000（Duplicate entry）を握り潰さない | W3 | ❌ 未修正 |
-| D-25 | S4 | `bootstrap.php` が `App.fullBaseUrl` を未設定 | W3 | ❌ 未修正 |
-| D-26 | S4 | D-23 により install バリデーションを動的検証できない | W3 | ❌ 未修正 |
+| D-23 | S2 | `InstallController` の DB 名検出が `Configure::consume` で常に既定へフォールバック | W3 | ✅ 修正済（`ConnectionManager::getConfig('default')`） |
+| D-24 | S3 | `_executeSQLScript()` が 23000（Duplicate entry）を握り潰さない | W3 | ✅ 修正済（`UpdateController` と挙動統一） |
+| D-25 | S4 | `App.fullBaseUrl` 未設定時に debug=false では全リクエストが 500 | W3 | ✅ 修正済（警告ログ＋通過。`APP_FULL_BASE_URL` 必須を README／compose に明記） |
+| D-26 | S4 | D-23 により install バリデーションを動的検証できない | W3 | ✅ 解消（D-23 修正により到達可能。スクラッチDBで実証） |
 | D-27 | S2 / P0 | テスト結果表示ページが 500（`TypeError: string - int`）。記述式設問を含むテストで結果が見られない | W4 | ❌ 未修正（**再実測で再現確認**） |
 | D-28 | S2 | 非公開のお知らせが受講者画面で閲覧可能（`opened` フィルタ欠落） | W4 | ❌ 未修正 |
 | D-29 | S2 / P0 | 学習記録保存（`/records/add`）が FormProtection で拒否されレコードが生成されない | W4 | ❌ 未修正（**再実測で再現確認**） |
@@ -59,8 +59,12 @@
 | D-31 | S4 | API の一部が JSON ではなく HTML 404 を返す | W6 | ❌ 未修正（当初の 400／DebugKit 泄露は反転） |
 | D-32 | S4 | NULL byte パスで Apache 既定の HTML 404 | W6 | ❌ 未修正 |
 | D-33 | S4 | MCP の `OPTIONS` preflight が 401 を返し CORS ヘッダを伴わない | W6 | ❌ 未修正（当初の 403 は反転） |
+| **D-34** | **S2 / P0** | `/install` のフォームに CSRF トークンが無く POST が 403（インストーラー使用不能） | W3 修正中 | ✅ 修正済（hidden input 追加） |
+| **D-35** | **S2 / P0** | install のフォーム送信値が常に空でバリデーションが必ず失敗（インストール永久に完了しない） | W3 修正中 | ✅ 修正済（`getData('data.User')`） |
 
-**未修正の P0 / S2**: D-02（実質）、D-03（Records）、**D-08 / D-09 / D-10 / D-12 / D-27 / D-29** の 7 件。
+**未修正の P0 / S2**: D-02（実質）、D-03（Records）、**D-14 / D-15 / D-27 / D-28 / D-29** の 6 件。
+
+> D-34 / D-35 は W3 の修正（D-23）で「インストール済み」判定の誤りが外れたことで初めて到達可能になった installer の実経路に、更なる独立原因として顕在化した。**修正前は D-23 が installer 全体を無効化していたため不可視だった。** 詳細は [W3-fix-record.md](W3/W3-fix-record.md) §1。
 
 ---
 
@@ -80,3 +84,4 @@
 - **自動テストが緑でも契約適合を意味しない**（W2: `Api/` 191 件が緑でも staff の教材 Write は 403、CSV インポートは反映 0 件）。
 - **実測の記録を保存する**（W1: 記録が上書きされ IDOR 実測が失われた事例あり。一次証拠を取り直して再記載済み）。
 - **静的推論と実挙動の乖離を疑う**（W1: ルート `.htaccess` の実効性、`session_regenerate` 不在でもセッション ID は Framework 依存で再生成される 等）。
+- **「遮蔽されているバグ」を遮蔽の修正後に必ず再検証する**（W3: D-23 の修正で installer に到達できるようになったところ、CSRF トークン欠落（D-34）と送信値読み出しパスの誤り（D-35）が preexisting の 2 つの P0 として顕在化。1 つの障害が複数原因を隠していた）。

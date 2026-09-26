@@ -11,6 +11,16 @@
 		</div>
 		<div class="panel-body">
 			<form method="post" class="form-horizontal">
+				<?php
+				/*
+				 * D-34: /install は CsrfProtectionMiddleware の対象外ではないため、
+				 * CSRF トークンを送信しないと POST が 403 で拒否され、
+				 * インストーラーが使用不能になる。 生HTMLのフォームなので
+				 * （FormHelper を使わないので）トークンを明示的に埋め込む。
+				 */
+				$csrfToken = (string)$this->getRequest()->getAttribute('csrfToken');
+				?>
+				<input type="hidden" name="_csrfToken" value="<?= h($csrfToken) ?>">
 				<div class="form-group">
 					<label for="Password" class="col col-sm-3 control-label">管理者ログインID</label>
 					<div class="col col-sm-9">

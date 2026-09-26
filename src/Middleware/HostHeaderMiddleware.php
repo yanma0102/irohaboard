@@ -5,7 +5,7 @@ namespace App\Middleware;
 
 use Cake\Core\Configure;
 use Cake\Http\Exception\BadRequestException;
-use Cake\Http\Exception\InternalErrorException;
+use Cake\Log\Log;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -37,11 +37,13 @@ class HostHeaderMiddleware implements MiddlewareInterface
 
         $fullBaseUrl = Configure::read('App.fullBaseUrl');
         if (!$fullBaseUrl) {
-            throw new InternalErrorException(
-                'SECURITY: App.fullBaseUrl is not configured. ' .
-                'This is required in production to prevent Host Header Injection attacks. ' .
-                'Set APP_FULL_BASE_URL environment variable or configure App.fullBaseUrl in config/app.php',
+            Log::warning(
+                'SECURITY: App.fullBaseUrl is not configured. '
+                . 'Host header validation is disabled. '
+                . 'Set APP_FULL_BASE_URL environment variable to enable Host Header Injection protection.'
             );
+
+            return $handler->handle($request);
         }
 
         $configuredHost = parse_url($fullBaseUrl, PHP_URL_HOST);

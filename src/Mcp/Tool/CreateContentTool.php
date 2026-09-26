@@ -15,6 +15,7 @@ use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server\RequestContext;
 
 /**
@@ -62,17 +63,17 @@ class CreateContentTool
         $role = $this->getRole($context);
 
         if (!$this->accessControl->isStaff($role)) {
-            return ['error' => 'Only staff members can create content.'];
+            throw new ToolCallException('Only staff members can create content.');
         }
 
-        if (!$this->accessControl->canAccessCourse($userId, $course_id)) {
-            return ['error' => 'Access denied to this course.'];
+        if (!$this->accessControl->canAccessCourse($userId, $course_id, $role)) {
+            throw new ToolCallException('Access denied to this course.');
         }
 
         // 設定ベースの妥当性検証（Schema enum の二重防御）
         $allowedKinds = array_keys((array)Configure::read('content_kind', []));
         if (!in_array($kind, $allowedKinds, true)) {
-            return ['error' => 'Invalid kind. Allowed: ' . implode(', ', $allowedKinds)];
+            throw new ToolCallException('Invalid kind. Allowed: ' . implode(', ', $allowedKinds));
         }
 
         $contentsTable = TableRegistry::getTableLocator()->get('Contents');
@@ -88,7 +89,9 @@ class CreateContentTool
         ]);
 
         if (!$contentsTable->save($entity)) {
-            return ['error' => 'Validation failed.', 'details' => $entity->getErrors()];
+            throw new ToolCallException(
+                json_encode(['error' => 'Validation failed.', 'details' => $entity->getErrors()], JSON_UNESCAPED_UNICODE),
+            );
         }
 
         return [

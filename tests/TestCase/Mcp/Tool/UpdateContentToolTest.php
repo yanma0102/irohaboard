@@ -15,6 +15,7 @@ use App\Service\AccessControlService;
 use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\TestCase;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Server\RequestContext;
 use Mcp\Server\Session\SessionInterface;
@@ -232,20 +233,20 @@ class UpdateContentToolTest extends TestCase
         $this->enrollUser((int)$user->id, (int)$course->id);
         $content = $this->createContent((int)$course->id);
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Only staff members can update content.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$user->id),
             (int)$content->id,
             '改ざんタイトル',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Only staff members can update content.', $result['error']);
     }
 
     /**
-     * コース未参加のスタッフは更新できない
+     * コース未参加のスタッフは更新できる（D-08: staff は全コースにアクセス可能）
      */
-    public function testStaffWithoutEnrollmentDenied(): void
+    public function testStaffCanUpdateUnenrolledCourse(): void
     {
         $course = $this->createCourse();
         $admin = $this->createUser('uadmin04', 'admin');
@@ -254,11 +255,11 @@ class UpdateContentToolTest extends TestCase
         $result = $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$content->id,
-            '改ざんタイトル',
+            '更新成功',
         );
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Access denied to this content.', $result['error']);
+        $this->assertArrayHasKey('data', $result);
+        $this->assertSame('更新成功', $result['data']['title']);
     }
 
     /**
@@ -268,14 +269,14 @@ class UpdateContentToolTest extends TestCase
     {
         $admin = $this->createUser('uadmin05', 'admin');
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Content not found.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             999999,
             'タイトル',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Content not found.', $result['error']);
     }
 
     /**
@@ -291,14 +292,14 @@ class UpdateContentToolTest extends TestCase
         $content->deleted = date('Y-m-d H:i:s');
         $this->assertNotFalse($this->getTableLocator()->get('Contents')->save($content));
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Content not found.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$content->id,
             'タイトル',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Content not found.', $result['error']);
     }
 
     // ----------------------------------------------------------------
@@ -315,13 +316,13 @@ class UpdateContentToolTest extends TestCase
         $this->enrollUser((int)$admin->id, (int)$course->id);
         $content = $this->createContent((int)$course->id);
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('No fields to update.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$content->id,
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('No fields to update.', $result['error']);
     }
 
     /**
@@ -334,15 +335,15 @@ class UpdateContentToolTest extends TestCase
         $this->enrollUser((int)$admin->id, (int)$course->id);
         $content = $this->createContent((int)$course->id);
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Invalid kind.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$content->id,
             null,
             'bogus_kind',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('Invalid kind', $result['error']);
     }
 
     /**
@@ -355,16 +356,15 @@ class UpdateContentToolTest extends TestCase
         $this->enrollUser((int)$admin->id, (int)$course->id);
         $content = $this->createContent((int)$course->id);
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Validation failed.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$content->id,
             null,
             null,
             '',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Validation failed.', $result['error']);
-        $this->assertArrayHasKey('body', $result['details']);
     }
 }

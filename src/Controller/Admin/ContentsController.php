@@ -28,7 +28,7 @@ class ContentsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
-        $this->FormProtection->unlockActions(['order', 'preview', 'uploadImage', 'copy']);
+        $this->FormProtection->unlockActions(['order', 'preview', 'upload', 'uploadImage', 'copy']);
     }
 
     /**

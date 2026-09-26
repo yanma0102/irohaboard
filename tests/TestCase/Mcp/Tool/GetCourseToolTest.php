@@ -14,6 +14,7 @@ use App\Mcp\Tool\GetCourseTool;
 use App\Service\AccessControlService;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\TestCase;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Server\RequestContext;
 use Mcp\Server\Session\SessionInterface;
@@ -168,13 +169,13 @@ class GetCourseToolTest extends TestCase
         $course = $this->createCourse('未受講コース');
         $user = $this->createUser('cstranger01');
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Access denied to this course.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$user->id),
             (int)$course->id,
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('Access denied', $result['error']);
     }
 
     /**
@@ -184,13 +185,13 @@ class GetCourseToolTest extends TestCase
     {
         $admin = $this->createUser('cadmin02', 'admin');
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Course not found.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             999999,
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Course not found.', $result['error']);
     }
 
     /**
@@ -205,12 +206,12 @@ class GetCourseToolTest extends TestCase
         $course->deleted = date('Y-m-d H:i:s');
         $this->assertNotFalse($coursesTable->save($course));
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Course not found.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$course->id,
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Course not found.', $result['error']);
     }
 }

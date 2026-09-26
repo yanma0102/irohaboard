@@ -15,6 +15,7 @@ use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server\RequestContext;
 
 /**
@@ -62,7 +63,7 @@ class UpdateContentTool
         $role = $this->getRole($context);
 
         if (!$this->accessControl->isStaff($role)) {
-            return ['error' => 'Only staff members can update content.'];
+            throw new ToolCallException('Only staff members can update content.');
         }
 
         $contentsTable = TableRegistry::getTableLocator()->get('Contents');
@@ -71,18 +72,18 @@ class UpdateContentTool
             ->first();
 
         if ($content === null) {
-            return ['error' => 'Content not found.'];
+            throw new ToolCallException('Content not found.');
         }
 
-        if (!$this->accessControl->canAccessCourse($userId, (int)$content->course_id)) {
-            return ['error' => 'Access denied to this content.'];
+        if (!$this->accessControl->canAccessCourse($userId, (int)$content->course_id, $role)) {
+            throw new ToolCallException('Access denied to this content.');
         }
 
         // 設定ベースの妥当性検証（Schema enum の二重防御）
         if ($kind !== null) {
             $allowedKinds = array_keys((array)Configure::read('content_kind', []));
             if (!in_array($kind, $allowedKinds, true)) {
-                return ['error' => 'Invalid kind. Allowed: ' . implode(', ', $allowedKinds)];
+                throw new ToolCallException('Invalid kind. Allowed: ' . implode(', ', $allowedKinds));
             }
         }
 
@@ -101,7 +102,7 @@ class UpdateContentTool
         }
 
         if ($patchData === []) {
-            return ['error' => 'No fields to update.'];
+            throw new ToolCallException('No fields to update.');
         }
 
         // patchEntity のバリデーションコンテキストには既存 kind が入らないため、
@@ -112,16 +113,20 @@ class UpdateContentTool
             && $body === ''
             && in_array($effectiveKind, ['text', 'html', 'markdown'], true)
         ) {
-            return [
-                'error' => 'Validation failed.',
-                'details' => ['body' => ['allowEmpty' => 'This field cannot be empty']],
-            ];
+            throw new ToolCallException(
+                json_encode([
+                    'error' => 'Validation failed.',
+                    'details' => ['body' => ['allowEmpty' => 'This field cannot be empty']],
+                ], JSON_UNESCAPED_UNICODE),
+            );
         }
 
         $entity = $contentsTable->patchEntity($content, $patchData);
 
         if (!$contentsTable->save($entity)) {
-            return ['error' => 'Validation failed.', 'details' => $entity->getErrors()];
+            throw new ToolCallException(
+                json_encode(['error' => 'Validation failed.', 'details' => $entity->getErrors()], JSON_UNESCAPED_UNICODE),
+            );
         }
 
         return [

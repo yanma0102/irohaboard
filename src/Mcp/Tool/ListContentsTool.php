@@ -12,6 +12,7 @@ namespace App\Mcp\Tool;
 
 use App\Service\AccessControlService;
 use Cake\ORM\TableRegistry;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server\RequestContext;
 
 /**
@@ -54,8 +55,8 @@ class ListContentsTool
         $role = $this->getRole($context);
 
         $isStaff = $this->accessControl->isStaff($role);
-        if (!$isStaff && !$this->accessControl->canAccessCourse($userId, $course_id)) {
-            return ['error' => 'Access denied to this course.'];
+        if (!$isStaff && !$this->accessControl->canAccessCourse($userId, $course_id, $role)) {
+            throw new ToolCallException('Access denied to this course.');
         }
 
         $conditions = [

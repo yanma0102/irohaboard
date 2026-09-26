@@ -88,12 +88,19 @@ EOF;
     /**
      * 指定ユーザが指定コースにアクセスできるか
      *
+     * staff ロールは全コースにアクセス可能（Web 管理画面と同一）。
+     *
      * @param int $userId ユーザID
      * @param int $courseId コースID
+     * @param string $role ロール（省略時は一般ユーザ扱い）
      * @return bool アクセス可能な場合 true
      */
-    public function canAccessCourse(int $userId, int $courseId): bool
+    public function canAccessCourse(int $userId, int $courseId, string $role = ''): bool
     {
+        if ($this->isStaff($role)) {
+            return true;
+        }
+
         return in_array($courseId, $this->accessibleCourseIds($userId), true);
     }
 

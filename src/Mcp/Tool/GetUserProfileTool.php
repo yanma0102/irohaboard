@@ -12,6 +12,7 @@ namespace App\Mcp\Tool;
 
 use App\Service\AccessControlService;
 use Cake\ORM\TableRegistry;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server\RequestContext;
 
 /**
@@ -45,7 +46,7 @@ class GetUserProfileTool
         $targetUserId = $user_id ?? $currentUserId;
 
         if ($targetUserId !== $currentUserId && !$this->accessControl->isStaff($role)) {
-            return ['error' => 'Access denied. You can only view your own profile.'];
+            throw new ToolCallException('Access denied. You can only view your own profile.');
         }
 
         $usersTable = TableRegistry::getTableLocator()->get('Users');
@@ -54,7 +55,7 @@ class GetUserProfileTool
             ->first();
 
         if ($user === null) {
-            return ['error' => 'User not found.'];
+            throw new ToolCallException('User not found.');
         }
 
         $data = $user->toArray();

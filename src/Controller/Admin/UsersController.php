@@ -38,6 +38,11 @@ class UsersController extends AppController
         $this->FormProtection->unlockActions([
             'login',
             'logout',
+            // CSV インポートは multipart/form-data で送信されるため、ファイル入力が
+            // $_POST（FormProtector::extractFields() の対象）に含まれず、
+            // 描画時と送信時のフィールド集合が恒常的に不一致になる。
+            // upload アクション（Admin/ContentsController）と同じ理由で解除する。
+            'import',
         ]);
     }
 
@@ -352,38 +357,44 @@ class UsersController extends AppController
         $group_count  = Configure::read('import_group_count');     // 所属グループの列数
         $course_count = Configure::read('import_course_count');     // 受講コースの列数
 
-        //------------------------------//
-        //	列番号の定義				//
-        //------------------------------//
-        define('COL_LOGINID',   0);
-        define('COL_PASSWORD',  1);
-        define('COL_NAME',      2);
-        define('COL_ROLE',      3);
-        define('COL_EMAIL',     4);
-        define('COL_COMMENT',   5);
-        define('COL_GROUP',     6);
-        define('COL_COURSE',    6 + $group_count);
-
         $err_msg = '';
 
         if ($this->request->is(['post', 'put'])) {
             //------------------------------//
+            //	列番号の定義				//
+            //------------------------------//
+            // 旧実装は define() でグローバル定数を定義していたが、
+            // 同一プロセス内で import() が複数回呼ばれると定数再定義警告が発生し、
+            // ワーカー/CLI 長寿命プロセスでは他リクエストへ状態を持ち込む。
+            // このメソッド内だけで有効なローカル変数へ置き換える。
+            $COL_LOGINID   = 0;
+            $COL_PASSWORD  = 1;
+            $COL_NAME      = 2;
+            $COL_ROLE      = 3;
+            $COL_EMAIL     = 4;
+            $COL_COMMENT   = 5;
+            $COL_GROUP     = 6;
+            $COL_COURSE    = 6 + $group_count;
+
+            //------------------------------//
             //	CSVファイルの読み込み		//
             //------------------------------//
-            // 制限時間を120秒に設定
-            set_time_limit(120);
+            // 制限時間を120秒に設定（CLIでは max_execution_time が無制限のため変更しない）
+            if (PHP_SAPI !== 'cli') {
+                set_time_limit(120);
+            }
 
-            $csvfile = $this->request->getData('csvfile');
+            $csvfile = $this->request->getUploadedFile('csvfile');
 
             // インポートファイルが指定されていない場合、エラーメッセージを表示
-            if (!is_array($csvfile) || $csvfile['error'] != 0) {
+            if ($csvfile === null || $csvfile->getError() !== UPLOAD_ERR_OK) {
                 $this->Flash->error(__('インポートファイルが指定されていません'));
                 $this->set(compact('err_msg'));
                 return null;
             }
 
             // CSVファイルの読み込み
-            $csv = Utils::getCsvData($csvfile['tmp_name']);
+            $csv = Utils::getCsvData($csvfile->getStream()->getMetadata('uri'));
 
             $i = 0;
 
@@ -414,7 +425,7 @@ class UsersController extends AppController
                     //------------------------------//
                     //	ユーザ情報の作成			//
                     //------------------------------//
-                    $existingUser = $usersTable->find()->where(['username' => $row[COL_LOGINID]])->first();
+                    $existingUser = $usersTable->find()->where(['username' => $row[$COL_LOGINID]])->first();
 
                     // 指定したログインIDのユーザが存在しない場合、新規追加とする
                     if (!$existingUser) {
@@ -424,17 +435,17 @@ class UsersController extends AppController
                     $saveData = [];
 
                     // ユーザ名
-                    $saveData['username'] = $row[COL_LOGINID];
+                    $saveData['username'] = $row[$COL_LOGINID];
 
                     // パスワード
-                    if ($row[COL_PASSWORD] !== '') {
-                        $saveData['password'] = $row[COL_PASSWORD];
+                    if ($row[$COL_PASSWORD] !== '') {
+                        $saveData['password'] = $row[$COL_PASSWORD];
                     }
 
-                    $saveData['name']    = $row[COL_NAME];                                     // 氏名
-                    $saveData['role']    = Utils::getKeyByValue('user_role', $row[COL_ROLE]); // 権限
-                    $saveData['email']   = $row[COL_EMAIL];                                    // メールアドレス
-                    $saveData['comment'] = Utils::issetOr($row[COL_COMMENT]);                 // 備考
+                    $saveData['name']    = $row[$COL_NAME];                                     // 氏名
+                    $saveData['role']    = Utils::getKeyByValue('user_role', $row[$COL_ROLE]); // 権限
+                    $saveData['email']   = $row[$COL_EMAIL];                                    // メールアドレス
+                    $saveData['comment'] = Utils::issetOr($row[$COL_COMMENT]);                 // 備考
 
                     //----------------------------------//
                     //	所属グループ・受講コースの割当	//
@@ -444,7 +455,7 @@ class UsersController extends AppController
 
                     // 所属グループの割当
                     for ($n = 0; $n < $group_count; $n++) {
-                        $title = Utils::issetOr($row[COL_GROUP + $n], '');
+                        $title = Utils::issetOr($row[$COL_GROUP + $n], '');
 
                         if ($title === '') {
                             continue;
@@ -461,7 +472,7 @@ class UsersController extends AppController
 
                     // 受講コースの割当
                     for ($n = 0; $n < $course_count; $n++) {
-                        $title = Utils::issetOr($row[COL_COURSE + $n], '');
+                        $title = Utils::issetOr($row[$COL_COURSE + $n], '');
 
                         if ($title === '') {
                             continue;

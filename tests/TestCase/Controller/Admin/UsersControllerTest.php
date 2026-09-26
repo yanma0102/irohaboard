@@ -521,6 +521,64 @@ class UsersControllerTest extends TestCase
     }
 
     // ----------------------------------------------------------------
+    // D-10 ユーザー CSV インポート回帰テスト
+    // ----------------------------------------------------------------
+
+    /**
+     * D-10: CSV インポートがアップロードファイルを受け取れること
+     *
+     * getUploadedFile() でファイルを取得でき、「インポートファイルが指定されていません」
+     * エラーにならず、パース段階に到達すること（＝インポート処理が実行されること）。
+     * CSV の内容は空行のみで、0 件インポートでも正常に完了する。
+     */
+    public function testImportAcceptsUploadedCsvFile(): void
+    {
+        $this->loginAsAdmin();
+
+        // ヘッダー行のみの最小 CSV ファイルを作成
+        $tmpFile = tempnam(sys_get_temp_dir(), 'test_csv_');
+        file_put_contents($tmpFile, "ログインID,パスワード,氏名,権限,メールアドレス\n");
+
+        $uploadedFile = new \Laminas\Diactoros\UploadedFile(
+            $tmpFile,
+            filesize($tmpFile),
+            UPLOAD_ERR_OK,
+            'users.csv'
+        );
+
+        $this->configRequest([
+            'files' => ['csvfile' => $uploadedFile],
+        ]);
+
+        $this->post('/admin/users/import');
+
+        // ヘッダーのみの CSV なので 0 件インポートで「完了」となる。
+        // import() の成功パスは Flash->success 後に redirect(['action' => 'index']) を返すため、
+        // レスポンスは 302 リダイレクトになる。
+        // '/admin' は routes.php で Admin\Users::index に接続されたユーザ一覧の正規URL
+        // （redirect(['action' => 'index'])＝controller 省略は Admin 全体の既定書き方）。
+        // 「インポートファイルが指定されていません」エラーで停止していないこと、
+        // および FormProtection の blackHole（/admin/users/login へのリダイレクト）じゃないことを確認する。
+        $this->assertRedirect('/admin');
+        $this->assertFlashMessage('インポートが完了しました');
+
+        @unlink($tmpFile);
+    }
+
+    /**
+     * D-10: CSV インポートでファイル未指定の場合にエラーメッセージが表示されること
+     */
+    public function testImportWithoutFileShowsError(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->post('/admin/users/import');
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('インポートファイルが指定されていません');
+    }
+
+    // ----------------------------------------------------------------
     // W2-F1 CSV Content-Type charset 回帰テスト
     // ----------------------------------------------------------------
 

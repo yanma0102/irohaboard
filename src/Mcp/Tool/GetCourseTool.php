@@ -12,6 +12,7 @@ namespace App\Mcp\Tool;
 
 use App\Service\AccessControlService;
 use Cake\ORM\TableRegistry;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server\RequestContext;
 
 /**
@@ -47,11 +48,11 @@ class GetCourseTool
             ->first();
 
         if ($course === null) {
-            return ['error' => 'Course not found.'];
+            throw new ToolCallException('Course not found.');
         }
 
-        if (!$this->accessControl->isStaff($role) && !$this->accessControl->canAccessCourse($userId, $course_id)) {
-            return ['error' => 'Access denied to this course.'];
+        if (!$this->accessControl->isStaff($role) && !$this->accessControl->canAccessCourse($userId, $course_id, $role)) {
+            throw new ToolCallException('Access denied to this course.');
         }
 
         return ['data' => $course->toArray()];

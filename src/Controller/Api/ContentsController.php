@@ -149,9 +149,13 @@ class ContentsController extends BaseController
         }
 
         $courseId = (int)$fields['course_id'];
-        $accessibleIds = $this->accessibleCourseIds($this->currentUserId());
-        if (!in_array($courseId, $accessibleIds, true)) {
-            $this->fail(403, 'You do not have access to this course');
+
+        // staff ロールは全コースにアクセス可能（Web 管理画面と同一）
+        if (!$this->isStaff()) {
+            $accessibleIds = $this->accessibleCourseIds($this->currentUserId());
+            if (!in_array($courseId, $accessibleIds, true)) {
+                $this->fail(403, 'You do not have access to this course');
+            }
         }
 
         $fields['user_id'] = $this->currentUserId();
@@ -194,9 +198,14 @@ class ContentsController extends BaseController
         $target = $contentsTable->get($id);
 
         $courseId = (int)$target->course_id;
-        $accessibleIds = $this->accessibleCourseIds($this->currentUserId());
-        if (!in_array($courseId, $accessibleIds, true)) {
-            $this->fail(403, 'You do not have access to this course');
+
+        // staff ロールは全コースにアクセス可能（Web 管理画面と同一）
+        $accessibleIds = [];
+        if (!$this->isStaff()) {
+            $accessibleIds = $this->accessibleCourseIds($this->currentUserId());
+            if (!in_array($courseId, $accessibleIds, true)) {
+                $this->fail(403, 'You do not have access to this course');
+            }
         }
 
         $input = $this->input();
@@ -215,7 +224,8 @@ class ContentsController extends BaseController
 
         if (isset($fields['course_id'])) {
             $newCourseId = (int)$fields['course_id'];
-            if (!in_array($newCourseId, $accessibleIds, true)) {
+            // staff ロールは全コースにアクセス可能（Web 管理画面と同一）
+            if (!$this->isStaff() && !in_array($newCourseId, $accessibleIds, true)) {
                 $this->fail(403, 'You do not have access to the target course');
             }
         }
@@ -255,10 +265,13 @@ class ContentsController extends BaseController
 
         $content = $contentsTable->get($id);
 
-        $courseId = (int)$content->course_id;
-        $accessibleIds = $this->accessibleCourseIds($this->currentUserId());
-        if (!in_array($courseId, $accessibleIds, true)) {
-            $this->fail(403, 'You do not have access to this course');
+        // staff ロールは全コースにアクセス可能（Web 管理画面と同一）
+        if (!$this->isStaff()) {
+            $courseId = (int)$content->course_id;
+            $accessibleIds = $this->accessibleCourseIds($this->currentUserId());
+            if (!in_array($courseId, $accessibleIds, true)) {
+                $this->fail(403, 'You do not have access to this course');
+            }
         }
 
         if ($contentsTable->delete($content)) {

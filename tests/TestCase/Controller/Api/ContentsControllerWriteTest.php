@@ -372,9 +372,10 @@ class ContentsControllerWriteTest extends TestCase
     }
 
     /**
-     * 異常系: アクセス権外コース → 403
+     * 正常系: staff ロールは未受講コースでもコンテンツ作成可能 → 201
+     * （Web 管理画面と同一の挙動）
      */
-    public function testAddInaccessibleCourse(): void
+    public function testStaffCanAddToUnenrolledCourse(): void
     {
         $this->createUser('admin01', ['role' => 'admin']);
         $otherAdmin = $this->createUser('admin02', ['role' => 'admin']);
@@ -390,7 +391,7 @@ class ContentsControllerWriteTest extends TestCase
             'kind' => 'html',
             'body' => '<p>test</p>',
         ]);
-        $this->assertResponseCode(403);
+        $this->assertResponseCode(201);
     }
 
     /**
@@ -519,9 +520,10 @@ class ContentsControllerWriteTest extends TestCase
     }
 
     /**
-     * 異常系: アクセス権外コース → 403
+     * 正常系: staff ロールは未受講コースでもコンテンツ更新可能 → 200
+     * （Web 管理画面と同一の挙動）
      */
-    public function testEditInaccessibleCourse(): void
+    public function testStaffCanEditToUnenrolledCourse(): void
     {
         $this->createUser('admin01', ['role' => 'admin']);
         $otherAdmin = $this->createUser('admin02', ['role' => 'admin']);
@@ -533,7 +535,7 @@ class ContentsControllerWriteTest extends TestCase
         $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
 
         $this->put('/api/v1/contents/' . $content->id, ['title' => 'No Access']);
-        $this->assertResponseCode(403);
+        $this->assertResponseOk();
     }
 
     /**

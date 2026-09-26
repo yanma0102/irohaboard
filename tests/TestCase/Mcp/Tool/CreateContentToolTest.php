@@ -15,6 +15,7 @@ use App\Service\AccessControlService;
 use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\TestCase;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Server\RequestContext;
 use Mcp\Server\Session\SessionInterface;
@@ -223,22 +224,22 @@ class CreateContentToolTest extends TestCase
         $user = $this->createUser('wuser01');
         $this->enrollUser((int)$user->id, (int)$course->id);
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Only staff members can create content.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$user->id),
             (int)$course->id,
             'タイトル',
             'html',
             '<p>x</p>',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Only staff members can create content.', $result['error']);
     }
 
     /**
-     * コース未参加のスタッフは作成できない
+     * コース未参加のスタッフは作成できる（D-08: staff は全コースにアクセス可能）
      */
-    public function testStaffWithoutEnrollmentDenied(): void
+    public function testStaffCanCreateInUnenrolledCourse(): void
     {
         $course = $this->createCourse();
         $admin = $this->createUser('wadmin04', 'admin');
@@ -251,8 +252,8 @@ class CreateContentToolTest extends TestCase
             '<p>x</p>',
         );
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Access denied to this course.', $result['error']);
+        $this->assertArrayHasKey('data', $result);
+        $this->assertSame('タイトル', $result['data']['title']);
     }
 
     // ----------------------------------------------------------------
@@ -268,16 +269,16 @@ class CreateContentToolTest extends TestCase
         $admin = $this->createUser('wadmin05', 'admin');
         $this->enrollUser((int)$admin->id, (int)$course->id);
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Invalid kind.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$course->id,
             'タイトル',
             'bogus_kind',
             '本文',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('Invalid kind', $result['error']);
     }
 
     /**
@@ -289,16 +290,15 @@ class CreateContentToolTest extends TestCase
         $admin = $this->createUser('wadmin06', 'admin');
         $this->enrollUser((int)$admin->id, (int)$course->id);
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Validation failed.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$course->id,
             'タイトル',
             'markdown',
             '',
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('Validation failed.', $result['error']);
-        $this->assertArrayHasKey('body', $result['details']);
     }
 }

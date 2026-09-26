@@ -15,6 +15,7 @@ use App\Mcp\Tool\GetContentTool;
 use App\Service\AccessControlService;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\TestCase;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Server\RequestContext;
 use Mcp\Server\Session\SessionInterface;
@@ -259,23 +260,33 @@ class GetContentHtmlToolTest extends TestCase
     // ----------------------------------------------------------------
 
     /**
-     * 未受講ユーザ → Access denied
+     * 未受講ユーザ → Access denied（get_content）
      */
-    public function testAccessDeniedForNonEnrolled(): void
+    public function testGetContentAccessDeniedForNonEnrolled(): void
     {
         $course = $this->createCourse();
         $user = $this->createUser('stranger02');
         $this->createContent((int)$course->id);
 
-        $result = $this->getTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Access denied');
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('Access denied', $result['error']);
+        $this->getTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
+    }
 
-        $resultHtml = $this->htmlTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
+    /**
+     * 未受講ユーザ → Access denied（get_content_html）
+     */
+    public function testGetContentHtmlAccessDeniedForNonEnrolled(): void
+    {
+        $course = $this->createCourse();
+        $user = $this->createUser('stranger03');
+        $this->createContent((int)$course->id);
 
-        $this->assertArrayHasKey('error', $resultHtml);
-        $this->assertStringContainsString('Access denied', $resultHtml['error']);
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Access denied');
+
+        $this->htmlTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
     }
 
     /**
@@ -288,10 +299,10 @@ class GetContentHtmlToolTest extends TestCase
         $this->enrollUser((int)$user->id, (int)$course->id);
         $this->createContent((int)$course->id, ['status' => 0]);
 
-        $result = $this->getTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('not found');
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('not found', $result['error']);
+        $this->getTool->__invoke($this->makeContext((int)$user->id), $this->lastContentId);
     }
 
     /**
@@ -316,10 +327,10 @@ class GetContentHtmlToolTest extends TestCase
     {
         $user = $this->createUser('nofound');
 
-        $result = $this->getTool->__invoke($this->makeContext((int)$user->id), 9999);
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('not found');
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('not found', $result['error']);
+        $this->getTool->__invoke($this->makeContext((int)$user->id), 9999);
     }
 
     // ----------------------------------------------------------------

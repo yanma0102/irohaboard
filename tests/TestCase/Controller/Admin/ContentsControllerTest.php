@@ -777,4 +777,62 @@ class ContentsControllerTest extends TestCase
         $this->assertStringContainsString('.pdf', $body, 'file タイプで汎用 upload_extensions の .pdf が表示されること');
         $this->assertStringContainsString('.zip', $body, 'file タイプで汎用 upload_extensions の .zip が表示されること');
     }
+
+    // ----------------------------------------------------------------
+    // D-12 ファイルアップロード FormProtection 回帰テスト
+    // ----------------------------------------------------------------
+
+    /**
+     * D-12: multipart ファイルアップロードが FormProtection でブロックされないこと
+     *
+     * unlockActions に 'upload' が含まれているため、multipart POST でも
+     * FormProtection のトークン検証がスキップされ、302（blackHole）にならない。
+     * ファイルが指定されていないためエラーモードでビューが返ることを確認する。
+     */
+    public function testUploadMultipartPostIsNotBlockedByFormProtection(): void
+    {
+        $this->loginAsAdmin();
+
+        // 許可外拡張子（.php）の multipart POST → 「形式は許可されていません」エラー
+        // FormProtection が blackHole して 302 にならないことを確認
+        // ※ .txt は upload_extensions に含まれるため「許可外」として使えない
+        $tmpFile = tempnam(sys_get_temp_dir(), 'test_upload_');
+        file_put_contents($tmpFile, str_repeat('x', 100));
+
+        $uploadedFile = new \Laminas\Diactoros\UploadedFile(
+            $tmpFile,
+            filesize($tmpFile),
+            UPLOAD_ERR_OK,
+            'malicious.php'
+        );
+
+        $this->configRequest([
+            'files' => ['file' => $uploadedFile],
+        ]);
+
+        $this->post('/admin/contents/upload/file');
+
+        // FormProtection が blackHole しておらず、コントローラが正常に処理されること
+        // ファイル拡張子が許可外なので「形式は許可されていません」エラーが返る
+        $this->assertResponseOk();
+        $this->assertResponseContains('アップロードされたファイルの形式は許可されていません');
+
+        @unlink($tmpFile);
+    }
+
+    /**
+     * D-12: upload アクションが unlockActions に含まれることの確認
+     *
+     * FormProtection の unlockActions に 'upload' が含まれていることを
+     * コードレベルで確認する（回帰防止）。
+     */
+    public function testUploadActionIsInUnlockActions(): void
+    {
+        $source = file_get_contents(ROOT . '/src/Controller/Admin/ContentsController.php');
+        $this->assertMatchesRegularExpression(
+            "/unlockActions\(\[[^\]]*'upload'[^\]]*\]\)/",
+            $source,
+            'unlockActions に upload が含まれていること'
+        );
+    }
 }

@@ -14,6 +14,7 @@ use App\Mcp\Tool\GetUserProfileTool;
 use App\Service\AccessControlService;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\TestCase;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Server\RequestContext;
 use Mcp\Server\Session\SessionInterface;
@@ -139,13 +140,13 @@ class GetUserProfileToolTest extends TestCase
         $target = $this->createUser('proftarget2');
         $me = $this->createUser('profme2');
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Access denied. You can only view your own profile.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$me->id),
             (int)$target->id,
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('own profile', $result['error']);
     }
 
     /**
@@ -155,13 +156,13 @@ class GetUserProfileToolTest extends TestCase
     {
         $admin = $this->createUser('profadmin2', 'admin');
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('User not found.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             999999,
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('User not found.', $result['error']);
     }
 
     /**
@@ -176,12 +177,12 @@ class GetUserProfileToolTest extends TestCase
         $target->deleted = date('Y-m-d H:i:s');
         $this->assertNotFalse($usersTable->save($target));
 
-        $result = $this->tool->__invoke(
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('User not found.');
+
+        $this->tool->__invoke(
             $this->makeContext((int)$admin->id, 'admin'),
             (int)$target->id,
         );
-
-        $this->assertArrayHasKey('error', $result);
-        $this->assertSame('User not found.', $result['error']);
     }
 }

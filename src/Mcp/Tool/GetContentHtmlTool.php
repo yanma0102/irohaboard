@@ -13,6 +13,7 @@ namespace App\Mcp\Tool;
 use App\Service\AccessControlService;
 use App\Utility\MarkdownRenderer;
 use Cake\ORM\TableRegistry;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server\RequestContext;
 
 /**
@@ -55,16 +56,16 @@ class GetContentHtmlTool
             ->first();
 
         if ($content === null) {
-            return ['error' => 'Content not found.'];
+            throw new ToolCallException('Content not found.');
         }
 
         $isStaff = $this->accessControl->isStaff($role);
         if (!$isStaff) {
-            if (!$this->accessControl->canAccessCourse($userId, (int)$content->course_id)) {
-                return ['error' => 'Access denied to this content.'];
+            if (!$this->accessControl->canAccessCourse($userId, (int)$content->course_id, $role)) {
+                throw new ToolCallException('Access denied to this content.');
             }
             if ((int)$content->status !== 1) {
-                return ['error' => 'Content not found.'];
+                throw new ToolCallException('Content not found.');
             }
         }
 

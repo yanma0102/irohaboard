@@ -11,25 +11,56 @@
 |----------|------|------|------|----------|
 | W0 | 環境準備・スモーク・ユニットテスト | [W0-execution-record.md](W0/W0-execution-record.md) | ✅ 合格 | — |
 | W1 | P0 セキュリティ／権限 | [W1-execution-record.md](W1/W1-execution-record.md)<br>[W1-cause-analysis.md](W1/W1-cause-analysis.md) | ❌ 不合格 | D-01〜D-07 |
-| W2 | P0 API／MCP／データ整合 | [W2-execution-record.md](W2/W2-execution-record.md) | ❌ 不合格 | D-08〜D-11 |
+| W2 | P0 API／MCP／データ整合 | [W2-execution-record.md](W2/W2-execution-record.md)<br>[W2-retest-record.md](W2/W2-retest-record.md)<br>[W2-cause-analysis.md](W2/W2-cause-analysis.md)<br>[W2-fix-record.md](W2/W2-fix-record.md) | ❌ 不合格（→ 修正済） | D-08〜D-12 |
+| W3 | P0 運用／移行（install・update・復旧） | [W3-execution-record.md](W3/W3-execution-record.md)<br>[W3-cause-analysis.md](W3/W3-cause-analysis.md) | ⚠️ 一部可 | D-23〜D-26 |
+| W4 | 核心ジャーニー探索 | [W4-execution-record.md](W4/W4-execution-record.md)<br>[W4-cause-analysis.md](W4/W4-cause-analysis.md) | ❌ 不合格 | D-27〜D-30 |
+| W5 | P1 機能／非機能（a11y・静的解析） | [W5-a11y-static.md](W5/W5-a11y-static.md)<br>[W5-cause-analysis.md](W5/W5-cause-analysis.md) | ⚠️ 一部可 | D-13〜D-22 |
+| W6 | P2 網羅＋探索拡張＋負荷・並行 | [W6-execution-record.md](W6/W6-execution-record.md)<br>[W6-cause-analysis.md](W6/W6-cause-analysis.md) | ⚠️ 一部可 | D-31〜D-33 |
+| W7 | 回帰＋復元＋報告 | [W7-execution-record.md](W7/W7-execution-record.md) | ⚠️ 一部可 | — |
+
+> **訂正記録**: [\_orchestrator-corrections.md](_orchestrator-corrections.md)（W4/W6/W7 の主張に対する独立再実測と、W7 の「修正済み」判定の訂正）
 
 ---
 
-## 2. 不備一覧（全ウェーブ）
+## 2. 不備一覧（全ウェーブ・2026-09-26 時点）
 
-| ID | 重大度 | 内容 | 発見ウェーブ |
-|----|--------|------|--------------|
-| D-01 | S2 / P0 | API 全体にレート制限が存在しない（ログイン試行のみ） | W1 |
-| D-02 | S2 / P0 | `file` 種別のアップロードが常時拒否（設定キー名不一致） | W1 |
-| D-03 | S2 / P0 | demo_mode 判定が管理 4 画面（Groups/ContentsQuestions/EnquetesQuestions/Records）で欠落 | W1 |
-| D-04 | S3 | CSP / HSTS / Referrer-Policy / Permissions-Policy 未設定 | W1 |
-| D-05 | S3 | セキュリティヘッダがアプリ層でなく Apache 層のみ | W1 |
-| D-06 | S3 | ログインブロック（Prelock）がユーザー名単位＝ロックアウト DoS | W1 |
-| D-07 | 要判定 | セッション Cookie の `Secure` 属性不在（HTTPS 環境での再計測が必要） | W1 |
-| D-08 | S2 / P0 | `accessibleCourseIds()` に staff バイパスなし → API/MCP の教材 Write が受講登録済み課程に限定（読み取り系と非対称） | W2 |
-| D-09 | S2 / P0 | MCP ツールのエラーが `isError: false` のまま JSON テキストで返る（契約逸脱） | W2 |
-| D-10 | S2 / P0 | ユーザー CSV インポートが機能しない（`getData('csvfile')` が `$_FILES` を読めない／テストも不在） | W2 |
-| D-11 | S3 | CSV レスポンスが `charset=UTF-8` 宣言だが実体 CP932 | W2 |
+| ID | 重大度 | 内容 | 発見 | 現状 |
+|----|--------|------|------|------|
+| D-01 | S2 / P0 | API 全体にレート制限が存在しない | W1 | ✅ 修正済（120/min） |
+| D-02 | S2 / P0 | `file` 種別の許可拡張子が 0 件で常時拒否 | W1 | ⚠️ 部分（設定キー解決。実操作は D-12 により不可） |
+| D-03 | S2 / P0 | demo_mode 判定が管理 4 画面で欠落 | W1 | ⚠️ 部分（**Records 未**） |
+| D-04 | S3 | CSP／HSTS／Referrer-Policy／Permissions-Policy 未設定 | W1 | ✅ 修正済 |
+| D-05 | S3 | セキュリティヘッダがアプリ層でなく Apache 層のみ | W1 | ✅ 修正済 |
+| D-06 | S3 | Prelock がユーザー名単位＝ロックアウト DoS | W1 | ✅ 修正済（IP 併用） |
+| D-07 | 要判定 | セッション Cookie の `Secure` 不在 | W1 | 要判定（HTTPS 環境が必要） |
+| D-08 | S2 / P0 | `accessibleCourseIds()` に staff バイパスなし → Write が受講登録済み課程に限定 | W2 | ✅ 修正済（Write 側にも `isStaff()` バイパス） |
+| D-09 | S2 / P0 | MCP ツールのエラーが `isError: false` のまま JSON テキストで返る | W2 | ✅ 修正済（`ToolCallException` 送出 → `isError: true`） |
+| D-10 | S2 / P0 | ユーザー CSV インポートが機能しない（`getData('csvfile')` が `$_FILES` を読めない／テスト不在） | W2 | ✅ 修正済（`getUploadedFile` ＋ `import` の FormProtection 解除） |
+| D-11 | S3 | CSV が `charset=UTF-8` 宣言だが実体 CP932 | W2 | ✅ 修正済（SJIS-WIN） |
+| D-12 | S2 / P0 | `upload` が FormProtection で 302 拒否 → **file／movie アップロードが利用不可** | 再試験 | ✅ 修正済（`unlockActions` に `upload`） |
+| D-13 | S3 | `<html lang>` 属性が全テンプレートで不在 | W5 | ❌ 未修正 |
+| D-14 | S2 | テスト／アンケート画面のラジオ・チェックボックスに `<label>` なし | W5 | ❌ 未修正 |
+| D-15 | S2 | モーダルに `role="dialog"`／`aria-modal`／フォーカストラップなし | W5 | ❌ 未修正 |
+| D-16 | S3 | インストール画面の `<label for>` と input id が不一致 | W5 | ❌ 未修正 |
+| D-17 | S3 | `error400.php` で URL がエスケープなしに出力 | W5 | ❌ 未修正 |
+| D-18 | S3 | `date()` の直接使用 31 箇所 | W5 | ❌ 未修正 |
+| D-19 | S4 | flash の `<div onclick>` がキーボード操作不可 | W5 | ❌ 未修正 |
+| D-20 | S4 | 13 テーブル中 12 に `<caption>` なし | W5 | ❌ 未修正 |
+| D-21 | S4 | 見出しレベルの飛び | W5 | ❌ 未修正 |
+| D-22 | S4 | phpcs 違反 997 件 | W5 | ❌ 未修正 |
+| D-23 | S2 | `InstallController` の DB 名検出が `Configure::consume` で常に既定へフォールバック | W3 | ❌ 未修正 |
+| D-24 | S3 | `_executeSQLScript()` が 23000（Duplicate entry）を握り潰さない | W3 | ❌ 未修正 |
+| D-25 | S4 | `bootstrap.php` が `App.fullBaseUrl` を未設定 | W3 | ❌ 未修正 |
+| D-26 | S4 | D-23 により install バリデーションを動的検証できない | W3 | ❌ 未修正 |
+| D-27 | S2 / P0 | テスト結果表示ページが 500（`TypeError: string - int`）。記述式設問を含むテストで結果が見られない | W4 | ❌ 未修正（**再実測で再現確認**） |
+| D-28 | S2 | 非公開のお知らせが受講者画面で閲覧可能（`opened` フィルタ欠落） | W4 | ❌ 未修正 |
+| D-29 | S2 / P0 | 学習記録保存（`/records/add`）が FormProtection で拒否されレコードが生成されない | W4 | ❌ 未修正（**再実測で再現確認**） |
+| D-30 | S3 | アンケート回答の詳細が `ib_records_questions` に保存されない | W4 | ❌ 未修正 |
+| D-31 | S4 | API の一部が JSON ではなく HTML 404 を返す | W6 | ❌ 未修正（当初の 400／DebugKit 泄露は反転） |
+| D-32 | S4 | NULL byte パスで Apache 既定の HTML 404 | W6 | ❌ 未修正 |
+| D-33 | S4 | MCP の `OPTIONS` preflight が 401 を返し CORS ヘッダを伴わない | W6 | ❌ 未修正（当初の 403 は反転） |
+
+**未修正の P0 / S2**: D-02（実質）、D-03（Records）、**D-08 / D-09 / D-10 / D-12 / D-27 / D-29** の 7 件。
 
 ---
 

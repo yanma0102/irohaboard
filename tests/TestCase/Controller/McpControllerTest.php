@@ -219,6 +219,26 @@ class McpControllerTest extends TestCase
         return $decoded;
     }
 
+    /**
+     * D-09: ツールエラーが CallToolResult(isError: true) として返ることを検証する
+     *
+     * 旧実装は `return ['error' => ...]` という plain array を返しており、
+     * SDK が isError: false で成功ラップしていた（クライアントはエラーを認識できない）。
+     * 修正後は ToolCallException 送出により isError: true になる。
+     */
+    private function assertToolError(array $result, string $expectedMessage): void
+    {
+        $this->assertTrue(
+            $result['isError'] ?? false,
+            'ツールエラーは isError: true で返る（D-09 修正後の契約）',
+        );
+        $this->assertStringContainsString(
+            $expectedMessage,
+            $result['content'][0]['text'],
+            'ツールエラーメッセージが(content に)含まれる',
+        );
+    }
+
     // ----------------------------------------------------------------
     // 認証
     // ----------------------------------------------------------------
@@ -371,10 +391,8 @@ class McpControllerTest extends TestCase
         $result = $this->callTool($token, $sessionId, 'list_contents', [
             'course_id' => (int)$course->id,
         ]);
-        $data = $this->decodeToolResult($result);
 
-        $this->assertArrayHasKey('error', $data);
-        $this->assertStringContainsString('Access denied', $data['error']);
+        $this->assertToolError($result, 'Access denied');
     }
 
     /**
@@ -881,15 +899,14 @@ class McpControllerTest extends TestCase
         $this->enrollUser((int)$user->id, (int)$course->id);
         $sessionId = $this->initializeSession($token);
 
-        $data = $this->decodeToolResult($this->callTool($token, $sessionId, 'create_content', [
+        $result = $this->callTool($token, $sessionId, 'create_content', [
             'course_id' => (int)$course->id,
             'title' => '試し',
             'kind' => 'html',
             'body' => '<p>x</p>',
-        ]));
+        ]);
 
-        $this->assertArrayHasKey('error', $data);
-        $this->assertSame('Only staff members can create content.', $data['error']);
+        $this->assertToolError($result, 'Only staff members can create content.');
     }
 
     /**

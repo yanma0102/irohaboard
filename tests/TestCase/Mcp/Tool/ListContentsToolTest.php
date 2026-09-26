@@ -14,6 +14,7 @@ use App\Mcp\Tool\ListContentsTool;
 use App\Service\AccessControlService;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\TestCase;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Server\RequestContext;
 use Mcp\Server\Session\SessionInterface;
@@ -243,10 +244,10 @@ class ListContentsToolTest extends TestCase
         $user = $this->createUser('stranger01');
         $this->createContent((int)$course->id);
 
-        $result = $this->tool->__invoke($this->makeContext((int)$user->id), (int)$course->id);
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Access denied to this course.');
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertStringContainsString('Access denied', $result['error']);
+        $this->tool->__invoke($this->makeContext((int)$user->id), (int)$course->id);
     }
 
     /**

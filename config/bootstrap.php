@@ -184,6 +184,7 @@ if ($httpHost !== '') {
 
 $configuredBaseUrl = Configure::read('App.fullBaseUrl');
 $configuredAuthority = '';
+$configuredPath = '';
 if ($configuredBaseUrl) {
     $parsed = parse_url((string)$configuredBaseUrl);
     if (is_array($parsed)) {
@@ -191,13 +192,17 @@ if ($configuredBaseUrl) {
         if (isset($parsed['port'])) {
             $configuredAuthority .= ':' . $parsed['port'];
         }
+        // サブディレクトリ配置（例: https://example.com/irohaboard）のベースパスを保持する。
+        $configuredPath = rtrim((string)($parsed['path'] ?? ''), '/');
     }
 }
 
-$fullBaseUrl = $configuredBaseUrl ?: $requestBaseUrl;
+$fullBaseUrl = $configuredBaseUrl ?: ($requestBaseUrl . $configuredPath);
 if ($configuredBaseUrl && $requestBaseUrl && $configuredAuthority !== $requestAuthority) {
-    // リクエスト Host が設定値と異なる（未設定・ポート差・開発環境の別ホストアクセス）
-    $fullBaseUrl = $requestBaseUrl;
+    // リクエスト Host が設定値と異なる（未設定・ポート差・開発環境の別ホストアクセス）。
+    // ホストとポートは実アクセスに追従させ、ベースパスは設定値から引き継ぐ
+    // （サブディレクトリ配置でもリダイレクト先がルートに落ちないようにするため）。
+    $fullBaseUrl = $requestBaseUrl . $configuredPath;
 }
 
 if ($fullBaseUrl) {
@@ -209,6 +214,7 @@ unset(
     $requestAuthority,
     $configuredBaseUrl,
     $configuredAuthority,
+    $configuredPath,
     $parsed,
     $s,
     $fullBaseUrl,

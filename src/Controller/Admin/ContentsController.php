@@ -16,6 +16,7 @@ use App\Utility\MarkdownRenderer;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
+use Cake\Routing\Router;
 use Throwable;
 
 /**
@@ -353,12 +354,11 @@ class ContentsController extends AppController
                         $result = false;
                     }
 
-                    // getPort() は既定ポート (80/443) で null を返すため、
-                    // 非既定ポート (:8082 等) のみ URL に含める。
-                    $uri = $this->request->getUri();
-                    $port = $uri->getPort() ? ':' . $uri->getPort() : '';
-                    $file_url = $uri->getScheme() . '://' . $uri->getHost() . $port
-                        . '/contents/file-image/' . $new_name;
+                    // Router::url() で組み立てる。ホスト・ポート・ベースパスは
+                    // Router::fullBaseUrl() とルート定義から解決されるため、
+                    // サブディレクトリ配置（例: https://example.com/irohaboard）でも
+                    // ベースパスが欠落しない。
+                    $file_url = Router::url(['controller' => 'Contents', 'action' => 'fileImage', $new_name], true);
                     $response = $result ? [$file_url] : [false];
                 }
             } else {

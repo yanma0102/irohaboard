@@ -20,6 +20,7 @@ use App\Middleware\ApiErrorMiddleware;
 use App\Middleware\ApiRateLimitMiddleware;
 use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
+use App\Utility\RequestPathHelper;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
@@ -123,7 +124,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                 (new CsrfProtectionMiddleware([
                     'httponly' => true,
                 ]))->skipCheckCallback(function ($request) {
-                    $uri = $request->getUri()->getPath();
+                    $uri = $this->baseRelativePath($request);
                     // REST API は Bearer トークン認証のため CSRF スキップ
                     if (str_starts_with($uri, '/api/')) {
                         return true;
@@ -145,6 +146,21 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
     }
 
     /**
+     * ルーティングのベースパス（サブディレクトリ配置時は /irohaboard 等）を除いたパス。
+     *
+     * getUri()->getPath() はリクエストの生のパスを返すため、サブディレクトリ
+     * 配置では /irohaboard/api/v1/... のようにベースパスが含まれる。前方一致
+     * 判定（/api/, /mcp, /users/login など）を行う際はこのメソッドで取り除く。
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request The request
+     * @return string
+     */
+    private function baseRelativePath(ServerRequestInterface $request): string
+    {
+        return RequestPathHelper::baseRelative($request);
+    }
+
+    /**
      * Authentication service provider.
      *
      * @param \Psr\Http\Message\ServerRequestInterface $request The request
@@ -154,12 +170,19 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
     {
         // admin プレフィックスの場合は管理画面ログインへリダイレクトする
         $prefix = $request->getAttribute('params')['prefix'] ?? null;
+
+        // ベースパス（サブディレクトリ配置時は /irohaboard 等）を明示的に連結する。
+        // 配列（['controller'=>..., 'action'=>...]）で渡すと AuthenticationService と
+        // DefaultUrlChecker が Router::url() を経由し、API スコープのコンテキストでは
+        // RouteCollection::parse() に落ちて MissingRouteException（404）が返るため、
+        // 必ず文字列で渡す。
+        $base = rtrim((string)$request->getAttribute('base', ''), '/');
         $loginUrl = $prefix === 'Admin'
-            ? '/admin/users/login'
-            : '/users/login';
+            ? $base . '/admin/users/login'
+            : $base . '/users/login';
 
         // REST API はセッション認証リダイレクト不要（Bearer トークン認証）
-        $isApi = str_starts_with($request->getUri()->getPath(), '/api/');
+        $isApi = str_starts_with($this->baseRelativePath($request), '/api/');
         $redirectUrl = $isApi ? null : $loginUrl;
 
         $service = new AuthenticationService([

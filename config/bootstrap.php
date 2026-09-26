@@ -160,10 +160,18 @@ if (PHP_SAPI === 'cli') {
  * compare the host against itself and disable Host Header Injection protection.
  *
  * When the request authority matches the configured one the configured URL is
- * kept as-is so its scheme/port stay canonical (avoids https -> http
- * downgrades behind proxies). When they differ, the request host is used: in
- * production (debug=false) HostHeaderMiddleware has already rejected such a
- * request with 400, so only debug mode / unconfigured setups reach that branch.
+ * used so its scheme/port stay canonical (avoids https -> http downgrades
+ * behind proxies). When they differ, the request host is used: in production
+ * (debug=false) HostHeaderMiddleware has already rejected such a request with
+ * 400, so only debug mode / unconfigured setups reach that branch.
+ *
+ * SUBDIRECTORY DEPLOYMENT: only scheme+host(+port) is passed to
+ * Router::fullBaseUrl(). The base path is intentionally NOT included —
+ * Router::url() prepends the routing base (Router.php:211 reads
+ * $request->getAttribute('base'), derived from PHP_SELF) by itself, so adding
+ * the path here as well would double it (e.g. /irohaboard/irohaboard).
+ * Note that this means APP_FULL_BASE_URL may carry a path for documentation
+ * purposes, but the path is stripped before use.
  *
  * Set APP_FULL_BASE_URL in your environment variables or configure App.fullBaseUrl
  * in config/app.php or config/app_local.php
@@ -183,26 +191,30 @@ if ($httpHost !== '') {
 }
 
 $configuredBaseUrl = Configure::read('App.fullBaseUrl');
+$configuredBase = null;
 $configuredAuthority = '';
-$configuredPath = '';
 if ($configuredBaseUrl) {
     $parsed = parse_url((string)$configuredBaseUrl);
-    if (is_array($parsed)) {
-        $configuredAuthority = strtolower((string)($parsed['host'] ?? ''));
+    if (is_array($parsed) && !empty($parsed['host'])) {
+        $configuredHost = (string)$parsed['host'];
+        $configuredAuthority = strtolower($configuredHost);
+        $configuredBase = 'http';
+        if (strtolower((string)($parsed['scheme'] ?? 'http')) === 'https') {
+            $configuredBase .= 's';
+        }
+        $configuredBase .= '://' . $configuredHost;
         if (isset($parsed['port'])) {
             $configuredAuthority .= ':' . $parsed['port'];
+            $configuredBase .= ':' . $parsed['port'];
         }
-        // サブディレクトリ配置（例: https://example.com/irohaboard）のベースパスを保持する。
-        $configuredPath = rtrim((string)($parsed['path'] ?? ''), '/');
     }
 }
 
-$fullBaseUrl = $configuredBaseUrl ?: ($requestBaseUrl . $configuredPath);
-if ($configuredBaseUrl && $requestBaseUrl && $configuredAuthority !== $requestAuthority) {
+$fullBaseUrl = $configuredBase ?: $requestBaseUrl;
+if ($configuredBase && $requestBaseUrl && $configuredAuthority !== $requestAuthority) {
     // リクエスト Host が設定値と異なる（未設定・ポート差・開発環境の別ホストアクセス）。
-    // ホストとポートは実アクセスに追従させ、ベースパスは設定値から引き継ぐ
-    // （サブディレクトリ配置でもリダイレクト先がルートに落ちないようにするため）。
-    $fullBaseUrl = $requestBaseUrl . $configuredPath;
+    // ホストとポートは実アクセスに追従させる。
+    $fullBaseUrl = $requestBaseUrl;
 }
 
 if ($fullBaseUrl) {
@@ -213,8 +225,9 @@ unset(
     $requestBaseUrl,
     $requestAuthority,
     $configuredBaseUrl,
+    $configuredBase,
     $configuredAuthority,
-    $configuredPath,
+    $configuredHost,
     $parsed,
     $s,
     $fullBaseUrl,

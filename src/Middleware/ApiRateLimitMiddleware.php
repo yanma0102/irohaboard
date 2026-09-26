@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Utility\RequestPathHelper;
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Http\Response;
@@ -35,7 +36,8 @@ class ApiRateLimitMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $path = $request->getUri()->getPath();
+        // ベースパスを除いたパスで判定する（サブディレクトリ配置でも /api/ に一致させる）
+        $path = RequestPathHelper::baseRelative($request);
 
         // Only apply to /api/ paths, skip /mcp (has its own limiter)
         if (!str_starts_with($path, '/api/') || str_starts_with($path, '/mcp')) {

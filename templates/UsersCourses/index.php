@@ -15,8 +15,9 @@
 			<?php }?>
 			
 			<?php if(count($infos) > 0){?>
-			<table cellpadding="0" cellspacing="0">
-			<tbody>
+		<table cellpadding="0" cellspacing="0">
+		<caption class="sr-only">最新のお知らせ</caption>
+		<tbody>
 			<?php foreach ($infos as $info): ?>
 			<tr>
 				<td width="100" valign="top"><?= h(\App\Utility\Utils::getYMD($info->created)); ?></td>
@@ -40,7 +41,7 @@
 				<?php if($course['left_cnt'] != 0){?>
 				<button type="button" class="btn btn-danger btn-rest"><?= __('残り')?> <span class="badge"><?= h($course['left_cnt']); ?></span></button>
 				<?php }?>
-				<h4 class="list-group-item-heading"><?= h($course['title']);?></h4>
+				<h3 class="list-group-item-heading"><?= h($course['title']);?></h3>
 				<p class="list-group-item-text">
 					<span class="first-date"><?= __('学習開始日').': '.\App\Utility\Utils::getYMD($course['first_date']); ?></span>
 					<span class="last-date"><?= __('前回学習日').': '.\App\Utility\Utils::getYMD($course['last_date']); ?></span>

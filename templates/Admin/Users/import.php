@@ -13,9 +13,10 @@
 			<li>パスワードの指定は任意です。指定されていない場合は、既存のパスワードが保持されます。</li>
 			<li>インポート処理がタイムアウトする場合は、CSVファイルを分割してインポートしてください。</li>
 			<br>
-			CSVの形式 ( * : 必須項目)
-			<table class="ib-table-csv">
-			<tr>
+		CSVの形式 ( * : 必須項目)
+		<table class="ib-table-csv">
+		<caption class="sr-only">CSVインポート形式</caption>
+		<tr>
 				<th>ログインID*</th>
 				<th>パスワード</th>
 				<th>氏名*</th>

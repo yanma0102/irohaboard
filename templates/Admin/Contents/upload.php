@@ -79,12 +79,12 @@
 <div class="panel panel-default">
 	<div class="panel-body">
 		<div class="form-group">
-			<h4>アップロード可能なファイル形式</h4>
+			<h2>アップロード可能なファイル形式</h2>
 			<?= $upload_extensions_str;?>
 		</div>
 
 		<div class="form-group">
-			<h4>アップロード可能なファイルサイズ</h4>
+			<h2>アップロード可能なファイルサイズ</h2>
 			最大 : <?= $this->Number->toReadableSize($upload_maxsize) ;?>バイト
 		</div>
 

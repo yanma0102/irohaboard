@@ -5,6 +5,7 @@
 		<button type="button" class="btn btn-primary btn-add" onclick="location.href='<?= $this->Url->build(['action' => 'add']) ?>'">+ 追加</button>
 	</div>
 	<table cellpadding="0" cellspacing="0">
+	<caption class="sr-only">お知らせ一覧</caption>
 	<thead>
 	<tr>
 		<th><?= $this->Paginator->sort('title',   __('タイトル')); ?></th>

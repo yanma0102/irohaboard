@@ -229,8 +229,8 @@ $getExplain = function ($explain) {
 			<div class="panel panel-info question question-<?= $question_index;?>">
 				<div class="panel-heading"><?= __('問').$question_index;?></div>
 				<div class="panel-body">
-					<!--問題タイトル-->
-					<h4><?= h($title) ?></h4>
+				<!--問題タイトル-->
+				<h2><?= h($title) ?></h2>
 					<div class="question-text bg-warning">
 						<!--問題文-->
 						<?= $body ?>

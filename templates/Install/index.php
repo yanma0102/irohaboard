@@ -21,30 +21,30 @@
 				$csrfToken = (string)$this->getRequest()->getAttribute('csrfToken');
 				?>
 				<input type="hidden" name="_csrfToken" value="<?= h($csrfToken) ?>">
-				<div class="form-group">
-					<label for="Password" class="col col-sm-3 control-label">管理者ログインID</label>
-					<div class="col col-sm-9">
-						<input name="data[User][username]" class="form-control" value="<?= h($username)?>">
-					</div>
+			<div class="form-group">
+				<label for="UserUsername" class="col col-sm-3 control-label">管理者ログインID</label>
+				<div class="col col-sm-9">
+					<input name="data[User][username]" id="UserUsername" class="form-control" value="<?= h($username)?>">
 				</div>
-				<div class="form-group">
-					<label for="Password" class="col col-sm-3 control-label">パスワード</label>
-					<div class="col col-sm-9">
-						<input name="data[User][password]" class="form-control" autocomplete="new-password" type="password" id="UserPassword" aria-autocomplete="list">
-					</div>
+			</div>
+			<div class="form-group">
+				<label for="UserPassword" class="col col-sm-3 control-label">パスワード</label>
+				<div class="col col-sm-9">
+					<input name="data[User][password]" class="form-control" autocomplete="new-password" type="password" id="UserPassword" aria-autocomplete="list">
 				</div>
-				<div class="form-group">
-					<label for="Password" class="col col-sm-3 control-label">パスワード(確認用)</label>
-					<div class="col col-sm-9">
-						<input name="data[User][password2]" class="form-control" autocomplete="new-password" type="password" id="UserPassword2" aria-autocomplete="list">
-					</div>
+			</div>
+			<div class="form-group">
+				<label for="UserPassword2" class="col col-sm-3 control-label">パスワード(確認用)</label>
+				<div class="col col-sm-9">
+					<input name="data[User][password2]" class="form-control" autocomplete="new-password" type="password" id="UserPassword2" aria-autocomplete="list">
 				</div>
-				<div class="form-group">
-					<label for="UserRegistNo" class="col col-sm-3 control-label"></label>
-					<div class="col col-sm-9">
-						<input class="btn btn-primary" type="submit" value="インストール">
-					</div>
+			</div>
+			<div class="form-group">
+				<div class="col col-sm-3 control-label"></div>
+				<div class="col col-sm-9">
+					<input class="btn btn-primary" type="submit" value="インストール">
 				</div>
+			</div>
 			</form>
 		</div>
 	</div>

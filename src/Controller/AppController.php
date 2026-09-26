@@ -61,7 +61,7 @@ class AppController extends Controller
      * コールバック（コントローラのアクションロジック実行前に実行）
      *
      * @param \Cake\Event\EventInterface $event イベント
-     * @return \Cake\Http\Response|null
+     * @return \Cake\Http\Response|null always null — redirect responses are set via $event->setResult()
      */
     public function beforeFilter(EventInterface $event): ?\Cake\Http\Response
     {
@@ -84,7 +84,9 @@ class AppController extends Controller
                     $logoutRedirect = $this->Authentication->logout();
                     $url = $logoutRedirect ?? '/users/login';
 
-                    return $this->redirect($url);
+                    $event->setResult($this->redirect($url));
+
+                    return null;
                 }
             }
         }
@@ -110,7 +112,9 @@ class AppController extends Controller
             $logoutRedirect = $this->Authentication->logout();
             $url = $logoutRedirect ?? '/users/login';
 
-            return $this->redirect($url);
+            $event->setResult($this->redirect($url));
+
+            return null;
         }
 
         return null;

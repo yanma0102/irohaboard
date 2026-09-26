@@ -39,7 +39,8 @@ class PagesControllerTest extends TestCase
         $this->get('/pages/home');
         $this->assertResponseOk();
         $this->assertResponseContains('CakePHP');
-        $this->assertResponseContains('<html>');
+        // D-13: <html> は lang 属性を持つため、開始タグ全体が一致する形で検証する
+        $this->assertResponseContains('<html lang="ja">');
     }
 
     /**

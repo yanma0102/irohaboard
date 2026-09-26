@@ -76,6 +76,7 @@
 	?>
 	</div>
 	<table cellpadding="0" cellspacing="0">
+	<caption class="sr-only">学習履歴一覧</caption>
 	<thead>
 	<tr>
 		<th nowrap><?= $this->Paginator->sort('User.username', __('ログインID')); ?></th>

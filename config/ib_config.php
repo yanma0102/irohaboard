@@ -205,6 +205,11 @@ $config['open_link_same_window'] = false;
 // 0 で無効化。本番環境では適切な値に設定してください。
 $config['api_rate_limit_per_minute'] = 120;
 
+// MCP CORS 許可オリジンリスト（ブラウザ内 MCP クライアント接続用）
+// 空配列 [] で全オリジン拒否（既定・セキュア）。['*'] で全オリジン許可。
+// 例: ['https://example.com', 'https://app.example.com']
+$config['mcp_cors_allowed_origins'] = [];
+
 // インストーラー・アップデータへのアクセス拒否 (true : 拒否, false : 許可)
 $config['deny_install_update_access'] = false;
 

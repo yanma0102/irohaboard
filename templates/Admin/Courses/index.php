@@ -63,6 +63,7 @@
 
 	<div class="alert alert-warning"><?= __('ドラッグアンドドロップでコースの並び順が変更できます。'); ?></div>
 	<table id='sortable-table'>
+	<caption class="sr-only">コース一覧</caption>
 	<thead>
 	<tr>
 		<th><?= __('コース名'); ?></th>

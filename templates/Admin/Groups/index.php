@@ -5,6 +5,7 @@
 		<button type="button" class="btn btn-primary btn-add" onclick="location.href='<?= $this->Url->build(['action' => 'add']) ?>'">+ 追加</button>
 	</div>
 	<table>
+	<caption class="sr-only">グループ一覧</caption>
 	<thead>
 	<tr>
 		<th><?= $this->Paginator->sort('title', 'グループ名'); ?></th>

@@ -66,6 +66,7 @@
 	
 	<div class="alert alert-warning"><?= __('ドラッグアンドドロップで表示順が変更できます。'); ?></div>
 	<table id='sortable-table' cellpadding="0" cellspacing="0">
+	<caption class="sr-only">アンケート質問一覧</caption>
 	<thead>
 	<tr>
 		<th><?= __('タイトル'); ?></th>

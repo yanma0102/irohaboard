@@ -65,6 +65,7 @@
 	
 	<div class="alert alert-warning"><?= __('ドラッグアンドドロップで出題順が変更できます。'); ?></div>
 	<table id='sortable-table' cellpadding="0" cellspacing="0">
+	<caption class="sr-only">テスト問題一覧</caption>
 	<thead>
 	<tr>
 		<th><?= __('タイトル'); ?></th>

@@ -56,6 +56,7 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 	</div>
 	<?php }?>
 	<table class="responsive-table">
+		<caption class="sr-only">コンテンツ一覧</caption>
 		<thead>
 			<tr>
 				<th><?= __('コンテンツ名'); ?></th>

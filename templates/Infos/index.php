@@ -12,8 +12,9 @@
 	<div class="panel panel-success">
 		<div class="panel-heading"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> <?= __('お知らせ一覧'); ?></div>
 		<div class="panel-body">
-			<table cellpadding="0" cellspacing="0">
-			<thead>
+		<table cellpadding="0" cellspacing="0">
+		<caption class="sr-only">お知らせ一覧</caption>
+		<thead>
 			<tr>
 				<th><?= $this->Paginator->sort('opend',   __('日付')); ?></th>
 				<th><?= $this->Paginator->sort('title',   __('タイトル')); ?></th>

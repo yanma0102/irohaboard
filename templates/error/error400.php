@@ -10,7 +10,7 @@
 	}
 	else
 	{
-		printf(__d('cake', '指定されたアドレス %s へのリクエストは無効です。'), "<strong>'{$url}'</strong>");
+		printf(__d('cake', '指定されたアドレス %s へのリクエストは無効です。'), "<strong>'" . h($url) . "'</strong>");
 	}
 	?>
 </p>

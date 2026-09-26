@@ -266,6 +266,28 @@ form .error-message {
 	box-shadow: inset 0 1px 0 rgba(255,255,255,.25),0 1px 2px rgba(0,0,0,.05);
 }
 
+/* flash メッセージの <button> 化に伴うブラウザ既定スタイルのリセット。
+   <div> と見た目を一致させる */
+button.message {
+	display: block;
+	width: 100%;
+	background: none;
+	cursor: default;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	outline: none;
+}
+
+/* キーボードフォーカス時の視覚フィードバック */
+button.message:focus-visible {
+	outline: 2px solid #337ab7;
+	outline-offset: 2px;
+}
+
 .success,
 .message,
 .cake-error,

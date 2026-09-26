@@ -63,6 +63,7 @@
 	</div>
 	<div class="alert alert-warning"><?= __('ドラッグアンドドロップでコンテンツの並び順が変更できます。'); ?></div>
 	<table id='sortable-table'>
+	<caption class="sr-only">コンテンツ一覧</caption>
 	<thead>
 	<tr>
 		<th><?= __('コンテンツ名'); ?></th>

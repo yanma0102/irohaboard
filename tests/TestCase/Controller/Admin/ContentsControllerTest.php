@@ -526,7 +526,7 @@ class ContentsControllerTest extends TestCase
         $contentsTable = $this->getTableLocator()->get('Contents');
         $copiedContent = $contentsTable->find()
             ->where(['title LIKE' => '%の複製'])
-            ->order(['id' => 'DESC'])
+            ->orderBy(['id' => 'DESC'])
             ->first();
 
         $this->assertNotNull($copiedContent, 'コピーされたコンテンツが見つからない');

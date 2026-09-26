@@ -9,8 +9,11 @@ use App\Mcp\McpRateLimitMiddleware;
 use App\Mcp\McpServerFactory;
 use App\Service\AccessControlService;
 use Cake\Controller\Controller;
+use Cake\Core\Configure;
 use Cake\Http\Response;
 use Cake\Http\ResponseFactory;
+use Mcp\Server\Transport\Http\Middleware\CorsMiddleware;
+use Mcp\Server\Transport\Http\Middleware\DnsRebindingProtectionMiddleware;
 use Mcp\Server\Transport\Http\Middleware\OAuthRequestMetaMiddleware;
 use Mcp\Server\Transport\StreamableHttpTransport;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
@@ -47,10 +50,19 @@ class McpController extends Controller
     /**
      * OPTIONS /mcp — プリフライトリクエストを処理する。
      *
+     * CORS preflight（Access-Control-Request-Method ヘッダ付き OPTIONS）は
+     * 認証なしで 204 + CORS ヘッダを返す。通常の OPTIONS は従来どおり認証を通す。
+     *
      * @return \Cake\Http\Response
      */
     public function options(): Response
     {
+        // CORS preflight のみ認証なしで応答する
+        if ($this->request->getHeaderLine('Access-Control-Request-Method') !== '') {
+            return $this->handleCorsPreflight();
+        }
+
+        // 通常の OPTIONS（preflight ではない）は認証を通す
         return $this->handle();
     }
 
@@ -89,10 +101,13 @@ class McpController extends Controller
         $server = (new McpServerFactory())->create($accessControl);
         $responseFactory = new ResponseFactory();
 
+        $allowedOrigins = Configure::read('mcp_cors_allowed_origins') ?? [];
+
         $transport = new StreamableHttpTransport(
             request: $this->request,
             middleware: [
-                ...StreamableHttpTransport::defaultMiddleware(),
+                new CorsMiddleware($allowedOrigins),
+                new DnsRebindingProtectionMiddleware(),
                 new IrohaAuthMiddleware($validator, $responseFactory),
                 new McpRateLimitMiddleware(
                     $this->fetchTable('Logs'),
@@ -106,6 +121,51 @@ class McpController extends Controller
         $psrResponse = $server->run($transport);
 
         return $this->convertToCakeResponse($psrResponse);
+    }
+
+    /**
+     * CORS preflight リクエストに認証なしで応答する。
+     *
+     * ブラウザの CORS preflight は Authorization ヘッダを送らないため、
+     * 通常の handle() 経由だと IrohaAuthMiddleware で 401 になる。
+     * 本番環境では mcp_cors_allowed_origins で適切に制限すること。
+     *
+     * @return \Cake\Http\Response
+     */
+    private function handleCorsPreflight(): Response
+    {
+        $allowedOrigins = Configure::read('mcp_cors_allowed_origins') ?? [];
+        $origin = $this->request->getHeaderLine('Origin');
+
+        $response = (new Response())
+            ->withStatus(204);
+
+        // Access-Control-Allow-Origin
+        if (!empty($allowedOrigins)) {
+            if (in_array('*', $allowedOrigins, true)) {
+                $response = $response->withHeader('Access-Control-Allow-Origin', '*');
+            } elseif ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
+                $response = $response->withHeader('Access-Control-Allow-Origin', $origin);
+                $response = $response->withHeader('Vary', 'Origin');
+            }
+        }
+
+        // Access-Control-Allow-Methods
+        $response = $response->withHeader(
+            'Access-Control-Allow-Methods',
+            'GET, POST, DELETE, OPTIONS',
+        );
+
+        // Access-Control-Allow-Headers（MCP Streamable HTTP で使用されるヘッダ）
+        $response = $response->withHeader(
+            'Access-Control-Allow-Headers',
+            'Accept, Authorization, Content-Type, Last-Event-ID, Mcp-Protocol-Version, Mcp-Session-Id',
+        );
+
+        // Access-Control-Max-Age（preflight キャッシュ 24 時間）
+        $response = $response->withHeader('Access-Control-Max-Age', '86400');
+
+        return $response;
     }
 
     /**

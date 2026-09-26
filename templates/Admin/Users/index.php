@@ -37,6 +37,7 @@
 	?>
 	</div>
 	<table>
+	<caption class="sr-only">ユーザ一覧</caption>
 	<thead>
 	<tr>
 		<th nowrap><?= $this->Paginator->sort('username', __('ログインID')); ?></th>

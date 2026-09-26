@@ -58,7 +58,7 @@ endif;
 
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <?= $this->Html->charset() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -107,7 +107,7 @@ endif;
                 </div>
                 <div class="row">
                     <div class="column">
-                        <h4>Environment</h4>
+                        <h2>Environment</h2>
                         <ul>
                         <?php if (version_compare(PHP_VERSION, '8.1.0', '>=')) : ?>
                             <li class="bullet success">Your version of PHP is 8.1.0 or higher (detected <?= PHP_VERSION ?>).</li>
@@ -139,7 +139,7 @@ endif;
                         </ul>
                     </div>
                     <div class="column">
-                        <h4>Filesystem</h4>
+                        <h2>Filesystem</h2>
                         <ul>
                         <?php if (is_writable(TMP)) : ?>
                             <li class="bullet success">Your tmp directory is writable.</li>
@@ -165,7 +165,7 @@ endif;
                 <hr>
                 <div class="row">
                     <div class="column">
-                        <h4>Database</h4>
+                        <h2>Database</h2>
                         <?php
                         $result = $checkConnection('default');
                         ?>
@@ -185,7 +185,7 @@ endif;
                         </ul>
                     </div>
                     <div class="column">
-                        <h4>DebugKit</h4>
+                        <h2>DebugKit</h2>
                         <ul>
                         <?php if (Plugin::isLoaded('DebugKit')) : ?>
                             <li class="bullet success">DebugKit is loaded.</li>
@@ -206,7 +206,7 @@ endif;
                 <hr>
                 <div class="row">
                     <div class="column links">
-                        <h3>Getting Started</h3>
+                        <h2>Getting Started</h2>
                         <a target="_blank" rel="noopener" href="https://book.cakephp.org/5/en/">CakePHP Documentation</a>
                         <a target="_blank" rel="noopener" href="https://book.cakephp.org/5/en/tutorials-and-examples/cms/installation.html">The 20 min CMS Tutorial</a>
                     </div>
@@ -214,7 +214,7 @@ endif;
                 <hr>
                 <div class="row">
                     <div class="column links">
-                        <h3>Help and Bug Reports</h3>
+                        <h2>Help and Bug Reports</h2>
                         <a target="_blank" rel="noopener" href="https://slack-invite.cakephp.org/">Slack</a>
                         <a target="_blank" rel="noopener" href="https://github.com/cakephp/cakephp/issues">CakePHP Issues</a>
                         <a target="_blank" rel="noopener" href="https://discourse.cakephp.org/">CakePHP Forum</a>
@@ -223,7 +223,7 @@ endif;
                 <hr>
                 <div class="row">
                     <div class="column links">
-                        <h3>Docs and Downloads</h3>
+                        <h2>Docs and Downloads</h2>
                         <a target="_blank" rel="noopener" href="https://api.cakephp.org/">CakePHP API</a>
                         <a target="_blank" rel="noopener" href="https://bakery.cakephp.org">The Bakery</a>
                         <a target="_blank" rel="noopener" href="https://book.cakephp.org/5/en/">CakePHP Documentation</a>
@@ -236,7 +236,7 @@ endif;
                 <hr>
                 <div class="row">
                     <div class="column links">
-                        <h3>Training and Certification</h3>
+                        <h2>Training and Certification</h2>
                         <a target="_blank" rel="noopener" href="https://cakefoundation.org/">Cake Software Foundation</a>
                         <a target="_blank" rel="noopener" href="https://training.cakephp.org/">CakePHP Training</a>
                     </div>

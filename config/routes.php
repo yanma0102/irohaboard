@@ -213,7 +213,7 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Users',
                 'action' => 'view',
                 '_method' => 'GET',
-            ], ['pass' => ['id']]);
+            ], ['id' => '\d+', 'pass' => ['id']]);
             $builder->connect('/users/{id}', [
                 'controller' => 'Users',
                 'action' => 'edit',
@@ -247,7 +247,7 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Users',
                 'action' => 'courses',
                 '_method' => 'GET',
-            ], ['pass' => ['id']]);
+            ], ['id' => '\d+', 'pass' => ['id']]);
             $builder->connect('/users/{id}/courses', [
                 'controller' => 'Users',
                 'action' => 'assignCourse',
@@ -274,7 +274,7 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Courses',
                 'action' => 'view',
                 '_method' => 'GET',
-            ], ['pass' => ['id']]);
+            ], ['id' => '\d+', 'pass' => ['id']]);
             $builder->connect('/courses/{id}', [
                 'controller' => 'Courses',
                 'action' => 'edit',
@@ -301,7 +301,7 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Contents',
                 'action' => 'view',
                 '_method' => 'GET',
-            ], ['pass' => ['id']]);
+            ], ['id' => '\d+', 'pass' => ['id']]);
 
             // Contents Write (POST/PUT/PATCH/DELETE)
             $builder->connect('/contents', [
@@ -335,7 +335,7 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Records',
                 'action' => 'view',
                 '_method' => 'GET',
-            ], ['pass' => ['id']]);
+            ], ['id' => '\d+', 'pass' => ['id']]);
 
             // グループ
             $builder->connect('/groups', [
@@ -352,7 +352,7 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Groups',
                 'action' => 'view',
                 '_method' => 'GET',
-            ], ['pass' => ['id']]);
+            ], ['id' => '\d+', 'pass' => ['id']]);
             $builder->connect('/groups/{id}', [
                 'controller' => 'Groups',
                 'action' => 'edit',
@@ -374,7 +374,7 @@ return function (RouteBuilder $routes): void {
                 'controller' => 'Groups',
                 'action' => 'users',
                 '_method' => 'GET',
-            ], ['pass' => ['id']]);
+            ], ['id' => '\d+', 'pass' => ['id']]);
             $builder->connect('/groups/{id}/users', [
                 'controller' => 'Groups',
                 'action' => 'assignUser',

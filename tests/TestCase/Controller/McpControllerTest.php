@@ -626,16 +626,39 @@ class McpControllerTest extends TestCase
     // ----------------------------------------------------------------
 
     /**
-     * OPTIONS preflight（認証付き）→ 204 + Access-Control-Allow-Methods
+     * OPTIONS preflight（認証付き）→ 204 + CORS ヘッダ
+     *
+     * Preflight は認証不要だが、Authorization 付きでも正しく応答する。
      */
     public function testOptionsPreflightReturns204WithCorsHeaders(): void
     {
-        $user = $this->createUser('optuser01', 'admin');
-        $token = $this->issueToken((int)$user->id);
-
         $this->configRequest([
             'headers' => [
-                'Authorization' => 'Bearer ' . $token,
+                'Origin' => 'http://localhost',
+                'Access-Control-Request-Method' => 'POST',
+            ],
+        ]);
+        $this->options('/mcp');
+
+        $this->assertResponseCode(204);
+        $this->assertStringContainsString(
+            'POST',
+            $this->_response->getHeaderLine('Access-Control-Allow-Methods'),
+        );
+        $this->assertNotEmpty($this->_response->getHeaderLine('Access-Control-Allow-Headers'));
+        $this->assertNotEmpty($this->_response->getHeaderLine('Access-Control-Max-Age'));
+    }
+
+    /**
+     * OPTIONS preflight は認証なしでも 204 を返す（D-33 修正後の挙動）
+     *
+     * ブラウザの CORS preflight は Authorization ヘッダを送らないため、
+     * 認証なしで 204 + CORS ヘッダが返ることが保証される。
+     */
+    public function testOptionsPreflightWithoutTokenReturns204(): void
+    {
+        $this->configRequest([
+            'headers' => [
                 'Origin' => 'http://localhost',
                 'Access-Control-Request-Method' => 'POST',
             ],
@@ -650,22 +673,22 @@ class McpControllerTest extends TestCase
     }
 
     /**
-     * OPTIONS は認証必須（現挙動: トークンなし → 401）
+     * OPTIONS preflight 以外（Access-Control-Request-Method なし）は認証必須
      *
-     * CORS は CorsMiddleware 既定（allowedOrigins 空 = ACAO 非付与）のため
-     * ブラウザ跨 origin 利用は現状不可。preflight も認証を通す。
+     * preflight だけが認証を免れる。通常の OPTIONS は 401 のまま。
      */
-    public function testOptionsUnauthorizedWithoutToken(): void
+    public function testOptionsWithoutPreflightRequiresAuth(): void
     {
         $this->configRequest([
             'headers' => [
                 'Origin' => 'http://localhost',
-                'Access-Control-Request-Method' => 'POST',
             ],
         ]);
         $this->options('/mcp');
 
         $this->assertResponseCode(401);
+        $wwwAuthenticate = $this->_response->getHeaderLine('WWW-Authenticate');
+        $this->assertStringContainsString('Bearer', $wwwAuthenticate);
     }
 
     // ----------------------------------------------------------------

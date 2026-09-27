@@ -2,6 +2,7 @@
 <?php use Cake\Core\Configure; ?>
 <?php $this->start('css-embedded'); ?>
 <?= $this->Html->css('summernote.css');?>
+<?= $this->Html->css('font-awesome.min.css');?>
 <?= $this->Html->css('easymde.min.css');?>
 <?php $this->end(); ?>
 <?php $this->start('script-embedded'); ?>
@@ -84,6 +85,7 @@
 			element: $('#body')[0],
 			spellChecker: false,
 			autosave: { enabled: false },
+			autoDownloadFontAwesome: false,
 			// 既定の "image" ボタン（URL 指定挿入）は file input を生成しない。
 			// 画像アップロードは "upload-image" ボタン経由でのみ動作するため明示指定する。
 			toolbar: [

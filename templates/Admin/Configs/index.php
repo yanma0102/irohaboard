@@ -113,15 +113,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         if ($help) {
                             $options['help'] = $help;
                         }
+                        $afterParts = [];
                         if ($unit) {
-                            $options['between'] = $options['between'] ?? '';
-                            $options['after'] = ($options['after'] ?? '') . ' <span class="text-muted small">' . h($unit) . '</span>';
+                            $afterParts[] = '<span class="text-muted small">' . h($unit) . '</span>';
                         }
                         if ($isOverride) {
                             // 「上書き中」は「未保存」を誤解されやすいため、
                             // ib_config.php の既定値から変更済みであることが分かる文言にする
-                            $options['after'] = ($options['after'] ?? '')
-                                . ' <span class="label label-info" style="margin-left: 8px;"'
+                            $afterParts[] = '<span class="label label-info" style="margin-left: 8px;"'
                                 . ' title="ib_config.php の既定値ではなく、DBに保存された値で動作しています">設定変更あり</span>';
                         }
                         if ($defaultVal !== null) {
@@ -129,7 +128,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             $defaultText = $def['type'] === 'size'
                                 ? (string)(int)round($defaultVal / 1048576)
                                 : (string)$defaultVal;
-                            $options['after'] = ($options['after'] ?? '') . ' <span class="text-muted small">既定: ' . h($defaultText) . '</span>';
+                            $afterParts[] = '<span class="text-muted small">既定: ' . h($defaultText) . '</span>';
+                        }
+                        if (!empty($afterParts)) {
+                            // label(col-sm-3) と入力欄(col-sm-9) が floats で幅を埋めるため、
+                            // after をそのまま置くと左端に折り返す。入力欄と揃うよう offset を付ける。
+                            $options['after'] = '<div class="col col-sm-offset-3 col-sm-9">'
+                                . implode(' ', $afterParts) . '</div>';
                         }
                         switch ($def['type']) {
                             case 'bool':

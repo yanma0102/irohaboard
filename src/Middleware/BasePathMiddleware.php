@@ -59,6 +59,20 @@ class BasePathMiddleware implements MiddlewareInterface
         // webroot 属性は通常 '/' 末尾。接頭辞を付与する前に '/' へ戻す。
         $webroot = '/' . ltrim((string)$request->getAttribute('webroot', '/'), '/');
 
+        // サーバ側に rewrite 設定が無くても Setting だけで動くよう、
+        // リクエストパス先頭の接頭辞を剥がしてアプリに渡す。
+        // （サーバー側で既に接頭辞が剥が済みの場合は何もせずそのまま通す）
+        $path = $request->getUri()->getPath();
+        if ($path === $base || str_starts_with($path, $base . '/')) {
+            $stripped = substr($path, strlen($base));
+            $request = $request
+                ->withUri($request->getUri()->withPath($stripped === '' ? '/' : $stripped))
+                ->withAttribute('base', $base)
+                ->withAttribute('webroot', $base . $webroot);
+
+            return $handler->handle($request);
+        }
+
         return $handler->handle(
             $request
                 ->withAttribute('base', $base)

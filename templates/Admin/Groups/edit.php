@@ -2,11 +2,11 @@
 <?= $this->Html->css( 'select2.min.css');?>
 <?= $this->Html->script( 'select2.min.js');?>
 <?php use Cake\Core\Configure; ?>
-<?php $this->Html->scriptStart(['inline' => false]); ?>
+<?php $this->Html->scriptStart(); ?>
 	$(function (e) {
 		$('#courses-ids').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
 	});
-<?php $this->Html->scriptEnd(); ?>
+<?= $this->Html->scriptEnd(); ?>
 <div class="admin-groups-edit">
 <?= $this->Html->link(__('<< 戻る'), ['action' => 'index'])?>
 	<div class="panel panel-default">

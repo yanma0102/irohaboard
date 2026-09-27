@@ -2,14 +2,14 @@
 <?= $this->Html->css( 'select2.min.css');?>
 <?= $this->Html->script( 'select2.min.js');?>
 <?php use Cake\Core\Configure; ?>
-<?php $this->Html->scriptStart(['inline' => false]); ?>
+<?php $this->Html->scriptStart(); ?>
 	$(function (e) {
 		$('#groups-ids').select2({placeholder:   "<?= __('所属するグループを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
 		$('#courses-ids').select2({placeholder: "<?= __('受講するコースを選択して下さい。(複数選択可)')?>", closeOnSelect: <?= (Configure::read('close_on_select') ? 'true' : 'false'); ?>,});
 		// パスワードの自動復元を防止
 		setTimeout('$("#new-password").val("");', 500);
 	});
-<?php $this->Html->scriptEnd(); ?>
+<?= $this->Html->scriptEnd(); ?>
 <div class="admin-users-edit">
 <?= $this->Html->link(__('<< 戻る'), ['action' => 'index'])?>
 	<div class="panel panel-default">

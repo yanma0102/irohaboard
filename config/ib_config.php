@@ -213,4 +213,19 @@ $config['mcp_cors_allowed_origins'] = [];
 // インストーラー・アップデータへのアクセス拒否 (true : 拒否, false : 許可)
 $config['deny_install_update_access'] = false;
 
+// LDAP 連携設定 (外部認証用)
+$config['ldap_host'] = 'ldap';                  // LDAPサーバーホスト名 (docker-compose サービス名)
+$config['ldap_port'] = 389;                     // LDAPポート番号
+$config['ldap_base_dn'] = 'dc=irohaboard,dc=local';  // base DN for user search
+$config['ldap_bind_dn'] = 'cn=admin,dc=irohaboard,dc=local';  // bind DN for authentication
+$config['ldap_bind_password'] = 'adminpass';    // bind password for authentication
+$config['ldap_uid_attribute'] = 'uid';          // ユーザID属性 (sAMAccountName または uid)
+$config['ldap_user_dn_pattern'] = 'uid=%s,ou=people,dc=irohaboard,dc=local';  // DN パターン
+
+// LDAP 連携の有効化 (true : 有効, false : 無効)
+$config['ldap_enabled'] = true;
+
+// LDAP StartTLS の使用 (true : 使用, false : 不使用)
+$config['ldap_tls'] = false;
+
 return $config;

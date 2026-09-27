@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Trait;
 
+use App\Service\LdapAuthService;
 use Cake\Core\Configure;
 use Cake\Http\Response;
 use Exception;
@@ -24,6 +25,73 @@ use Exception;
  */
 trait UserLoginTrait
 {
+    /**
+     * LDAPユーザー同期処理
+     *
+     * LDAP認証でログイン成功後、ローカルDBにユーザーが存在しない場合は作成する。
+     * ユーザーロールは 'user'（受講者）とし、管理者がLDAPで認証しても
+     * 標準的な受講者権限とする。
+     *
+     * @param array $identity LDAP認証から取得した identity データ
+     * @return \App\Model\Entity\User|false 同期されたユーザーエンティティ、または失敗時は false
+     */
+    protected function syncLdapUser(array $identity): mixed
+    {
+        $username = (string)($identity['username'] ?? '');
+        if ($username === '') {
+            return false;
+        }
+
+        // DBカラム長（varchar 50）に合わせて切り詰め
+        $username = mb_substr($username, 0, 50);
+
+        $usersTable = $this->fetchTable('Users');
+
+        $user = $usersTable->find()
+            ->where(['username' => $username, 'deleted IS NULL'])
+            ->first();
+
+        $attributes = [];
+        if (!empty($identity['name'])) {
+            $attributes['name'] = mb_substr((string)$identity['name'], 0, 50);
+        }
+        if (!empty($identity['email'])) {
+            $attributes['email'] = mb_substr((string)$identity['email'], 0, 50);
+        }
+
+        if ($user) {
+            if ($attributes !== []) {
+                $user = $usersTable->patchEntity($user, $attributes);
+            }
+            $user->last_logined = date('Y-m-d H:i:s');
+            if (!$usersTable->save($user)) {
+                return false;
+            }
+
+            return $user;
+        }
+
+        // 新規作成: LDAP認証専用ユーザ（パスワードは空のまま）
+        // LDAPのユーザ名はアプリ標準バリデーション（英数字のみ等）に合わない場合があるため、
+        // 外部認部認証で検証済みのユーザ情報としてバリデーションをスキップして保存する。
+        $newUser = $usersTable->newEntity([
+            'username' => $username,
+            'name' => $attributes['name'] ?? $username,
+            'email' => $attributes['email'] ?? '',
+            'role' => 'user',
+            'password' => '',
+        ], ['validate' => false]);
+
+        if (!$usersTable->save($newUser)) {
+            return false;
+        }
+
+        $newUser->last_logined = date('Y-m-d H:i:s');
+        $usersTable->save($newUser, ['checkRules' => false]);
+
+        return $newUser;
+    }
+
     /**
      * ログイン処理の共通ロジック
      *
@@ -186,38 +254,51 @@ trait UserLoginTrait
         $usersTable = $this->fetchTable('Users');
         $user = $usersTable->find()->where(['username' => $username])->first();
 
-        // 指定したユーザが存在しない場合、認証失敗とする
-        if (!$user) {
-            return false;
-        }
+        // 1. ローカルDB認証
+        //    パスワードが設定されている既存ユーザは、ローカルDBのパスワードでのみ認証する。
+        if ($user && (string)$user->password !== '') {
+            $hash = $user->password;
 
-        $hash = $user->password;
+            // 先頭文字で bcrypt ハッシュかどうか判定
+            if (substr($hash, 0, 1) === '$') {
+                if (!password_verify($password, $hash)) {
+                    return false;
+                }
 
-        // 先頭文字で bcrypt ハッシュかどうか判定
-        if (substr($hash, 0, 1) === '$') {
-            if (!password_verify($password, $hash)) {
+                $this->Authentication->setIdentity($user->toArray());
+
+                return true;
+            }
+
+            // 既存 SHA1 での認証（CakePHP 2 の Security::hash($password, null, true) 互換）
+            $legacySalt = (string)Configure::read('legacy_security_salt');
+            if ($hash !== sha1($legacySalt . $password) && $hash !== sha1($password)) {
                 return false;
             }
 
+            // 認証成功
             $this->Authentication->setIdentity($user->toArray());
+
+            // 次回以降は bcrypt で認証できるようアップグレード
+            $user->password = $password;
+            $usersTable->save($user);
 
             return true;
         }
 
-        // 既存 SHA1 での認証（CakePHP 2 の Security::hash($password, null, true) 互換）
-        $legacySalt = (string)Configure::read('legacy_security_salt');
-        if ($hash !== sha1($legacySalt . $password) && $hash !== sha1($password)) {
-            return false;
+        // 2. LDAP外部認証
+        //    ローカルにユーザが存在しない、またはパスワード未設定（LDAP連携ユーザ）の場合に試行する。
+        $ldapIdentity = (new LdapAuthService())->authenticate((string)$username, (string)$password);
+        if ($ldapIdentity !== null) {
+            $syncedUser = $this->syncLdapUser($ldapIdentity);
+            if ($syncedUser) {
+                $this->Authentication->setIdentity($syncedUser->toArray());
+
+                return true;
+            }
         }
 
-        // 認証成功
-        $this->Authentication->setIdentity($user->toArray());
-
-        // 次回以降は bcrypt で認証できるようアップグレード
-        $user->password = $password;
-        $usersTable->save($user);
-
-        return true;
+        return false;
     }
 
     /**

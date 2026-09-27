@@ -119,9 +119,11 @@ class ConfigsController extends AppController
     {
         $this->request->allowMethod('post');
         $ldapKeys = ['ldap_host', 'ldap_port', 'ldap_base_dn', 'ldap_bind_dn', 'ldap_bind_password', 'ldap_tls'];
+        // フォームの入力名は Config[ldap_host] 形式で届므로 Config 配下から取得する
+        $submitted = (array)$this->request->getData('Config');
         $params = [];
         foreach ($ldapKeys as $k) {
-            $v = $this->request->getData($k);
+            $v = $submitted[$k] ?? null;
             if ($v !== null && $v !== '') {
                 $params[$k] = $v;
             }

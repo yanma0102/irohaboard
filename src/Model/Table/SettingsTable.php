@@ -90,6 +90,9 @@ class SettingsTable extends AppTable
     /**
      * システム設定を保存
      *
+     * setting_key は一意制約（uk_setting_key）を持つため、ON DUPLICATE KEY UPDATE で upsert する。
+     * UPDATE のみだと未登録のキーは静かに無視され、「保存したのに反映されない」状態になるため。
+     *
      * @param array $settings 保存する設定値リスト（連想配列）
      */
     public function setSettings(array $settings): void
@@ -98,8 +101,10 @@ class SettingsTable extends AppTable
 
         foreach ($settings as $key => $value) {
             $connection->execute(
-                'UPDATE ib_settings SET setting_value = :setting_value WHERE setting_key = :setting_key',
-                ['setting_key' => $key, 'setting_value' => $value],
+                'INSERT INTO ib_settings (setting_key, setting_name, setting_value)
+                 VALUES (:setting_key, :setting_name, :setting_value)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)',
+                ['setting_key' => $key, 'setting_name' => $key, 'setting_value' => $value],
             );
         }
     }

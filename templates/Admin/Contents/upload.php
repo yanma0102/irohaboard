@@ -85,7 +85,7 @@
 
 		<div class="form-group">
 			<h2>アップロード可能なファイルサイズ</h2>
-			最大 : <?= $this->Number->toReadableSize($upload_maxsize) ;?>バイト
+			最大 : <?= $this->Number->toReadableSize($upload_maxsize) ;?>
 		</div>
 
 		<div class="form-group">

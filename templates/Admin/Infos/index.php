@@ -19,7 +19,7 @@
 	<?php foreach ($infos as $info): ?>
 	<tr>
 		<td><?= h($info->title); ?>&nbsp;</td>
-		<td><div class="reader col-group" title="<?= h($info->group_title); ?>"><p><?= h($info->group_title); ?>&nbsp;</p></td>
+		<td><div class="reader col-group" title="<?= h($info->group_title); ?>"><p><?= h($info->group_title); ?>&nbsp;</p></div></td>
 		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($info->created); ?>&nbsp;</td>
 		<td class="ib-col-date"><?= \App\Utility\Utils::getYMDHN($info->modified); ?>&nbsp;</td>
 		<td class="ib-col-action">

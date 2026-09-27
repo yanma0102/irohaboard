@@ -92,6 +92,61 @@ class LdapAuthService
     }
 
     /**
+     * 接続テスト（未保存の値でもテスト可能：Configureを参照しない）
+     *
+     * @param array $params Keys: ldap_host, ldap_port, ldap_bind_dn, ldap_bind_password, ldap_base_dn, ldap_tls
+     * @return array ['success' => bool, 'message' => string]
+     */
+    public function testConnection(array $params): array
+    {
+        if (!extension_loaded('ldap')) {
+            return ['success' => false, 'message' => 'PHPのLDAP拡張が有効ではありません'];
+        }
+        $host = $params['ldap_host'] ?? '';
+        $port = (int)($params['ldap_port'] ?? 389);
+        if ($host === '') {
+            return ['success' => false, 'message' => 'LDAPホストが指定されていません'];
+        }
+        $bindDn = $params['ldap_bind_dn'] ?? '';
+        $bindPassword = $params['ldap_bind_password'] ?? '';
+        $baseDn = $params['ldap_base_dn'] ?? '';
+        $useTls = (bool)($params['ldap_tls'] ?? false);
+
+        $conn = @ldap_connect($host, $port);
+        if (!$conn) {
+            return ['success' => false, 'message' => "LDAPサーバー({$host}:{$port})への接続に失敗しました"];
+        }
+        ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($conn, LDAP_OPT_REFERRALS, 0);
+        if ($useTls) {
+            if (!@ldap_start_tls($conn)) {
+                return ['success' => false, 'message' => 'StartTLSの開始に失敗しました'];
+            }
+        }
+        $bind = @ldap_bind($conn, $bindDn, $bindPassword);
+        if (!$bind) {
+            $errno = ldap_errno($conn);
+            $error = ldap_error($conn);
+            @ldap_close($conn);
+            $msg = match ($errno) {
+                49 => 'バインド失敗: 資格情報が正しくありません (bind DN/パスワード)',
+                default => "LDAPバインドエラー [{$errno}]: {$error}",
+            };
+            return ['success' => false, 'message' => $msg];
+        }
+        // Optional: base DN reachability check
+        if ($baseDn !== '') {
+            $read = @ldap_read($conn, $baseDn, '(objectClass=*)', ['dn']);
+            if ($read === false) {
+                @ldap_close($conn);
+                return ['success' => false, 'message' => "ベースDN({$baseDn})へのアクセス確認に失敗: " . ldap_error($conn)];
+            }
+        }
+        @ldap_close($conn);
+        return ['success' => true, 'message' => 'LDAP接続テスト成功: バインドおよびベースDN到達確認OK'];
+    }
+
+    /**
      * ユーザの DN を解決する
      *
      * ldap_user_dn_pattern が設定されている場合はそれを利用し、

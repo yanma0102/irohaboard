@@ -32,8 +32,8 @@ ALTER TABLE ib_contents ADD question_count int(8) AFTER pass_rate;
 
 UPDATE ib_contents SET status = 1 WHERE status IS NULL;
 
-ALTER TABLE ib_users_groups  ADD INDEX idx_user_group_id(user_id, group_id);
-ALTER TABLE ib_users_courses ADD INDEX idx_user_course_id(user_id, course_id);
+ALTER TABLE ib_users_groups  ADD UNIQUE INDEX uk_user_group(user_id, group_id);
+ALTER TABLE ib_users_courses ADD UNIQUE INDEX uk_user_course(user_id, course_id);
 -- 2026-09-21 不整合修正: ib_records に group_id カラムは存在しないためインデックス作成行を削除
 -- ALTER TABLE ib_records ADD INDEX idx_group_course_user_content_id(group_id, course_id, user_id, content_id);
 ALTER TABLE ib_records ADD INDEX idx_created(created);
@@ -67,6 +67,19 @@ CREATE TABLE IF NOT EXISTS `ib_user_tokens` (
   KEY `idx_user_type` (`user_id`, `token_type`),
   KEY `idx_expired` (`expired`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for `ib_config_overrides`
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `ib_config_overrides` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `config_key` varchar(100) NOT NULL COMMENT 'ib_config.phpのキー名',
+  `config_value` text NOT NULL COMMENT '正規化済み値（型はスキーマ定義に従う）',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_config_key` (`config_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 # 管理者アカウントのパスワードの復旧方法
 # 1. UPDATE文の前の#を削除し、「復旧したい管理者のログインID」と「パスワード」を対象のものに置換します。

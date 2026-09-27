@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `ib_users_groups` (
   `modified` datetime DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`id`),
-  KEY `idx_user_group_id` (`user_id`,`group_id`)
+  UNIQUE KEY `uk_user_group` (`user_id`,`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `ib_users_courses` (
   `modified` datetime DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`id`),
-  KEY `idx_user_course_id` (`user_id`,`course_id`)
+  UNIQUE KEY `uk_user_course` (`user_id`,`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -58,7 +58,8 @@ CREATE TABLE IF NOT EXISTS `ib_settings` (
   `setting_key` varchar(100) NOT NULL,
   `setting_name` varchar(100) NOT NULL,
   `setting_value` varchar(1000) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_setting_key` (`setting_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -269,6 +270,19 @@ CREATE TABLE IF NOT EXISTS `ib_cake_sessions` (
   `data` text NOT NULL,
   `expires` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
+-- Table structure for `ib_config_overrides`
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `ib_config_overrides` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `config_key` varchar(100) NOT NULL COMMENT 'ib_config.phpのキー名',
+  `config_value` text NOT NULL COMMENT '正規化済み値（型はスキーマ定義に従う）',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_config_key` (`config_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO `ib_settings` VALUES ('1', 'title', 'システム名', 'eラーニングシステム');

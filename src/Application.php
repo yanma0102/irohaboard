@@ -20,6 +20,7 @@ use App\Middleware\ApiErrorMiddleware;
 use App\Middleware\ApiRateLimitMiddleware;
 use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
+use App\Service\AppConfigService;
 use App\Utility\RequestPathHelper;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
@@ -67,6 +68,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
         // iroha Board 設定ファイルをロード
         Configure::load('ib_config');
+
+        AppConfigService::applyOverrides();
     }
 
     /**

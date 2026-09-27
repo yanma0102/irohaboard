@@ -38,3 +38,6 @@ nbproject/*
 yarn-debug.log
 yarn-error.log
 webroot/uploads/
+
+# worktree管理用
+/.slim/

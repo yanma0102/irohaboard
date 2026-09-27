@@ -25,6 +25,9 @@
 			{
 				$is_active = ($currentController == 'Settings') ? ' active' : '';
 				echo '<li class="'.$is_active.'">'.$this->Html->link(__('システム設定'), ['controller' => 'settings', 'action' => 'index']).'</li>';
+
+				$is_active = ($currentController == 'Configs') ? ' active' : '';
+				echo '<li class="'.$is_active.'">'.$this->Html->link(__('アプリ設定'), ['controller' => 'configs', 'action' => 'index']).'</li>';
 			}
 			?>
 		</ul>

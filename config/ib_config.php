@@ -140,6 +140,9 @@ $config['demo_password'] = "pass";
 // ログイン状態保持（Remember Me）トークンの有効日数
 $config['remember_token_expired_days'] = 14;
 
+// APIトークンの有効日数（0以下の場合は30日として扱われる）
+$config['api_token_expired_days'] = 30;
+
 // フォームのスタイル(BoostCake)の基本設定
 // ※ CakePHP 5 では inputDefaults は Form->create() で非対応。
 //    inputDefaults は AppFormHelper::control() 内でマージする。

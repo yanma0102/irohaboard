@@ -2,6 +2,9 @@ name: irohaboard5-ldap
 
 services:
   web:
+    # 公開イメージ（Docker Hub）。`docker compose pull web` で取得、
+    # `--build` でこのリポジトリの Dockerfile からローカルビルド。
+    image: yanma0102/irohaboard:latest
     build:
       context: ../
       dockerfile: Docker/Dockerfile.cakephp5

@@ -1,17 +1,17 @@
-name: irohaboard5
+name: irohaboard5-hub
 
+# Docker Hub の公開イメージ（yanma0102/irohaboard:latest）を使って起動する構成。
+# このイメージはアプリ本体を含まない Web ランタイムのため、リポジトリの app/ を
+# /var/www/html にマウントして供給する（マウント方式）。
+#   docker compose -f Docker/docker-compose.hub.yml pull
+#   docker compose -f Docker/docker-compose.hub.yml up -d
 services:
   web:
-    # 公開イメージ（Docker Hub）。`docker compose pull web` で取得、
-    # `--build` でこのリポジトリの Dockerfile からローカルビルド。
     image: yanma0102/irohaboard:latest
-    build:
-      context: ../
-      dockerfile: Docker/Dockerfile.cakephp5
     ports:
       - "8082:80"
     volumes:
-      # 開発時のホットリロード用にアプリケーションコードをマウント
+      # アプリ本体はリポジトリからマウント供給
       - ../app:/var/www/html/
       # tmpディレクトリの永続化（コンテナ再起動時も保持）
       - cakephp5-tmp:/var/www/html/tmp
@@ -30,7 +30,7 @@ services:
     mem_limit: 1536m
     pids_limit: 512
     restart: unless-stopped
-    # D-36 対策: アップロード先の所有権を Apache 実行ユーザ www-data に合わせる。
+    # アップロード先の所有権を Apache 実行ユーザ www-data に合わせる。
     # webroot/uploads はホスト bind、files/tmp は named volume のため、起動時に毎回 chown する。
     command: >
       sh -c "chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files /var/www/html/tmp &&

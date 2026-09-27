@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Controller\Api\ApiException;
+use App\Utility\RequestPathHelper;
 use Cake\Controller\Exception\InvalidParameterException;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,7 +16,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * API ルート用エラーハンドリングミドルウェア
  *
- * ApiException / InvalidParameterException をキャッチして JSON レスポンスを返す。
+ * ApiException / InvalidParameterException / BadRequestException をキャッチして
+ * API 経路（/api/・/mcp）では JSON レスポンスを返す。
+ * BadRequestException は非 API パス（フロントエンドの HTML ページ等）では
+ * 従来どおり再スローし、ErrorHandlerMiddleware に委譲する。
  * 500 系例外（InternalErrorException 等）は JSON 化せず、
  * 従来どおり ErrorHandlerMiddleware に委譲する。
  */
@@ -35,6 +40,26 @@ class ApiErrorMiddleware implements MiddlewareInterface
                 'error' => [
                     'code' => $code,
                     'message' => $e->getMessage(),
+                ],
+            ];
+
+            return $this->buildJsonResponse($payload, $code);
+        } catch (BadRequestException $e) {
+            // ベースパスを除いたパスで API 経路判定（ApiRateLimitMiddleware と同一パターン）
+            $path = RequestPathHelper::baseRelative($request);
+
+            if (!str_starts_with($path, '/api/') && !str_starts_with($path, '/mcp')) {
+                // 非 API パスでは従来どおり HTML エラーページに委譲
+                throw $e;
+            }
+
+            $code = $e->getCode() ?: 400;
+            $message = $e->getMessage() ?: 'Bad Request';
+
+            $payload = [
+                'error' => [
+                    'code' => $code,
+                    'message' => $message,
                 ],
             ];
 

@@ -6,6 +6,7 @@ namespace App\Test\TestCase\Middleware;
 use App\Controller\Api\ApiException;
 use App\Middleware\ApiErrorMiddleware;
 use Cake\Controller\Exception\InvalidParameterException;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
@@ -216,6 +217,95 @@ class ApiErrorMiddlewareTest extends TestCase
 
         $this->expectException(InternalErrorException::class);
         $this->middleware->process($request, $handler);
+    }
+
+    // ================================================================
+    // (d) BadRequestException — API paths return JSON, non-API re-throws
+    // ================================================================
+
+    /**
+     * BadRequestException on /api/ path returns JSON 400, not HTML
+     */
+    public function testBadRequestExceptionOnApiPathReturnsJson400(): void
+    {
+        $exception = new BadRequestException('Invalid JSON body');
+        $request = new ServerRequest(['url' => '/api/v1/courses']);
+        $handler = $this->createThrowingHandler($exception);
+
+        $response = $this->middleware->process($request, $handler);
+
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame('application/json', $response->getHeaderLine('Content-Type'));
+
+        $body = (string)$response->getBody();
+        $this->assertJson($body);
+        $this->assertStringNotContainsString('<', $body);
+
+        $decoded = json_decode($body, true);
+        $this->assertArrayHasKey('error', $decoded);
+        $this->assertSame(400, $decoded['error']['code']);
+        $this->assertSame('Invalid JSON body', $decoded['error']['message']);
+    }
+
+    /**
+     * BadRequestException on /mcp path returns JSON 400
+     */
+    public function testBadRequestExceptionOnMcpPathReturnsJson400(): void
+    {
+        $exception = new BadRequestException('Malformed request');
+        $request = new ServerRequest(['url' => '/mcp']);
+        $handler = $this->createThrowingHandler($exception);
+
+        $response = $this->middleware->process($request, $handler);
+
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame('application/json', $response->getHeaderLine('Content-Type'));
+
+        $body = (string)$response->getBody();
+        $this->assertJson($body);
+        $this->assertStringNotContainsString('<', $body);
+
+        $decoded = json_decode($body, true);
+        $this->assertArrayHasKey('error', $decoded);
+        $this->assertSame(400, $decoded['error']['code']);
+        $this->assertSame('Malformed request', $decoded['error']['message']);
+    }
+
+    /**
+     * BadRequestException on non-API path propagates to ErrorHandlerMiddleware
+     */
+    public function testBadRequestExceptionOnNonApiPathPropagates(): void
+    {
+        $exception = new BadRequestException('Invalid JSON body');
+        $request = new ServerRequest(['url' => '/users/login']);
+        $handler = $this->createThrowingHandler($exception);
+
+        $this->expectException(BadRequestException::class);
+        $this->middleware->process($request, $handler);
+    }
+
+    /**
+     * BadRequestException with base path prefix — API path detection still works
+     */
+    public function testBadRequestExceptionWithBasePathDetectsApi(): void
+    {
+        $exception = new BadRequestException('Invalid JSON body');
+        $request = new ServerRequest([
+            'url' => '/irohaboard/api/v1/courses',
+            'server' => ['REQUEST_URI' => '/irohaboard/api/v1/courses'],
+        ]);
+        // サブディレクトリ配置を模倣: base 属性を設定
+        $request = $request->withAttribute('base', '/irohaboard');
+        $handler = $this->createThrowingHandler($exception);
+
+        $response = $this->middleware->process($request, $handler);
+
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame('application/json', $response->getHeaderLine('Content-Type'));
+
+        $decoded = json_decode((string)$response->getBody(), true);
+        $this->assertArrayHasKey('error', $decoded);
+        $this->assertSame(400, $decoded['error']['code']);
     }
 
     // ================================================================

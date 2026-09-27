@@ -17,6 +17,7 @@
 | W5 | P1 機能／非機能（a11y・静的解析） | [W5-a11y-static.md](W5/W5-a11y-static.md)<br>[W5-cause-analysis.md](W5/W5-cause-analysis.md)<br>[W5-fix-record.md](W5/W5-fix-record.md) | ❌ 不合格（→ 修正済） | D-13〜D-22 |
 | W6 | P2 網羅＋探索拡張＋負荷・並行 | [W6-execution-record.md](W6/W6-execution-record.md)<br>[W6-cause-analysis.md](W6/W6-cause-analysis.md)<br>[W6-fix-record.md](W6/W6-fix-record.md) | ❌ 不合格（→ 修正済） | D-31〜D-33 |
 | W7 | 回帰＋復元＋報告 | [W7-execution-record.md](W7/W7-execution-record.md) | ⚠️ 一部可 | — |
+| W8 | ABチャーター／残手動項目のライブ実測 | [W8-execution-record.md](W8/W8-execution-record.md)<br>[W8-fix-record.md](W8/W8-fix-record.md) | ✅ 合格（→ 修正済） | D-39 |
 | **R2** | **修正済み 8 不備の再試験（実 HTTP）** | [R2-retest-record.md](R2/R2-retest-record.md) | ❌ 不合格 | D-10 残留(P0)<br>D-12 残留(P1) |
 | **R3** | **P0 残存 2 件の再検証＋回帰** | [R3-retest-record.md](R3/R3-retest-record.md) | ❌ 不合格（→ 修正済） | D-10 / D-36 とも未修正（D-09 は追試で修正確認） |
 | **R3-fix** | **D-10／D-36／D-37／D-38 の修正と検証** | [R3-fix-record.md](R3/R3-fix-record.md) | ✅ 修正済 | D-37・D-38（修正中に新規発見） |
@@ -69,6 +70,7 @@
 | **D-35** | **S2 / P0** | install のフォーム送信値が常に空でバリデーションが必ず失敗（インストール永久に完了しない） | W3 | ✅ 修正済（`getData('data.User')`） |
 | **D-37** | **S2 / P0** | アップロード画像・ファイル配信が到達不能（snake_case アクション `file_download`/`file_movie`/`file_image` と `DashedRoute` の自動 inflect 不整合で `Missing Method` 404。`uploadImage` の返す URL もアンダースコア形式で不一致） | 再試験（R3-fix） | ✅ 修正済（3 メソッドを camelCase 化＋ルート・テンプレート・返却 URL を統一） |
 | **D-38** | **S2** | `fileDownload`/`fileMovie` が `content.url` 空（未登録ファイル）で `basename(null)` の TypeError → HTTP 500 | 再試験（R3-fix） | ✅ 修正済（空 URL を `NotFoundException` に変換し 404 化） |
+| **D-39** | **S4** | JSON API が不正 JSON に debug HTML（867KB・スタック/内部パス露出）を返す | W8 | ✅ 修正済（ApiErrorMiddleware が /api・/mcp の BadRequestException を捕捉し JSON 400。非 API は再スローで HTML 維持） |
 
 **未修正の P0 / S2: 0 件。**（W1〜W6 の P0／S2 および R2/R3 で残存した D-10／D-36／D-37／D-38 はすべて修正済み。**R4 で実 HTTP と自動テストにより修正を確認**。詳細は [R4-retest-record.md](R4/R4-retest-record.md)）
 

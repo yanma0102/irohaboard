@@ -1,0 +1,98 @@
+name: irohaboard5-ldap
+
+services:
+  web:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.cakephp5
+    ports:
+      - "8083:80"
+    volumes:
+      - ../:/var/www/html/
+      - cakephp5-tmp:/var/www/html/tmp
+      - cakephp5-files:/var/www/html/files
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=irohaboard
+      - DB_USER=root
+      - DB_PASS=rootpass
+      - APP_FULL_BASE_URL=http://localhost:8083
+    depends_on:
+      db:
+        condition: service_healthy
+      ldap:
+        condition: service_healthy
+    mem_limit: 1536m
+    pids_limit: 512
+    restart: unless-stopped
+    # tmp（named volume cakephp5-tmp）も所有者変更が必要:
+    # chownしないと /var/www/html/tmp/cache が書けず、ログインページが
+    # Warning だらけのデバッグ出力になりフォームが描画されない。
+    command: >
+      sh -c "chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files /var/www/html/tmp &&
+      exec apache2-foreground"
+
+  db:
+    image: mariadb:11.4
+    ports:
+      - "13308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: irohaboard
+      MYSQL_USER: ib_user
+      MYSQL_PASSWORD: ib_password
+    volumes:
+      - cakephp5-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 1g
+    restart: unless-stopped
+
+  ldap:
+    image: osixia/openldap:1.5.0
+    ports:
+      - "13389:389"
+      - "1636:636"
+    environment:
+      - LDAP_ORGANISATION=iroha Board
+      - LDAP_DOMAIN=irohaboard.local
+      - LDAP_ADMIN_PASSWORD=adminpass
+      - LDAP_CONFIG_PASSWORD=configpass
+      - LDAP_READONLY_USER=false
+      - LDAP_READONLY_USER_PASSWORD=readonlypass
+      - LDAP_RFC2307BIS_SCHEMA=true
+      - LDAP_BACKEND=mdb
+      - LDAP_TLS_VERIFY_CLIENT=try
+      # LDAP_TLS=false: アプリは389平文(ldap_tls=false)のため証明書/DH生成をスキップ
+      - LDAP_TLS=false
+      # デフォルトtrueは起動完了時に `rm -rf .../slapd/assets/config` を実行するが、
+      # ldap-init を bind mount しているため「Device or resource busy」で失敗し、
+      # 同時に tls-enable.ldif 等の設定木ごと削除されて再起動時に
+      # 「sed: can't read tls-enable.ldif」で無限リスタートループになる。
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false
+    volumes:
+      - cakephp5-ldap-data:/var/lib/ldap
+      - cakephp5-ldap-config:/etc/ldap/slapd.d
+      # NOTE: osixia/openldap の startup.sh が `chown -R .../slapd` を実行するため
+      # 読み取り専用マウント(:ro)は起動失敗（exit 1 ループ）の原因になる。
+      # 空のLDIFマウント用ディレクトリとして rw マウントする。
+      - ./ldap-init:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    healthcheck:
+      test: ["CMD", "ldapsearch", "-x", "-H", "ldap://localhost", "-b", "dc=irohaboard,dc=local", "-D", "cn=admin,dc=irohaboard,dc=local", "-w", "adminpass", "objectClass=*"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    mem_limit: 512m
+    restart: unless-stopped
+
+volumes:
+  cakephp5-mysql-data:
+  cakephp5-tmp:
+  cakephp5-files:
+  cakephp5-ldap-data:
+  cakephp5-ldap-config:

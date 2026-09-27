@@ -22,13 +22,15 @@
 | **R3** | **P0 残存 2 件の再検証＋回帰** | [R3-retest-record.md](R3/R3-retest-record.md) | ❌ 不合格（→ 修正済） | D-10 / D-36 とも未修正（D-09 は追試で修正確認） |
 | **R3-fix** | **D-10／D-36／D-37／D-38 の修正と検証** | [R3-fix-record.md](R3/R3-fix-record.md) | ✅ 修正済 | D-37・D-38（修正中に新規発見） |
 | **R4** | **D-10／D-36／D-37／D-38 の修正確認（実 HTTP＋再作成での永続化実証）** | [R4-retest-record.md](R4/R4-retest-record.md) | ✅ **合格** | — |
+| **R5** | **ユーザー報告バグの調査と D-41 の修正（select2 初期化 JS）** | [R5-fix-record.md](R5/R5-fix-record.md) | ✅ 修正済（報告症状は再現せず） | D-41 |
+| **R6** | **ユーザー報告バグの修正（D-42：動画アップロード／post_max_size 超過時）** | [R6-fix-record.md](R6/R6-fix-record.md) | ✅ 修正済（94MB 実アップロード成功・超過時は 413） | D-42 |
 
 > **訂正記録**: [\_orchestrator-corrections.md](_orchestrator-corrections.md)（W4/W6/W7 の主張に対する独立再実測と、W7 の「修正済み」判定の訂正）
 > **R2 の訂正**: R2 レコード §4 の後片付け表は基準値（`ib_records`/`ib_records_questions`）を誤記していたため、検査係が真の基準（2／3）へ復元し直した。詳細は R2 レコード §4.1。
 
 ---
 
-## 2. 不備一覧（全ウェーブ・2026-09-26 時点）
+## 2. 不備一覧（全ウェーブ・2026-09-27 時点）
 
 | ID | 重大度 | 内容 | 発見 | 現状 |
 |----|--------|------|------|------|
@@ -72,6 +74,9 @@
 | **D-38** | **S2** | `fileDownload`/`fileMovie` が `content.url` 空（未登録ファイル）で `basename(null)` の TypeError → HTTP 500 | 再試験（R3-fix） | ✅ 修正済（空 URL を `NotFoundException` に変換し 404 化） |
 | **D-39** | **S4** | JSON API が不正 JSON に debug HTML（867KB・スタック/内部パス露出）を返す | W8 | ✅ 修正済（ApiErrorMiddleware が /api・/mcp の BadRequestException を捕捉し JSON 400。非 API は再スローで HTML 維持） |
 | **D-40** | **S3** | Cookie Secure の設定が機能していない（config/app.php Session `secure` は死に設定、AppController writeCookie() に withSecure() 欠落） | W8 | ✅ 修正済（config/app.php ini 配列設計＋AppController writeCookie() に withSecure() 追加。CLI 5ケース＋ライブ E2E で検証済み。D-07 の根因も解消） |
+| **D-41** | **S2** | 管理画面（グループ／ユーザ／お知らせ編集）の select2 初期化 JS が黙って破棄され、複数選択 UI が素の `<select>` に退化。`scriptStart(['inline' => false])` の `inline` は CakePHP 5 で無視され、`HtmlHelper::scriptBlock()`（`vendor/cakephp/cakephp/src/View/Helper/HtmlHelper.php:597-618`）は既定 `block=null` のため文字列を返すだけで `view` に積まず、テンプレートが `scriptEnd()` の戻り値を echo していなかった（2→5 移行リグレッション） | R5（ユーザー報告） | ✅ 修正済（3 ファイル ×2 箇所を echo 方式へ。HTTP＋実ブラウザで `select2-container` 有効・既選択がタグ表示されることを確認。回帰 747/748 緑、残 1 件は並行セッションの `ib_config_overrides` 起因で本修正と無関係） |
+
+| **D-42** | **S2** | 動画アップロードで `post_max_size`（64M）を超えると、PHP が Request Startup 時に本文を破棄し警告を即送信 → ヘッダ・ステータス送出不能（HTTP 200 の壊れた応答）。CSRF トークンも失われ `InvalidCsrfTokenException` の 1.26MB デバッグページ（内部パス露出）が返る。さらにアプリ上限 10MB ＜ 設定GUI 上限 1024MB ＝ php.ini 64M の矛盾で 94MB 動画はそもそも不可 | R6（ユーザー報告） | ✅ 修正済（`config/bootstrap.php` に 413 事前検出ガード、`ContentsController` でアップロードエラーの誤案内を解消、`docker/php.ini` を 1024M＋`output_buffering` へ、動画上限デフォルト 1024MB 化。イメージ再ビルド込み。94MB 実アップロード成功・超過時 413・回帰 747/748 緑） |
 
 **未修正の P0 / S2: 0 件。**（W1〜W6 の P0／S2 および R2/R3 で残存した D-10／D-36／D-37／D-38 はすべて修正済み。**R4 で実 HTTP と自動テストにより修正を確認**。詳細は [R4-retest-record.md](R4/R4-retest-record.md)）
 

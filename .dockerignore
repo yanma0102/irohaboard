@@ -1,26 +1,27 @@
 .git
 .gitignore
 .dockerignore
-docker/README.md
+Docker/README.md
 *.md
 LICENSE
 .editorconfig
-tmp/
-logs/
+app/tmp/
+app/logs/
 *.log
 .DS_Store
 Thumbs.db
 
-# CakePHP 5 (migration 先) 要素は既存ビルドから除外
-vendor/
-src/
-config/
-templates/
-bin/
-tests/
-resources/
-plugins/
-phpcs.xml
-phpstan.neon
-psalm.xml
-phpunit.xml.dist
+# アプリ本体は bind マウントで供給するため、ビルドコンテキストから除外
+Dev/
+app/vendor/
+app/src/
+app/config/
+app/templates/
+app/bin/
+app/tests/
+app/resources/
+app/plugins/
+app/phpcs.xml
+app/phpstan.neon
+app/psalm.xml
+app/phpunit.xml.dist

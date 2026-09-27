@@ -4,11 +4,11 @@ services:
   web:
     build:
       context: ../
-      dockerfile: docker/Dockerfile.cakephp5
+      dockerfile: Docker/Dockerfile.cakephp5
     ports:
       - "8083:80"
     volumes:
-      - ../:/var/www/html/
+      - ../app:/var/www/html/
       - cakephp5-tmp:/var/www/html/tmp
       - cakephp5-files:/var/www/html/files
     environment:

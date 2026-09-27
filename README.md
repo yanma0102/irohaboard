@@ -15,11 +15,11 @@ https://irohaboard.irohasoft.jp/
 
 ```bash
 git clone https://github.com/yanma0102/irohaboard.git
-cd irohaboard
+cd irohaboard/app
 composer install
 ```
 
-Config 目配下の `app_local.php` を作成し、DB接続情報を設定してください。
+`app/config/` 配下の `app_local.php` を作成し、DB接続情報を設定してください。
 初期セットアップは `/install` にアクセスして実行します。
 
 > **注**: `/mcp`（MCP サーバ）は `mcp/sdk` を使用します。既存環境を更新する際は `git pull` 後に必ず `composer install` を実行してください。
@@ -27,6 +27,7 @@ Config 目配下の `app_local.php` を作成し、DB接続情報を設定して
 ## テスト
 
 ```bash
+cd app
 vendor/bin/phpunit
 ```
 
@@ -36,7 +37,8 @@ vendor/bin/phpunit
 未設定の場合、Host header 検証（Host Header Injection 防御）は無効化され、ログに警告が記録されます。
 値はアプリケーションの公開 URL を指定してください（例: `https://example.com`）。
 
-Docker を使用する場合は `docker-compose.yml` / `docker-compose.cakephp5.yml` で事前設定済みです。
+Docker を使用する場合は `Docker/docker-compose.cakephp5.yml`（LDAP 併用時は
+`Docker/docker-compose.cakephp5-ldap.yml`）で事前設定済みです。
 手動デプロイの場合は `.env` ファイルに `export APP_FULL_BASE_URL="https://your-domain.com"` を追加してください。
 
 ## サブディレクトリでの配信
@@ -44,7 +46,7 @@ Docker を使用する場合は `docker-compose.yml` / `docker-compose.cakephp5.
 ドキュメントルート直下（`http://example.com/`）ではなく、サブディレクトリ
 （`http://example.com/irohaboard/`）に配置する場合の Apache 設定です。
 
-**`webroot/.htaccess` はそのままでは使えません。** `.htaccess` の
+**`app/webroot/.htaccess` はそのままでは使えません。** `.htaccess` の
 `RewriteRule ^ index.php` は `RewriteBase` 未設定のため DocumentRoot 相対パスへ
 解決され、`Alias` で付けたプレフィックス（`/irohaboard`）が失われます。
 `<Directory>` 内の `RewriteBase` も `.htaccess` の `RewriteEngine On` に
@@ -56,12 +58,12 @@ Docker を使用する場合は `docker-compose.yml` / `docker-compose.cakephp5.
 ```apache
 <VirtualHost *:80>
     ServerName example.com
-    DocumentRoot /var/www/html/webroot
+    DocumentRoot /var/www/html/app/webroot
 
-    Alias /irohaboard /var/www/html/webroot
+    Alias /irohaboard /var/www/html/app/webroot
     RedirectMatch 301 ^/irohaboard$ /irohaboard/
 
-    <Directory /var/www/html/webroot>
+    <Directory /var/www/html/app/webroot>
         Options -Indexes +FollowSymLinks
         AllowOverride None
         Require all granted
@@ -70,7 +72,7 @@ Docker を使用する場合は `docker-compose.yml` / `docker-compose.cakephp5.
         RewriteEngine On
         RewriteBase /irohaboard/          # ← 公開パスに合わせて変更
 
-        # webroot/.htaccess のセキュリティルールを複製
+        # app/webroot/.htaccess のセキュリティルールを複製
         RewriteCond %{REQUEST_URI} (\.env|vendor|phpunit|\.git|\.sql|\.bak|\.ini|\.cgi|\.py) [NC]
         RewriteRule ^ - [F,L]
         RewriteCond %{REQUEST_URI} (wp-admin|wp-includes|wp-content) [NC]

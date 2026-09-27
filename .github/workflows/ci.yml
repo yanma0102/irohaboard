@@ -8,6 +8,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    # アプリ本体は app/ 配下にあるため、run ステップは app/ で実行する。
+    defaults:
+      run:
+        working-directory: app
+
     services:
       mariadb:
         image: mariadb:11.4

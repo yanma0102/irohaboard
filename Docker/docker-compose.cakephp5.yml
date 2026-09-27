@@ -4,12 +4,12 @@ services:
   web:
     build:
       context: ../
-      dockerfile: docker/Dockerfile.cakephp5
+      dockerfile: Docker/Dockerfile.cakephp5
     ports:
       - "8082:80"
     volumes:
       # 開発時のホットリロード用にアプリケーションコードをマウント
-      - ../:/var/www/html/
+      - ../app:/var/www/html/
       # tmpディレクトリの永続化（コンテナ再起動時も保持）
       - cakephp5-tmp:/var/www/html/tmp
       # アップロードファイルの永続化
@@ -28,9 +28,9 @@ services:
     pids_limit: 512
     restart: unless-stopped
     # D-36 対策: アップロード先の所有権を Apache 実行ユーザ www-data に合わせる。
-    # webroot/uploads はホスト bind、files は named volume のため、起動時に毎回 chown する。
+    # webroot/uploads はホスト bind、files/tmp は named volume のため、起動時に毎回 chown する。
     command: >
-      sh -c "chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files &&
+      sh -c "chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files /var/www/html/tmp &&
       exec apache2-foreground"
 
   db:

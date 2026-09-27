@@ -26,7 +26,7 @@ use Migrations\TestSuite\Migrator;
  * Add additional configuration/setup your application needs when running
  * unit tests in this file.
  */
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__, 2) . '/app/vendor/autoload.php';
 
 // テストは必ずテスト用DB (irohaboard_test) に対して実行する（メインDB破壊防止）。
 // CakePHP の env() は $_SERVER を $_ENV より優先して参照するため、コンテナの
@@ -37,7 +37,7 @@ $testDbName = getenv('TEST_DB_NAME') ?: 'irohaboard_test';
 $_SERVER['DB_NAME'] = $_ENV['DB_NAME'] = $testDbName;
 putenv('DB_NAME=' . $testDbName);
 
-require dirname(__DIR__) . '/config/bootstrap.php';
+require dirname(__DIR__, 2) . '/app/config/bootstrap.php';
 
 if (empty($_SERVER['HTTP_HOST']) && !Configure::read('App.fullBaseUrl')) {
     Configure::write('App.fullBaseUrl', 'http://localhost');

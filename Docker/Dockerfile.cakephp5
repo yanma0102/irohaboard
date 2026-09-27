@@ -30,16 +30,16 @@ RUN apt-get update && apt-get install -y \
 RUN a2enmod rewrite headers
 
 # Apache 設定ファイルをコピー
-COPY docker/apache-vhost.cakephp5.conf /etc/apache2/sites-available/000-default.conf
-COPY docker/apache-app.conf /etc/apache2/conf-available/irohaboard.conf
+COPY Docker/apache-vhost.cakephp5.conf /etc/apache2/sites-available/000-default.conf
+COPY Docker/apache-app.conf /etc/apache2/conf-available/irohaboard.conf
 RUN a2enconf irohaboard \
     && echo 'ServerName localhost' >> /etc/apache2/apache2.conf
 
 # Apache MPM(prefork) 設定をコピー（ワーカー数上限と定期再生成でメモリ肥大を防止）
-COPY docker/mpm-prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
+COPY Docker/mpm-prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 
 # PHP 設定ファイルをコピー
-COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
+COPY Docker/php.ini /usr/local/etc/php/conf.d/app.ini
 
 EXPOSE 80
 

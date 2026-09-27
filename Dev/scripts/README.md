@@ -32,10 +32,10 @@ REST API smoke test. Checks:
 
 ```bash
 # Run with defaults
-bash scripts/smoke-api.sh
+bash Dev/scripts/smoke-api.sh
 
 # Run against a custom base URL
-BASE_URL=http://localhost:8081 bash scripts/smoke-api.sh
+BASE_URL=http://localhost:8081 bash Dev/scripts/smoke-api.sh
 ```
 
 ## scripts/smoke-mcp.sh
@@ -48,24 +48,24 @@ MCP (Model Context Protocol) smoke test. Checks:
 
 ```bash
 # Run with defaults (auto-obtains token)
-bash scripts/smoke-mcp.sh
+bash Dev/scripts/smoke-mcp.sh
 
 # Provide a pre-existing token
-MCP_TOKEN="selector:validator" bash scripts/smoke-mcp.sh
+MCP_TOKEN="selector:validator" bash Dev/scripts/smoke-mcp.sh
 ```
 
 ## scripts/test-fresh.sh
 
-PHPUnit をフレッシュなテスト DB で実行する。`tests/bootstrap.php` の Migrator は
+PHPUnit をフレッシュなテスト DB で実行する。`Dev/tests/bootstrap.php` の Migrator は
 テーブルを DROP しないため、テスト DB に Seeder 等の残留データがあると偽の失敗を
 招くことがある。定常緑を確認する場合は本スクリプトを使う。
 
 ```bash
 # テスト DB を作り直して全テスト実行
-bash scripts/test-fresh.sh
+bash Dev/scripts/test-fresh.sh
 
-# 個別ファイルも指定可
-bash scripts/test-fresh.sh tests/TestCase/Controller/Api/ApiContractTest.php
+# 個別ファイルも指定可（app/ からの相対パス）
+bash Dev/scripts/test-fresh.sh ../Dev/tests/TestCase/Controller/Api/ApiContractTest.php
 ```
 
 | Variable | Default | Description |

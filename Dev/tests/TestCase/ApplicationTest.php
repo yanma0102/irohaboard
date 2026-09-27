@@ -44,7 +44,7 @@ class ApplicationTest extends TestCase
     public function testBootstrap()
     {
         Configure::write('debug', false);
-        $app = new Application(dirname(__DIR__, 2) . '/config');
+        $app = new Application(CONFIG);
         $app->bootstrap();
         $plugins = $app->getPlugins();
 
@@ -61,7 +61,7 @@ class ApplicationTest extends TestCase
     public function testBootstrapInDebug()
     {
         Configure::write('debug', true);
-        $app = new Application(dirname(__DIR__, 2) . '/config');
+        $app = new Application(CONFIG);
         $app->bootstrap();
         $plugins = $app->getPlugins();
 
@@ -75,7 +75,7 @@ class ApplicationTest extends TestCase
      */
     public function testMiddleware()
     {
-        $app = new Application(dirname(__DIR__, 2) . '/config');
+        $app = new Application(CONFIG);
         $middleware = new MiddlewareQueue();
 
         $middleware = $app->middleware($middleware);
@@ -112,7 +112,7 @@ class ApplicationTest extends TestCase
      */
     public function testSecurityAndRateLimitMiddlewareRegistered(): void
     {
-        $app = new Application(dirname(__DIR__, 2) . '/config');
+        $app = new Application(CONFIG);
         $middleware = new MiddlewareQueue();
         $middleware = $app->middleware($middleware);
 

@@ -3,7 +3,7 @@
 # seed-ds.sh — Run irohaboard DS-* test-data seeds in order.
 #
 # Usage:
-#   DB_NAME=irohaboard_test DB_PORT=13307 ./scripts/seed-ds.sh
+#   DB_NAME=irohaboard_test DB_PORT=13307 Dev/scripts/seed-ds.sh
 #
 # Environment variables (all optional, with defaults):
 #   DB_NAME   — database name            (default: irohaboard)
@@ -22,10 +22,11 @@ DB_PASS="${DB_PASS:-rootpass}"
 DB_NAME="${DB_NAME:-irohaboard}"
 FORCE="${FORCE:-0}"
 
-# Resolve the project root (parent of scripts/)
+# Resolve the app root (Dev/scripts -> repo root -> app/)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CAKE="${PROJECT_ROOT}/bin/cake"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+APP_ROOT="${REPO_ROOT}/app"
+CAKE="${APP_ROOT}/bin/cake"
 
 FORCE_FLAG=""
 if [ "$FORCE" = "1" ]; then

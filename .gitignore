@@ -1,10 +1,10 @@
 # CakePHP 5 specific files #
 ############################
-/config/app_local.php
-/config/.env
-/logs/*
-/tmp/*
-/vendor/*
+/app/config/app_local.php
+/app/config/.env
+/app/logs/*
+/app/tmp/*
+/app/vendor/*
 
 # OS generated files #
 ######################
@@ -20,8 +20,8 @@ Thumbs.db
 
 # Tool specific files #
 #######################
-.phpunit.cache
-tests.sqlite
+/app/.phpunit.cache
+/app/tests.sqlite
 *~
 *.swp
 *.swo
@@ -37,7 +37,10 @@ nbproject/*
 /node_modules/*
 yarn-debug.log
 yarn-error.log
-webroot/uploads/
+/app/webroot/uploads/
+
+# Docker
+/Docker/.env
 
 # worktree管理用
 /.slim/

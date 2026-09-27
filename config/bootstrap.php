@@ -289,3 +289,70 @@ ServerRequest::addDetector('tablet', function ($request) {
 // and https://unicode-org.github.io/icu/userguide/format_parse/datetime/#datetime-format-syntax
 // \Cake\I18n\Date::setToStringFormat('dd.MM.yyyy');
 // \Cake\I18n\Time::setToStringFormat('dd.MM.yyyy HH:mm');
+
+/*
+ * D-42: post_max_size を超える POST の事前検出
+ *
+ * POST が php.ini の post_max_size を超えると、PHP はスクリプト実行前（Request Startup）
+ * に本文を丸ごと破棄してしまう。このとき CSRF トークンも失われるため、
+ * ミドルウェアに任せると InvalidCsrfTokenException のデバッグページが返り、
+ * display_errors に出た警告でヘッダまで送出できず「HTTP 200 の壊れた応答」になる。
+ * 本文が破棄される前に検出することで、明示的な 413 応答へ変換する。
+ */
+if (PHP_SAPI !== 'cli' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    $ibParseIniSize = static function (string $value): int {
+        $value = trim($value);
+        if ($value === '') {
+            return 0;
+        }
+        $number = (float)$value;
+        switch (strtolower(substr($value, -1))) {
+            case 'g':
+                $number *= 1024;
+                // no break
+            case 'm':
+                $number *= 1024;
+                // no break
+            case 'k':
+                $number *= 1024;
+        }
+
+        return (int)$number;
+    };
+
+    $ibPostMax = (string)ini_get('post_max_size');
+    $ibPostMaxBytes = $ibParseIniSize($ibPostMax);
+    $ibContentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+
+    if ($ibPostMaxBytes > 0 && $ibContentLength > $ibPostMaxBytes) {
+        // Request Startup 時の警告をバッファから消してヘッダ送出を可能にする
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
+
+        Log::warning(sprintf(
+            'POST body rejected: %d bytes exceeds post_max_size %s (%d bytes)',
+            $ibContentLength,
+            $ibPostMax,
+            $ibPostMaxBytes,
+        ));
+
+        $ibReferer = $_SERVER['HTTP_REFERER'] ?? '';
+        header('HTTP/1.1 413 Payload Too Large');
+        header('Content-Type: text/html; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo '<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">'
+            . '<title>413 Payload Too Large</title></head>'
+            . '<body style="font-family: sans-serif; padding: 2em; line-height: 1.8;">'
+            . '<h1>アップロードサイズが上限を超えています</h1>'
+            . '<p>送信されたデータ量 ' . number_format($ibContentLength) . ' バイトは、'
+            . 'サーバの受け取り上限 <code>post_max_size = ' . htmlspecialchars($ibPostMax, ENT_QUOTES) . '</code>'
+            . ' を超えているため、リクエストを受け付けませんでした。</p>'
+            . '<p>ファイルを小さくするか、管理者に上限の引き上げを依頼してください。</p>'
+            . ($ibReferer !== ''
+                ? '<p><a href="' . htmlspecialchars($ibReferer, ENT_QUOTES) . '">前のページに戻る</a></p>'
+                : '')
+            . '</body></html>';
+        exit;
+    }
+}

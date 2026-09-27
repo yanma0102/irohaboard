@@ -269,7 +269,15 @@ class ContentsController extends AppController
             }
 
             $file = $this->request->getUploadedFile('file') ?? $this->request->getUploadedFile('Contents.file');
-            if ($file && $file->getError() === UPLOAD_ERR_OK) {
+            if ($file === null) {
+                $mode = 'error';
+                $this->Flash->error('ファイルが指定されていません');
+            } elseif ($file->getError() !== UPLOAD_ERR_OK) {
+                // post_max_size / upload_max_filesize 超過や途中切断など、
+                // PHP がアップロードを拒否した理由を「ファイル未指定」と誤案内せず返す。
+                $mode = 'error';
+                $this->Flash->error($this->uploadErrorMessage($file->getError()));
+            } else {
                 $original_name = $file->getClientFilename();
                 $ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
 
@@ -303,9 +311,6 @@ class ContentsController extends AppController
                         $this->Flash->error('ファイルのアップロードに失敗しました');
                     }
                 }
-            } else {
-                $mode = 'error';
-                $this->Flash->error('ファイルが指定されていません');
             }
         }
 
@@ -313,6 +318,24 @@ class ContentsController extends AppController
         $upload_extensions_str = implode(', ', $upload_extensions);
 
         $this->set(compact('mode', 'file_url', 'file_name', 'upload_extensions_str', 'upload_maxsize'));
+    }
+
+    /**
+     * PHP のアップロードエラーコードを案内メッセージへ変換する。
+     *
+     * post_max_size / upload_max_filesize を超えると PHP は本文を破棄し、
+     * $_FILES にはエラーコードのみが残る。サイズ上限の拒否を
+     * 「ファイルが指定されていません」と誤案内しないために用いる。
+     */
+    private function uploadErrorMessage(int $error): string
+    {
+        return match ($error) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE =>
+                'ファイルサイズがサーバの受け取り上限を超えています。ファイルを小さくするか、上限の引き上げを管理者に依頼してください',
+            UPLOAD_ERR_PARTIAL => 'ファイルが途中で切断されました。もう一度アップロードしてください',
+            UPLOAD_ERR_NO_FILE => 'ファイルが指定されていません',
+            default => 'ファイルのアップロードに失敗しました',
+        };
     }
 
     /**

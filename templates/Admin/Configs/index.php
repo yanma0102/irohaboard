@@ -118,7 +118,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             $options['after'] = ($options['after'] ?? '') . ' <span class="text-muted small">' . h($unit) . '</span>';
                         }
                         if ($isOverride) {
-                            $options['after'] = ($options['after'] ?? '') . ' <span class="label label-info" style="margin-left: 8px;">上書き中</span>';
+                            // 「上書き中」は「未保存」を誤解されやすいため、
+                            // ib_config.php の既定値から変更済みであることが分かる文言にする
+                            $options['after'] = ($options['after'] ?? '')
+                                . ' <span class="label label-info" style="margin-left: 8px;"'
+                                . ' title="ib_config.php の既定値ではなく、DBに保存された値で動作しています">設定変更あり</span>';
                         }
                         if ($defaultVal !== null) {
                             // size 型はバイト保存のため MB 表示に揃える（入力欄と同じ単位にする）

@@ -38,6 +38,8 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 			['controller' => 'UsersCourses','action' => 'index'],
 			['escape' => false]
 		);
+		// 現在のページを追加（コース一覧をリンクさせるため）
+		$this->Html->addCrumb(h($course['title']));
 		echo $this->Html->getCrumbs(' / ');
 	}
 	?>

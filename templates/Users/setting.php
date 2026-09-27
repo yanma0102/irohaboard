@@ -7,6 +7,8 @@
 		['controller' => 'UsersCourses','action' => 'index'],
 		['escape' => false]
 	);
+	// 現在のページを追加（HOMEをリンクさせるため）
+	$this->Html->addCrumb(__('設定'));
 	echo $this->Html->getCrumbs(' / ');
 	?>
 	</div>

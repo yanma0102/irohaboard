@@ -1,8 +1,9 @@
 name: irohaboard5-hub
 
 # Docker Hub の公開イメージ（yanma0102/irohaboard:latest）を使って起動する構成。
-# このイメージはアプリ本体を含まない Web ランタイムのため、リポジトリの app/ を
-# /var/www/html にマウントして供給する（マウント方式）。
+# このイメージはアプリ本体を含まない Web ランタイム（composer 同梱）のため、
+# リポジトリの app/ を /var/www/html にマウントして供給する（マウント方式）。
+# 初回起動時に vendor/ が無ければコンテナ内で composer install を自動実行する。
 #   docker compose -f Docker/docker-compose.hub.yml pull
 #   docker compose -f Docker/docker-compose.hub.yml up -d
 services:
@@ -30,10 +31,13 @@ services:
     mem_limit: 1536m
     pids_limit: 512
     restart: unless-stopped
-    # アップロード先の所有権を Apache 実行ユーザ www-data に合わせる。
+    # 初回起動時に vendor/ が無ければコンテナ内の composer で自動インストールし、
+    # その後 Apache 実行ユーザ www-data に必要なディレクトリの所有権を合わせる。
     # webroot/uploads はホスト bind、files/tmp は named volume のため、起動時に毎回 chown する。
     command: >
-      sh -c "chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files /var/www/html/tmp &&
+      sh -c "if [ ! -f /var/www/html/vendor/autoload.php ]; then
+      composer install --no-interaction --prefer-dist --optimize-autoloader; fi;
+      chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files /var/www/html/tmp &&
       exec apache2-foreground"
 
   db:

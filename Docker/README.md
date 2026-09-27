@@ -7,7 +7,7 @@ iroha Board を Docker で動かすための構成です。旧 CakePHP 2.10 時�
 
 | ファイル | 役割 |
 | --- | --- |
-| `Dockerfile.cakephp5` | php:8.4-apache ベースの Web イメージ（PHP 拡張・Apache 設定・php.ini を同梱） |
+| `Dockerfile.cakephp5` | php:8.4-apache ベースの Web イメージ（PHP 拡張・Apache 設定・php.ini・composer を同梱） |
 | `docker-compose.cakephp5.yml` | Web + MariaDB の標準構成 |
 | `docker-compose.cakephp5-ldap.yml` | Web + MariaDB + OpenLDAP の構成 |
 | `apache-vhost.cakephp5.conf` | Apache vhost（DocumentRoot を `/var/www/html/webroot` に設定） |
@@ -59,7 +59,7 @@ Web は `http://localhost:8083`、LDAP は `localhost:13389`（389）です。
 公開イメージ: `yanma0102/irohaboard:latest`
 （https://hub.docker.com/r/yanma0102/irohaboard）
 
-このイメージは **PHP 8.4 + Apache + 必要拡張 + Apache/PHP 設定のみ** を同梱した
+このイメージは **PHP 8.4 + Apache + 必要拡張 + Apache/PHP 設定 + composer** を同梱した
 Web ランタイムです。アプリ本体（CakePHP コード）は含まないため、リポジトリを
 clone し、`app/` を `/var/www/html` にマウントして使います。
 
@@ -67,14 +67,26 @@ clone し、`app/` を `/var/www/html` にマウントして使います。
 git clone https://github.com/yanma0102/irohaboard.git
 cd irohaboard
 
-# 依存パッケージの取得（初回は config/app_local.php も生成される）
-composer install --working-dir=app
-# ホストに composer が無い場合は composer イメージを使う:
-# docker run --rm -v "$PWD/app:/app" -w /app composer:2 install
-
 # 公開イメージを取得して起動（アプリ本体はマウント供給）
 docker compose -f Docker/docker-compose.hub.yml pull
 docker compose -f Docker/docker-compose.hub.yml up -d
+```
+
+初回起動時に `app/vendor/autoload.php` が無ければ、コンテナ内の composer が
+自動的に `composer install` を実行します（`config/app_local.php` も生成されます）。
+手動で実行したい場合は次のとおりです。
+
+```bash
+docker compose -f Docker/docker-compose.hub.yml exec web \
+  composer install --no-interaction --prefer-dist --optimize-autoloader
+```
+
+ホスト側の composer を使うこともできます。
+
+```bash
+composer install --working-dir=app
+# ホストに composer が無い場合は composer イメージを使う:
+# docker run --rm -v "$PWD/app:/app" -w /app composer:2 install
 ```
 
 - `docker-compose.hub.yml` は `build` を持たず、`image:` と `../app` のマウントだけを
@@ -108,6 +120,7 @@ chown されます。
 ## 注意
 
 - 本番では `APP_FULL_BASE_URL` の設定が必須です（Host Header Injection 対策）。
-- アプリ本体は bind マウントのため、`composer install` は `app/` で実行してください。
-- 公開イメージはアプリ本体を含まない Web ランタイムです。利用者側でリポジトリを clone し、
-  依存パッケージ（`vendor/`）と `config/app_local.php` を用意してください。
+- アプリ本体は bind マウントのため、`composer install` は `app/` で実行してください
+  （コンテナ内の composer でも、ホスト側の composer でも可）。
+- 公開イメージはアプリ本体を含まない Web ランタイム（composer 同梱）です。利用者側で
+  リポジトリを clone し、依存パッケージ（`vendor/`）と `config/app_local.php` を用意してください。

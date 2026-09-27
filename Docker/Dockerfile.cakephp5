@@ -1,5 +1,9 @@
 FROM php:8.4-apache
 
+# Composer 本体を同梱（コンテナ内で `composer install` を実行できるようにする）
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 # PHP拡張モジュールインストール
 RUN apt-get update && apt-get install -y \
     libpng-dev \

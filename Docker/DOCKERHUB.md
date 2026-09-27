@@ -10,6 +10,7 @@ iroha Board は PHP / CakePHP で作られたオープンソースの eラーニ
 
 - PHP 8.4（Apache `php:8.4-apache` ベース）
 - PHP 拡張: `pdo_mysql` `mbstring` `gd` `intl` `opcache` `zip` `bcmath` `ldap`
+- Composer 2（コンテナ内で `composer install` を実行可能）
 - Apache 設定（`mod_rewrite` / `mod_headers` 有効、`DocumentRoot=/var/www/html/webroot`）
 - `php.ini` / MPM prefork 設定
 
@@ -23,16 +24,11 @@ iroha Board は PHP / CakePHP で作られたオープンソースの eラーニ
 
 ## 使い方
 
-### 1. リポジトリの取得と依存関係の準備
+### 1. リポジトリの取得
 
 ```bash
 git clone https://github.com/yanma0102/irohaboard.git
 cd irohaboard
-
-# 依存パッケージの取得（初回は config/app_local.php も生成される）
-composer install --working-dir=app
-# ホストに composer が無い場合は composer イメージを使う:
-# docker run --rm -v "$PWD/app:/app" -w /app composer:2 install
 ```
 
 ### 2. 起動（推奨: docker compose）
@@ -43,6 +39,15 @@ docker compose -f Docker/docker-compose.hub.yml up -d
 ```
 
 Web: http://localhost:8082
+
+初回起動時に `app/vendor/autoload.php` が無ければ、コンテナ内の composer が
+自動的に `composer install` を実行します（`app/config/app_local.php` も生成されます）。
+手動で実行する場合:
+
+```bash
+docker compose -f Docker/docker-compose.hub.yml exec web \
+  composer install --no-interaction --prefer-dist --optimize-autoloader
+```
 
 初回は `http://localhost:8082/install` にアクセスしてインストールを実行します。
 （MariaDB は同時に起動し、ホスト側 `13307` に公開されます。）

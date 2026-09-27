@@ -8,7 +8,7 @@
 | 対象環境（検証） | Docker: `irohaboard5-web-1`（php:8.4-apache, `http://localhost:8082`）/ `irohaboard5-db-1`（mariadb:11.4, port 13307） |
 | 対象リポジトリ | `github.com/yanma0102/irohaboard` |
 | 作成日 | 2026-09-25 |
-| 版 | 1.9（v1.9: W1/W2 検出の不具合 D-01〜D-07/W2-F1 を修正・実測 `evidence/W1/W1-fix-record.md`（645/3173/0E/0F、レート制限120→429、セキュリティヘッダ付与）。v1.8: W2 実施、v1.7: W1 実施＋原因解析、v1.6: W0、v1.5: MCP 9 ツール、v1.4 手順書 `09`、v1.3 第2次レビュー、v1.2 全画面/画面操作、v1.1 セキュリティ前提修正） |
+| 版 | 1.10（v1.10: 強化検証の**ナレッジ**を `10-verification-knowledge.md` に記録し、テスト件数を現行値（744/3689）へ更新。v1.9: W1/W2 検出の不具合 D-01〜D-07/W2-F1 を修正・実測 `evidence/W1/W1-fix-record.md`（645/3173/0E/0F、レート制限120→429、セキュリティヘッダ付与）。v1.8: W2 実施、v1.7: W1 実施＋原因解析、v1.6: W0、v1.5: MCP 9 ツール、v1.4 手順書 `09`、v1.3 第2次レビュー、v1.2 全画面/画面操作、v1.1 セキュリティ前提修正） |
 | 状態 | 計画策定済み。自動化基盤（Seeder/スモーク/CI/API 契約テスト）導入済。検証項目は未実施（結果欄は空欄運用） |
 
 ---
@@ -84,7 +84,7 @@
 | DB | MariaDB 11.4（`irohaboard5-db-1`, host port 13307, db `irohaboard` / test `irohaboard_test`） |
 | 起動 | `cd docker && docker compose -f docker-compose.cakephp5.yml up -d --build` |
 | 初期化 | 初回 `http://localhost:8082/install` でスキーマ + 管理者作成 |
-| テスト実行 | `composer test`（MariaDB Docker port 13307。`DATABASE_TEST_URL` で上書き可）。現在 587 テスト / 2961 アサーション。既知 deprecation 2 件（`Admin/ContentsControllerTest` の `Query::order` / `AppController::beforeFilter` の return-value）。**テスト DB に残余データがあると偽の失敗を招くため、`scripts/test-fresh.sh` で作り直してから実行する。** |
+| テスト実行 | `composer test`（MariaDB Docker port 13307。`DATABASE_TEST_URL` で上書き可）。現在 **744 テスト / 3689 アサーション**（`test-fresh.sh` 実測、errors 0 / failures 0 / deprecations 0）。既知: **PHPUnit Notices 8 件**（vanilla のみ）。**テスト DB に残余データがあると偽の失敗を招くため、`scripts/test-fresh.sh` で作り直してから実行する。**（並行実行の競合による偽の大量失敗は `10` §4.1） |
 | 品質ゲート | `composer check`（= phpunit + phpcs）/ `vendor/bin/phpstan analyse` / `vendor/bin/psalm` |
 
 ---
@@ -115,6 +115,7 @@
 | `07-screen-inventory-matrix.md` | **全画面インベントリ × 検証項目マトリクス**（Front 18 + Admin 20 の全テンプレートと項目の 1:1 対応・網羅保証） | — |
 | `08-ui-operation.md` | **画面操作・UIインタラクション検証**（実ブラウザ操作、横断 50 項目 + 画面別 26 シナリオ、非機械中心） | `VR-UI` / `VR-UIS` |
 | `09-verification-procedure.md` | **検証実施手順書**（体制・環境準備・DS 投入・実施サイクル・証跡規約・記録シート・判定/重大度・トリアージ・自動化実行・中断復旧・完了承認） | — |
+| `10-verification-knowledge.md` | **検証ナレッジ**（実施済み強化検証 W0〜W7 / R2〜R4 で得た知見。実 HTTP ハーネスの罠、スモークの裏手順、Docker/テスト運用、記録とコミットの注意、**罠サマリ表**） | — |
 
 ---
 
@@ -187,7 +188,7 @@
 
 ## 9. 自動化方針と工数
 
-- **既存**: `tests/TestCase/**`（587 テスト / 2961 アサーション）。`composer test` で実行。既知 deprecation 2 件（テスト DB は `scripts/test-fresh.sh` で作り直し推奨）。表の `機械`=`済`。
+- **既存**: `tests/TestCase/**`（**744 テスト / 3689 アサーション**、deprecations 0）。`composer test` で実行。既知の PHPUnit Notices 8 件（テスト DB は `scripts/test-fresh.sh` で作り直し推奨）。表の `機械`=`済`。
 - **自動化基盤（導入済）**: API 契約テスト（`ApiContractTest` 46 テスト / 339 アサーション）、Seeder DS-0/1/2/3/5/7（`config/Seeds/`、`scripts/seed-ds.sh`。DS-4/DS-6 は未セーダー化）、API スモーク（`scripts/smoke-api.sh`）、MCP スモーク（`scripts/smoke-mcp.sh`）、CI（`.github/workflows/ci.yml`：PHPUnit ブロッキング / phpcs 非ブロッキング）。
 - **優先自動化**: ① API 全エンドポイントの契約テスト（Write 含む）、② バリデーション境界値、③ Markdown サニタイズ、④ MCP ツール、⑤ CSV 出力のヘッダ/行数/文字コード、⑥ ルーティング全解決。
 - **自動化できないもの**: 探索的検証、濫用シナリオ、使用性/a11y、視覚品質、実負荷。`05` で人間主導の実施を設計。

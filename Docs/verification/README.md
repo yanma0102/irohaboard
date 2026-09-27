@@ -8,7 +8,7 @@
 | 対象環境（検証） | Docker: `irohaboard5-web-1`（php:8.4-apache, `http://localhost:8082`）/ `irohaboard5-db-1`（mariadb:11.4, port 13307） |
 | 対象リポジトリ | `github.com/yanma0102/irohaboard` |
 | 作成日 | 2026-09-25 |
-| 版 | 1.11（v1.11: W8（ABチャーター）実施、D-39（不正JSON時のHTML応答）を修正・実測 `evidence/W8/W8-execution-record.md`（748/3708/0E/0F）。v1.10: 強化検証の**ナレッジ**を `10-verification-knowledge.md` に記録し、テスト件数を現行値（744/3689）へ更新。v1.9: W1/W2 検出の不具合 D-01〜D-07/W2-F1 を修正・実測 `evidence/W1/W1-fix-record.md`（645/3173/0E/0F、レート制限120→429、セキュリティヘッダ付与）。v1.8: W2 実施、v1.7: W1 実施＋原因解析、v1.6: W0、v1.5: MCP 9 ツール、v1.4 手順書 `09`、v1.3 第2次レビュー、v1.2 全画面/画面操作、v1.1 セキュリティ前提修正） |
+| 版 | 1.12（v1.12: W8 追補 — VR-AUTH-043（セッション固定攻撃）PASS、D-07（HTTPS Cookie Secure 測定）完了、D-40（Cookie Secure 設定修正）完了。v1.11: W8（ABチャーター）実施、D-39（不正JSON時のHTML応答）を修正・実測 `evidence/W8/W8-execution-record.md`（748/3708/0E/0F）。v1.10: 強化検証の**ナレッジ**を `10-verification-knowledge.md` に記録し、テスト件数を現行値（744/3689）へ更新。v1.9: W1/W2 検出の不具合 D-01〜D-07/W2-F1 を修正・実測 `evidence/W1/W1-fix-record.md`（645/3173/0E/0F、レート制限120→429、セキュリティヘッダ付与）。v1.8: W2 実施、v1.7: W1 実施＋原因解析、v1.6: W0、v1.5: MCP 9 ツール、v1.4 手順書 `09`、v1.3 第2次レビュー、v1.2 全画面/画面操作、v1.1 セキュリティ前提修正） |
 | 状態 | 計画策定済み。自動化基盤（Seeder/スモーク/CI/API 契約テスト）導入済。検証項目は未実施（結果欄は空欄運用） |
 
 ---
@@ -237,3 +237,17 @@
 | SBTM | Session-Based Test Management。時間制の探索的テスト運用。 |
 | チャーター | 探索的セッションの目的・対象・狙いを記した指示。 |
 | DS | Data Set。検証前提データ。 |
+
+---
+
+## 13. W8 追補（2026-09-27）
+
+W8（ABチャーター／残手動項目のライブ実測）の追補として、以下の3件を実施・記録した。
+
+- **VR-AUTH-043（セッション固定・再生成攻撃）→ PASS**: 攻撃者が自分の未ログインセッション ID を被害者に植え付けるシナリオを実演。被害者ログイン後、攻撃者の旧セッション ID では 302 → ログイン画面（乗っ取り不可）。防御: `session_regenerate_id(true)`。
+- **D-07（HTTPS ログイン時クッキーに Secure が付かない）→ 測定完了**: 自作 TLS プロキシで HTTPS ログインを実施。D-40 修正前は Secure 0/5。根因は D-40（下記）。
+- **D-40（Cookie Secure の設定が機能していない）→ 修正・検証完了**: `config/app.php` の Session ini 配列設計＋`AppController::writeCookie()` に `withSecure()` 追加。CLI 5ケース＋ライブ E2E で Secure 5/5 付与を確認。D-07 の根因も解消。
+
+詳細は `evidence/W8/W8-execution-record.md`（§2.14〜§2.16）および `evidence/W8/W8-fix-record.md`（§9）を参照。
+
+**スイート基準**: 748 tests / 3708 assertions / 0E / 0F / 8 PHPUnit Notices（据え置き）。

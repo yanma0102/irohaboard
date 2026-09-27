@@ -242,6 +242,7 @@ class AppController extends Controller
             ->withValue($value)
             ->withPath(ini_get('session.cookie_path'))
             ->withHttpOnly(true)
+            ->withSecure((bool) ini_get('session.cookie_secure'))
             ->withExpiry(new DateTimeImmutable($expires));
 
         $this->response = $this->response->withCookie($cookie);

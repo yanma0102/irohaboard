@@ -38,7 +38,7 @@
 | D-04 | S3 | CSP／HSTS／Referrer-Policy／Permissions-Policy 未設定 | W1 | ✅ 修正済 |
 | D-05 | S3 | セキュリティヘッダがアプリ層でなく Apache 層のみ | W1 | ✅ 修正済 |
 | D-06 | S3 | Prelock がユーザー名単位＝ロックアウト DoS | W1 | ✅ 修正済（IP 併用） |
-| D-07 | 要判定 | セッション Cookie の `Secure` 不在 | W1 | 要判定（HTTPS 環境が必要） |
+| D-07 | S3 | セッション Cookie の `Secure` 不在 | W1 | ✅ 測定完了（W8 で TLS プロキシによる実測を実施。D-40 修正前に Secure 0/5 を確認。修正後は 5/5 付与。根因は D-40 として修正済み） |
 | D-08 | S2 / P0 | `accessibleCourseIds()` に staff バイパスなし → Write が受講登録済み課程に限定 | W2 | ✅ 修正済（Write 側にも `isStaff()` バイパス） |
 | D-09 | S2 / P0 | MCP ツールのエラーが `isError: false` のまま JSON テキストで返る | W2 | ✅ 修正済（`ToolCallException` 送出 → `isError: true`） |
 | D-10 | S2 / P0 | ユーザー CSV インポートが機能しない | W2 | ✅ **修正済（R3-fix）**。`src/Utility/Utils.php:11` を `use Cake\Core\Configure;` に変更（1 行）。CP932 CSV 取込でユーザー作成を実 HTTP 確認 |
@@ -71,6 +71,7 @@
 | **D-37** | **S2 / P0** | アップロード画像・ファイル配信が到達不能（snake_case アクション `file_download`/`file_movie`/`file_image` と `DashedRoute` の自動 inflect 不整合で `Missing Method` 404。`uploadImage` の返す URL もアンダースコア形式で不一致） | 再試験（R3-fix） | ✅ 修正済（3 メソッドを camelCase 化＋ルート・テンプレート・返却 URL を統一） |
 | **D-38** | **S2** | `fileDownload`/`fileMovie` が `content.url` 空（未登録ファイル）で `basename(null)` の TypeError → HTTP 500 | 再試験（R3-fix） | ✅ 修正済（空 URL を `NotFoundException` に変換し 404 化） |
 | **D-39** | **S4** | JSON API が不正 JSON に debug HTML（867KB・スタック/内部パス露出）を返す | W8 | ✅ 修正済（ApiErrorMiddleware が /api・/mcp の BadRequestException を捕捉し JSON 400。非 API は再スローで HTML 維持） |
+| **D-40** | **S3** | Cookie Secure の設定が機能していない（config/app.php Session `secure` は死に設定、AppController writeCookie() に withSecure() 欠落） | W8 | ✅ 修正済（config/app.php ini 配列設計＋AppController writeCookie() に withSecure() 追加。CLI 5ケース＋ライブ E2E で検証済み。D-07 の根因も解消） |
 
 **未修正の P0 / S2: 0 件。**（W1〜W6 の P0／S2 および R2/R3 で残存した D-10／D-36／D-37／D-38 はすべて修正済み。**R4 で実 HTTP と自動テストにより修正を確認**。詳細は [R4-retest-record.md](R4/R4-retest-record.md)）
 

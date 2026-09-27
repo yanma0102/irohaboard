@@ -434,11 +434,19 @@ return [
         'defaults' => 'php',
         'cookie' => 'AppSession',
         'timeout' => 1440,
-        'secure' => filter_var(env('SESSION_SECURE', false), FILTER_VALIDATE_BOOLEAN),
-        'ini' => [
-            'session.cookie_path' => '/',
-            'session.cookie_samesite' => 'Lax',
-        ],
+        'ini' => array_filter(
+            [
+                'session.cookie_path' => '/',
+                'session.cookie_samesite' => 'Lax',
+                // SESSION_SECURE 未設定時（または空文字＝compose の ${VAR:-} パターン）はキーを落とし、
+                // CakePHP の自動付与（env('HTTPS') 真時）を優先。true=常時付与（TLS 終端が PHP に
+                // HTTPS を渡さない LB 構成向け）/ false=明示的に不付与。
+                'session.cookie_secure' => in_array(env('SESSION_SECURE'), [null, ''], true)
+                    ? null
+                    : filter_var(env('SESSION_SECURE'), FILTER_VALIDATE_BOOLEAN),
+            ],
+            static fn($value): bool => $value !== null
+        ),
     ],
 
     /**

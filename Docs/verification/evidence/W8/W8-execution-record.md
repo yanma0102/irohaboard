@@ -3,11 +3,11 @@
 | 項目 | 内容 |
 |------|------|
 | 実施日 | 2026-09-27 |
-| 実施範囲 | W8（ABチャーター／残手動項目のライブ実測）: AB-01〜AB-15、VR-SEC-005、AD-073 |
+| 実施範囲 | W8（ABチャーター／残手動項目のライブ実測）: AB-01〜AB-15、VR-SEC-005、AD-073、VR-AUTH-043、D-07、D-40 |
 | 実施方法 | curl + HTTP リクエスト、DB 直接操作（検証データ作成のみ）、MCP ツール呼び出し、Playwright（ヘッドレス Chrome） |
 | 対象環境 | ローカル Docker（web `irohaboard5-web-1` :8082、DB `irohaboard5-db-1` MariaDB 11.4）、`127.0.0.1:8082` + `Host: localhost` ヘッダ偽装、DB `irohaboard`（本番相当の実測用） |
 | 認証 | 管理 `admin/adminpass`（セッション）、一般 `user1/password`・`user2/password`（セッション）、API は `POST /api/v1/auth/token` で取得した user1/admin の Bearer トークン |
-| スイート基準 | 744 tests / 3689 assertions / 0E / 0F / 8 PHPUnit Notices（この記録の作成時点では W8 のコード修正は別タスクで進行中のため、スイート結果は「基準維持（前回実行時点）」と注記） |
+| スイート基準 | 748 tests / 3708 assertions / 0E / 0F / 8 PHPUnit Notices（`bash scripts/test-fresh.sh` 実測） |
 
 ---
 
@@ -251,15 +251,80 @@
 
 → **システム設定画面が正常に描画**。JS エラーなし。
 
+### 2.14 VR-AUTH-043: セッション固定・再生成攻撃（実攻撃実演）
+
+**判定: ✅ PASS**
+
+**攻撃手法**: 攻撃者が自分の未ログインセッション ID を被害者に植え付け、被害者のログイン後にその ID で会話を奪う試行。
+
+**手順と実測**:
+1. 攻撃者の事前セッション `X = a8605d70defb70d42963aee7496b60ec` を取得。
+2. そのセッション Cookie で被害者がログイン（POST /users/login）→ 応答に `Set-Cookie: AppSession=deleted` ＋ 新 ID が計2回（最終 `Y = cd6de1f6ac41cd8695597b8c455e8b17`、Y ≠ X）。
+3. 攻撃者が旧 X で `/users-courses` を要求 → **302 → ログイン画面へ**（乗っ取り不可）。
+4. 被害者は新 Y で `/users-courses` → **200「コース一覧」**。
+
+**防御機構**: ログイン成功時の `session_regenerate_id(true)` — `vendor/cakephp/cakephp/src/Http/Session.php:662`。
+
+→ **セッション固定攻撃は防御により無効化**。旧セッション ID ではアクセス不可。
+
+### 2.15 D-07: HTTPS ログイン時クッキーに Secure が付かない（測定完了、根因は D-40）
+
+**判定: 測定完了（修正は D-40 で実施）**
+
+**手法**: 自作 TLS プロキシ `/tmp/opencode/tls_proxy.py`（`127.0.0.1:8443` → `127.0.0.1:8082`、自己署名証明書）で実際に HTTPS ログインを実施。
+
+**測定結果（既定設定・D-40 修正前）**: HTTPS ログイン応答の Set-Cookie 5件すべて **Secure 0/5**（AppSession×4＝deleted×2＋新ID×2、LoginStatus×1）。HTTP ベースラインも Secure 0。
+
+**結論**: 未付与の根因は D-40（`config/app.php` の Session 設計不備）。D-40 の修正後に再測定し、Secure 5/5 付与を確認（§2.16 参照）。
+
+→ **D-07 の根因は D-40 として修正済み**。
+
+### 2.16 D-40: Cookie Secure の設定が機能していない（修正・検証完了）
+
+**判定: ✅ 修正済み**
+
+**根因（4点）**:
+1. `config/app.php` のトップレベル `'secure'` キーは CakePHP 5 の `Session` クラスが一切参照しない**死に設定**（`vendor/cakephp/cakephp/src/Http/Session.php` に `secure` 参照なし）。
+2. `AppController::writeCookie()`（`LoginStatus` クッキー手动生成）に `withSecure()` がなかった。
+3. compose（`docker/docker-compose.cakephp5.yml`）に `SESSION_SECURE` が未定義。
+4. CakePHP の自動付与（`Session.php:112-118`）は `!isset($ini['session.cookie_secure']) && env('HTTPS')` 条件。**ini キーを常に置くと自動付与が遮断される**ため、未設定時はキーを落とす設計が必要。
+
+**修正内容**:
+- `config/app.php`（Session ブロック）: トップレベル `'secure'` を削除し、`ini` 配列に `'session.cookie_secure' => in_array(env('SESSION_SECURE'), [null, ''], true) ? null : filter_var(env('SESSION_SECURE'), FILTER_VALIDATE_BOOLEAN)` を追加。env 未設定・空文字（compose の `${VAR:-}` パターン相当）なら**キー自体を置かず** CakePHP の自動付与（env('HTTPS')）に委ね、明示値ならその値を採用。
+- `src/Controller/AppController.php` `writeCookie()`: `->withHttpOnly(true)` の直後に `->withSecure((bool) ini_get('session.cookie_secure'))` を追加（LoginStatus に Secure 付与。セッション開始後の `ini_get` で当該リクエストの実効値を参照）。
+
+**検証（全て実測）**:
+1. `php -l` 両ファイルとも OK。`grep -rn "Session\.secure\|'secure'" tests/` ヒットなし（テスト非依存）。
+2. CLI 5ケース（`Session::create` → `start()` 後に `ini_get('session.cookie_secure')` を実測）:
+
+| env | HTTPS | ini キー | start後 cookie_secure |
+|---|---|---|---|
+| 未設定 | off | 不在 | `[0]` |
+| 未設定 | on | 不在 | **`[1]`（自動付与パスが生きている）** |
+| `true` | off | `true` | `[1]` |
+| `false` | on | `false` | `[]`（明示オフが HTTPS 自動付与に優先） |
+| 空文字 | on | 不在 | **`[1]`（空文字＝未設定扱い）** |
+
+3. ライブ E2E（`SESSION_SECURE` 既定を一時 `true` 化 → 実測 → 復元）:
+   - HTTPS GET /users/login → `Set-Cookie: AppSession=...; path=/; secure; HttpOnly; SameSite=Lax` 付与。
+   - HTTPS ログイン応答 → **Set-Cookie 5/5 全て `secure`**: AppSession deleted×2＋新ID×2（`session_regenerate_id` による再生成も含む）、`LoginStatus=logined; secure; HttpOnly`。
+   - ログイン成功 302 → `/users-courses` 200「コース一覧」到達確認済。
+   - 復元後: `config/app.php` の md5 が実測前と一致（無改変復元）、HTTPS ベースライン Secure 0 に回帰。
+
+**残課題（記録のみ・スコープ外）**: ① `csrfToken` クッキーは Secure 未付与（CSRF ミドルウェア管理）。② 実運用では TLS 終端が `HTTPS` を伝えない構成もあるため、確実性のため `SESSION_SECURE=true` の明示設定を推奨。
+
+→ **D-40 は修正済み。D-07 の根因も解消**。
+
 ---
 
 ## 3. 残り（✅ にならなかったもの）
 
 | ID | 状態 | 理由 |
 |----|------|------|
-| VR-AUTH-043 | 防御確認済み / 攻撃シナリオ未実施 | 防御（ログイン時の session ID 再生成、framework `vendor/cakephp/cakephp/src/Http/Session.php:662` の `session_regenerate_id(true)`）は既確認だが、**攻撃シナリオ（攻撃者がセッション ID を被害者に固定する実演）は未実施**のまま |
-| D-07 | 要判定 | HTTPS 環境での Cookie `Secure` 再計測（前章で要判定のまま） |
+| VR-AUTH-043 | ✅ 実施完了（PASS） | 実攻撃シナリオで session 固定→乗っ取り不可を実証。詳細は §2.14 参照。防御: ログイン成功時の `session_regenerate_id(true)` |
+| D-07 | ✅ 測定完了（根因は D-40 として修正済み） | HTTPS プロキシで実測。D-40 修正前は Secure 0/5、修正後は 5/5 付与。詳細は §2.15 参照 |
 | D-39 | 修正進行中 | AB-13 参照。修正後の再実測はオーケストレーターが実施する |
+| D-40 | ✅ 修正済み | Cookie Secure 設定が機能していなかった。config/app.php の ini 配列設計＋AppController writeCookie() に withSecure() 追加で修正。詳細は §2.16 参照 |
 | D-18 | 意図的延期 | 既存記録のまま |
 | D-32 | 意図的延期 | 既存記録のまま |
 
@@ -290,12 +355,15 @@
 
 - **AB-01〜AB-15（14/15 合格）**: 他人レコードアクセス拒否、非公開コンテンツ保護、権限昇格防御、お知らせグループ限定、MCP 権限、ファイルアップロード制御、レート制限、CSV サニタイズ、オープンリダイレクト防御、CSV 権限昇格防御が全て正常に機能
 - **AB-13（不合格 → D-39）**: 不正 JSON 送信時に CakePHP debug HTML が返される。ApiErrorMiddleware が BodyParser の BadRequestException を catch していないため、API 契約（JSON 応答）に違反。修正は別タスクで進行中
+- **VR-AUTH-043（PASS）**: セッション固定・再生成攻撃を実攻撃シナリオで実証。攻撃者の旧セッション ID ではアクセス不可（session_regenerate_id(true) による防御）
+- **D-07（測定完了 → D-40 として修正済み）**: HTTPS ログイン時の Cookie Secure 未付与を TLS プロキシで実測。根因は D-40（config/app.php Session 設計不備）であり、D-40 修正後に Secure 5/5 付与を確認
+- **D-40（修正済み）**: config/app.php の ini 配列設計＋AppController writeCookie() に withSecure() 追加。CLI 5ケース＋ライブ E2E で検証済み
 - **AD-073**: 管理画面システム設定が正常に描画、JS エラーなし
 - **VR-SEC-010**: CSV 権限昇格は全経路で遮断確認済
 
-**スイート基準**: 744 tests / 3689 assertions / 0E / 0F / 8 PHPUnit Notices（基準維持・前回実行時点）
+**スイート基準**: 748 tests / 3708 assertions / 0E / 0F / 8 PHPUnit Notices（`bash scripts/test-fresh.sh` 実測）
 
 **S1（データ破データ破壊・権限逸脱）**: 0 件
 **S2（機能不具合）**: 0 件
 **S3（UX/セキュリティ）**: 0 件
-**S4（軽微）**: 1 件（D-39: 不正 JSON 送信時の debug HTML 漏洩、修正進行中）
+**S4（軽微）**: 2 件（D-39: 不正 JSON 送信時の debug HTML 漏洩、修正進行中。D-40: Cookie Secure 設定が機能していない、**修正済み**）

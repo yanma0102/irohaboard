@@ -18,6 +18,7 @@ namespace App;
 
 use App\Middleware\ApiErrorMiddleware;
 use App\Middleware\ApiRateLimitMiddleware;
+use App\Middleware\BasePathMiddleware;
 use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
 use App\Service\AppConfigService;
@@ -92,6 +93,11 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // In production, ensures App.fullBaseUrl is configured and validates
             // the incoming Host header against it.
             ->add(new HostHeaderMiddleware())
+
+            // 設定されたベースパス（サブディレクトリ接頭辞）を request に適用する。
+            // AssetMiddleware と RoutingMiddleware が URL を組み立てる前に
+            // 差し込む必要があるため、この位置が前提となる。
+            ->add(new BasePathMiddleware())
 
             // Handle plugin/theme assets like CakePHP normally does.
             ->add(new AssetMiddleware([

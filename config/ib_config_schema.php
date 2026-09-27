@@ -17,16 +17,27 @@ declare(strict_types=1);
 
 // カテゴリ定義（表示順）
 $categories = [
-    'ldap'     => ['label' => 'LDAP設定',       'order' => 1],
-    'security' => ['label' => 'セキュリティ',    'order' => 2],
-    'upload'   => ['label' => 'アップロード',    'order' => 3],
-    'ui'       => ['label' => 'UI表示',         'order' => 4],
-    'api'      => ['label' => 'API',            'order' => 5],
-    'import'   => ['label' => '取込',           'order' => 6],
+    'system'   => ['label' => 'システム',        'order' => 1],
+    'ldap'     => ['label' => 'LDAP設定',       'order' => 2],
+    'security' => ['label' => 'セキュリティ',    'order' => 3],
+    'upload'   => ['label' => 'アップロード',    'order' => 4],
+    'ui'       => ['label' => 'UI表示',         'order' => 5],
+    'api'      => ['label' => 'API',            'order' => 6],
+    'import'   => ['label' => '取込',           'order' => 7],
 ];
 
-// 24項目のフィールド定義
+// 25項目のフィールド定義
 $fields = [
+    // ─── 1.1 システム（1項目）───
+    'base_path' => [
+        'type'     => 'string',
+        'category' => 'system',
+        'label'    => 'ベースパス（URLのサブディレクトリ）',
+        'help'     => '例: /irohaboard 。空欄の場合はPHP_SELFから自動判定します。'
+            . 'リバースプロキシが接頭辞を剥がす構成でのみ使用してください。'
+            . '誤った値を設定するとリンクが壊れます。',
+    ],
+
     // ─── 2.1 LDAP設定（9項目）───
     'ldap_enabled' => [
         'type'     => 'bool',

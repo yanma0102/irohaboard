@@ -110,9 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             'label' => __($def['label']),
                             'value' => $val,
                         ];
-                        if ($help) {
-                            $options['help'] = $help;
-                        }
                         $afterParts = [];
                         if ($unit) {
                             $afterParts[] = '<span class="text-muted small">' . h($unit) . '</span>';
@@ -129,6 +126,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ? (string)(int)round($defaultVal / 1048576)
                                 : (string)$defaultVal;
                             $afterParts[] = '<span class="text-muted small">既定: ' . h($defaultText) . '</span>';
+                        }
+                        if ($help) {
+                            // CakePHP5 は control() の 'help' を受け付けず
+                            // 入力要素に help="..." 属性としてリークするため、
+                            // 補助表示エリアにテキストとして描画する
+                            $afterParts[] = '<span class="text-muted small">' . h($help) . '</span>';
                         }
                         if (!empty($afterParts)) {
                             // label(col-sm-3) と入力欄(col-sm-9) が floats で幅を埋めるため、

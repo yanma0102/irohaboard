@@ -30,6 +30,7 @@ class MigrationVerificationTest extends TestCase
     {
         $expectedTables = [
             'ib_cake_sessions',
+            'ib_config_overrides',
             'ib_contents',
             'ib_contents_questions',
             'ib_courses',

@@ -18,6 +18,7 @@ namespace App\Test\TestCase;
 
 use App\Application;
 use App\Middleware\ApiRateLimitMiddleware;
+use App\Middleware\BasePathMiddleware;
 use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
 use Cake\Core\Configure;
@@ -90,12 +91,16 @@ class ApplicationTest extends TestCase
         $middleware->seek(2);
         $this->assertInstanceOf(HostHeaderMiddleware::class, $middleware->current());
 
-        // 3: AssetMiddleware
+        // 3: BasePathMiddleware（AssetMiddleware の前に base/webroot を確定させる）
         $middleware->seek(3);
+        $this->assertInstanceOf(BasePathMiddleware::class, $middleware->current());
+
+        // 4: AssetMiddleware
+        $middleware->seek(4);
         $this->assertInstanceOf(AssetMiddleware::class, $middleware->current());
 
-        // 4: RoutingMiddleware
-        $middleware->seek(4);
+        // 5: RoutingMiddleware
+        $middleware->seek(5);
         $this->assertInstanceOf(RoutingMiddleware::class, $middleware->current());
     }
 

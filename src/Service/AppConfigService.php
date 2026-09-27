@@ -178,7 +178,14 @@ class AppConfigService
 
                 case 'string':
                 case 'secret':
-                    // 特別な検証なし（空は上記でスキップ済み）
+                    // base_path は生成URLの接頭辞になるため、不正値でリンクが壊れる
+                    if ($key === 'base_path') {
+                        $basePath = '/' . trim((string)$value, '/');
+                        if (!preg_match('#^/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$#', $basePath)) {
+                            $errors[$key] = '英数字と / . _ ~ - のみ使用でき、先頭と末尾の / は不要です'
+                                . '（例: /irohaboard）。空欄の場合は自動判定します。';
+                        }
+                    }
                     break;
             }
         }

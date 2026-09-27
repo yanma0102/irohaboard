@@ -11,6 +11,11 @@
 // CakePHP 2 時代の Security.salt（旧 SHA1 パスワードの検証に使用）
 $config['legacy_security_salt'] = '397110e45242a23e5802e78f4eec95a7bd39e0f0';
 
+// URLのベースパス（サブディレクトリ接頭辞）。
+// 空欄（推奨）＝PHP_SELFからの自動判定。
+// リバースプロキシが接頭辞を剥がす構成で、生成URLに接頭辞を付与したい場合のみ設定する。
+$config['base_path'] = '';
+
 $config['group_status']		= ['1' => '公開', '0' => '非公開'];
 $config['course_status']	= ['1' => '有効', '0' => '無効'];
 $config['content_status']	= ['1' => '公開', '0' => '非公開'];

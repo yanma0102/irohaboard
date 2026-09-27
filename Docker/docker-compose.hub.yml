@@ -1,9 +1,8 @@
 name: irohaboard5-hub
 
 # Docker Hub の公開イメージ（yanma0102/irohaboard:latest）を使って起動する構成。
-# このイメージはアプリ本体を含まない Web ランタイム（composer 同梱）のため、
-# リポジトリの app/ を /var/www/html にマウントして供給する（マウント方式）。
-# 初回起動時に vendor/ が無ければコンテナ内で composer install を自動実行する。
+# アプリ本体（vendor 同梱）はイメージに含まれるため、リポジトリの clone や
+# composer install は不要。pull だけで起動できる（オフライン環境向け）。
 #   docker compose -f Docker/docker-compose.hub.yml pull
 #   docker compose -f Docker/docker-compose.hub.yml up -d
 services:
@@ -12,12 +11,12 @@ services:
     ports:
       - "8082:80"
     volumes:
-      # アプリ本体はリポジトリからマウント供給
-      - ../app:/var/www/html/
       # tmpディレクトリの永続化（コンテナ再起動時も保持）
       - cakephp5-tmp:/var/www/html/tmp
       # アップロードファイルの永続化
       - cakephp5-files:/var/www/html/files
+      # 画像アップロード（webroot/uploads）の永続化
+      - cakephp5-uploads:/var/www/html/webroot/uploads
     environment:
       - DB_HOST=db
       - DB_PORT=3306
@@ -31,14 +30,6 @@ services:
     mem_limit: 1536m
     pids_limit: 512
     restart: unless-stopped
-    # 初回起動時に vendor/ が無ければコンテナ内の composer で自動インストールし、
-    # その後 Apache 実行ユーザ www-data に必要なディレクトリの所有権を合わせる。
-    # webroot/uploads はホスト bind、files/tmp は named volume のため、起動時に毎回 chown する。
-    command: >
-      sh -c "if [ ! -f /var/www/html/vendor/autoload.php ]; then
-      composer install --no-interaction --prefer-dist --optimize-autoloader; fi;
-      chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files /var/www/html/tmp &&
-      exec apache2-foreground"
 
   db:
     image: mariadb:11.4
@@ -63,3 +54,4 @@ volumes:
   cakephp5-mysql-data:
   cakephp5-tmp:
   cakephp5-files:
+  cakephp5-uploads:

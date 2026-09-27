@@ -45,6 +45,25 @@ COPY Docker/mpm-prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 # PHP 設定ファイルをコピー
 COPY Docker/php.ini /usr/local/etc/php/conf.d/app.ini
 
+# アプリ本体をイメージに同梱（vendor 含む。ネットワーク不要で起動できる）
+COPY app/ /var/www/html/
+
+# app_local.php を example から生成し、ランダムな SECURITY_SALT を焼き込む
+# （DB 接続情報などは実行時に compose の環境変数から注入される）
+RUN cp /var/www/html/config/app_local.example.php /var/www/html/config/app_local.php \
+    && SALT="$(php -r 'echo bin2hex(random_bytes(32));')" \
+    && sed -i "s/__SALT__/${SALT}/" /var/www/html/config/app_local.php \
+    && mkdir -p /var/www/html/tmp /var/www/html/logs /var/www/html/files /var/www/html/webroot/uploads \
+    && chown -R www-data:www-data /var/www/html/tmp /var/www/html/logs /var/www/html/files /var/www/html/webroot/uploads
+
+# named volume で uploads が隠れた場合に .htaccess を復元するためのテンプレート
+COPY app/webroot/uploads/.htaccess /usr/local/share/irohaboard/uploads.htaccess
+
+# 起動エントリポイント（所有権調整と Apache 起動）
+COPY Docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 EXPOSE 80
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["apache2-foreground"]

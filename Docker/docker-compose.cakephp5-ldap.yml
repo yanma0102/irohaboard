@@ -29,12 +29,10 @@ services:
     mem_limit: 1536m
     pids_limit: 512
     restart: unless-stopped
-    # tmp（named volume cakephp5-tmp）も所有者変更が必要:
-    # chownしないと /var/www/html/tmp/cache が書けず、ログインページが
+    # tmp（named volume cakephp5-tmp）を含む所有権調整は、イメージの
+    # ENTRYPOINT（Docker/entrypoint.sh）が起動時に実行する。
+    # chown されないと /var/www/html/tmp/cache が書けず、ログインページが
     # Warning だらけのデバッグ出力になりフォームが描画されない。
-    command: >
-      sh -c "chown -R www-data:www-data /var/www/html/webroot/uploads /var/www/html/files /var/www/html/tmp &&
-      exec apache2-foreground"
 
   db:
     image: mariadb:11.4

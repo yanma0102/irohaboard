@@ -1,27 +1,29 @@
+# VCS / エディタ / CI
 .git
 .gitignore
 .dockerignore
-Docker/README.md
+.editorconfig
+.slim
+.github
+
+# ドキュメント
 *.md
 LICENSE
-.editorconfig
+
+# 開発・検証用（イメージには不要）
+Dev/
+
+# アプリの実行時生成物・秘密情報（ビルドコンテキストから除外）
 app/tmp/
 app/logs/
+app/tests.sqlite
+app/.phpunit.cache
+app/config/app_local.php
+app/config/.env
 *.log
 .DS_Store
 Thumbs.db
 
-# アプリ本体は bind マウントで供給するため、ビルドコンテキストから除外
-Dev/
-app/vendor/
-app/src/
-app/config/
-app/templates/
-app/bin/
-app/tests/
-app/resources/
-app/plugins/
-app/phpcs.xml
-app/phpstan.neon
-app/psalm.xml
-app/phpunit.xml.dist
+# アップロード画像は同梱しない（.htaccess のみ同梱）
+app/webroot/uploads/*
+!app/webroot/uploads/.htaccess

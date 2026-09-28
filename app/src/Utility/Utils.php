@@ -95,8 +95,12 @@ class Utils
      */
     public static function getHNSBySec($sec)
     {
-        $hour = floor($sec / 3600);
-        $min = floor(($sec / 60) % 60);
+        // 秒数は DB の集計（SUM 等）により float / string で渡る場合があるため整数へ正規化する。
+        // PHP 8.1+ では float を % や int 引数へ暗黙変換すると
+        // "Implicit conversion from float ... to int loses precision" が発生する。
+        $sec = (int)$sec;
+        $hour = intdiv($sec, 3600);
+        $min = intdiv($sec, 60) % 60;
         $sec = $sec % 60;
 
         $hms = sprintf('%02d:%02d:%02d', $hour, $min, $sec);

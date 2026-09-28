@@ -106,8 +106,7 @@ class InfosTable extends AppTable
 
         $query = $this->find()
             ->select(['Infos.id', 'Infos.title', 'Infos.created'])
-            ->where(['Infos.id IN' => $infoIdList])
-            ->orderBy(['Infos.created' => 'DESC']);
+            ->where(['Infos.id IN' => $infoIdList]);
 
         if ($limit) {
             $query->limit($limit);

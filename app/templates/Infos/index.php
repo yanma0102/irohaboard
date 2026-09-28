@@ -18,7 +18,7 @@
 		<caption class="sr-only">お知らせ一覧</caption>
 		<thead>
 			<tr>
-				<th><?= $this->Paginator->sort('opend',   __('日付')); ?></th>
+				<th><?= $this->Paginator->sort('opened',  __('日付')); ?></th>
 				<th><?= $this->Paginator->sort('title',   __('タイトル')); ?></th>
 			</tr>
 			</thead>

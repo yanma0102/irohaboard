@@ -96,8 +96,7 @@ class UsersController extends AppController
 
         // クエリの構築
         $query = $usersTable->find()
-            ->where($conditions)
-            ->orderBy([$usersTable->aliasField('created') => 'DESC']);
+            ->where($conditions);
 
         $query->select($usersTable);
 
@@ -117,6 +116,8 @@ class UsersController extends AppController
 
         $this->paginate = [
             'limit' => 20,
+            'order' => ['Users.created' => 'DESC'],
+            'sortableFields' => ['username', 'name', 'role', 'last_logined', 'created'],
         ];
 
         try {

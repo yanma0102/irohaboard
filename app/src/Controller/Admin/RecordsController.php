@@ -117,11 +117,12 @@ class RecordsController extends AppController
         // 一覧表示
         $query = $recordsTable->find()
             ->contain(['Users', 'Courses', 'Contents'])
-            ->where($conditions)
-            ->orderBy([$recordsTable->aliasField('created') => 'DESC']);
+            ->where($conditions);
 
         $this->paginate = [
             'limit' => 20,
+            'order' => ['Records.created' => 'DESC'],
+            'sortableFields' => ['created', 'course_id', 'content_id', 'score', 'pass_score', 'is_passed', 'understanding', 'study_sec', 'User.username', 'User.name'],
         ];
 
         try {

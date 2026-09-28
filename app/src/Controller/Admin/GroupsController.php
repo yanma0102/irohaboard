@@ -51,11 +51,12 @@ class GroupsController extends AppController
                     "(SELECT GROUP_CONCAT(c.title ORDER BY c.id SEPARATOR ', ') AS course_title FROM ib_groups_courses gc INNER JOIN ib_courses c ON c.id = gc.course_id WHERE gc.group_id = Groups.id GROUP BY gc.group_id)",
                 ),
             ])
-            ->where([$groupsTable->aliasField('deleted IS NULL')])
-            ->orderBy([$groupsTable->aliasField('created') => 'DESC']);
+            ->where([$groupsTable->aliasField('deleted IS NULL')]);
 
         $this->paginate = [
             'limit' => 20,
+            'order' => ['Groups.created' => 'DESC'],
+            'sortableFields' => ['title', 'created', 'modified'],
         ];
 
         $groups = $this->paginate($query);

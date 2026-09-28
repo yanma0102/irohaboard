@@ -31,6 +31,12 @@ class InfosController extends AppController
 
         $query = $infosTable->getInfoOption($this->readAuthUser('id'));
 
+        $this->paginate = [
+            'limit' => 20,
+            'order' => ['Infos.created' => 'DESC'],
+            'sortableFields' => ['opened', 'title'],
+        ];
+
         $infos = $this->paginate($query);
 
         $this->set(compact('infos'));

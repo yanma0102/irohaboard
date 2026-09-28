@@ -48,7 +48,8 @@
 	<div class="ib-page-title"><?= __('学習履歴一覧'); ?></div>
 	<div class="ib-horizontal">
 	<?php
-		echo $this->Form->create(null);
+		// 検索条件はクエリ文字列で受け取る（コントローラは getQuery() を参照）ため GET で送信する。
+		echo $this->Form->create(null, ['type' => 'get']);
 		echo '<div class="ib-search-buttons">';
 		echo $this->Form->submit(__('検索'),	['class' => 'btn btn-info', 'div' => false]);
 		echo $this->Form->hidden('cmd');

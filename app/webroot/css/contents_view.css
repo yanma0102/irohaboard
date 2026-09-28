@@ -14,6 +14,7 @@ html, body
 	flex-direction		: column;
 	box-sizing			: border-box;
 	padding-bottom		: 80px;
+	overflow-x			: hidden;
 }
 
 .content-view video
@@ -33,11 +34,41 @@ html, body
 {
 	flex				: 1 1 0%;
 	min-height			: 0;
+	min-width			: 0;
 	overflow-y			: auto;
+	overflow-x			: hidden;
 	border-bottom		: 1px solid #ddd;
 	background			: #f9f9f9;
 	padding				: 5px;
+	box-sizing			: border-box;
+	overflow-wrap		: break-word;
+	word-wrap			: break-word;
+	word-break			: break-word;
+}
 
+.content-body img,
+.content-body table,
+.content-body iframe,
+.content-body video,
+.content-body embed,
+.content-body object
+{
+	max-width			: 100%;
+}
+
+.content-body table
+{
+	table-layout		: fixed;
+}
+
+.content-body pre,
+.content-body code
+{
+	overflow-wrap		: break-word;
+	word-wrap			: break-word;
+	word-break			: break-all;
+	white-space			: pre-wrap;
+	max-width			: 100%;
 }
 
 .content-body-html
@@ -87,6 +118,68 @@ html, body
 	border				: 1px;
 }
 
+/* ============================================================
+   印刷: 本文全体を表示領域にとらわれず最後まで印刷する
+   ============================================================ */
+@media print
+{
+	html, body
+	{
+		height			: auto;
+		overflow		: visible;
+	}
+
+	.content-view
+	{
+		height			: auto;
+		padding-bottom	: 0;
+		overflow		: visible;
+	}
+
+	.content-title
+	{
+		flex-shrink		: 1;
+	}
+
+	.content-body,
+	.content-body-html
+	{
+		flex			: none;
+		height			: auto;
+		min-height		: 0;
+		max-height		: none;
+		overflow		: visible;
+		overflow-wrap	: break-word;
+		word-wrap		: break-word;
+		word-break		: break-word;
+	}
+
+	.content-body img,
+	.content-body table,
+	.content-body iframe,
+	.content-body video,
+	.content-body embed,
+	.content-body object
+	{
+		max-width		: 100%;
+	}
+
+	.content-body pre,
+	.content-body code
+	{
+		overflow-wrap	: break-word;
+		word-wrap		: break-word;
+		word-break		: break-all;
+		white-space		: pre-wrap;
+		max-width		: 100%;
+	}
+
+	.content-foot
+	{
+		display			: none;
+	}
+}
+
 @media only screen and (max-width:800px)
 {
 	img,
@@ -106,10 +199,10 @@ html, body
 		height			: initial;
 		min-height		: calc(100% - 100px);
 		overflow-y			: scroll;
-}
+	}
 
 	.content-foot
-{
+	{
 		height			: initial;
 		padding-bottom	: 10px;
 

@@ -14,7 +14,7 @@
 		echo $this->Html->css('jquery-ui');
 		echo $this->Html->css('bootstrap.min');
 		echo $this->Html->css('common.css');
-		echo $this->Html->css('contents_view.css?20260928');
+		echo $this->Html->css('contents_view.css?20260929');
 		echo $this->Html->css('custom.css');
 
 		echo $this->Html->script('jquery-1.9.1.min.js');

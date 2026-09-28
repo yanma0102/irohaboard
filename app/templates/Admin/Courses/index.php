@@ -54,7 +54,8 @@
 	</div>
 	<div class="ib-horizontal">
 	<?php
-		echo $this->Form->create(null);
+		// 検索条件はクエリ文字列で受け取る（コントローラは getQuery() を参照）ため GET で送信する。
+		echo $this->Form->create(null, ['type' => 'get']);
 		echo $this->Form->searchField('keyword', ['label' => __('キーワード')]);
 		echo $this->Form->submit(__('検索'), ['class' => 'btn btn-info btn-add']);
 		echo $this->Form->end();

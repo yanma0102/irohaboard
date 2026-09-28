@@ -77,6 +77,18 @@ class UsersController extends AppController
             $conditions[$usersTable->aliasField('id') . ' IN'] = $userIds ?: [-1];
         }
 
+        // ログインIDで部分一致検索
+        $username = $this->getQuery('username');
+        if ($username !== '' && $username !== null) {
+            $conditions[$usersTable->aliasField('username') . ' LIKE'] = '%' . $username . '%';
+        }
+
+        // 氏名で部分一致検索
+        $name = $this->getQuery('name');
+        if ($name !== '' && $name !== null) {
+            $conditions[$usersTable->aliasField('name') . ' LIKE'] = '%' . $name . '%';
+        }
+
         // CSV出力モードの場合
         if ($this->getQuery('cmd') === 'export') {
             return $this->_exportCsv($conditions);

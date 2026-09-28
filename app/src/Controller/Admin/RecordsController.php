@@ -81,6 +81,30 @@ class RecordsController extends AppController
             $to_date . ' 23:59:59',
         );
 
+        // コースで絞り込み
+        $course_id = $this->getQuery('course_id');
+        if ($course_id !== '' && $course_id !== null) {
+            $conditions['Records.course_id'] = (int)$course_id;
+        }
+
+        // コンテンツ名で部分一致検索
+        $content_title = $this->getQuery('content_title');
+        if ($content_title !== '' && $content_title !== null) {
+            $conditions['Contents.title LIKE'] = '%' . $content_title . '%';
+        }
+
+        // ログインIDで部分一致検索
+        $username = $this->getQuery('username');
+        if ($username !== '' && $username !== null) {
+            $conditions['Users.username LIKE'] = '%' . $username . '%';
+        }
+
+        // 氏名で部分一致検索
+        $name = $this->getQuery('name');
+        if ($name !== '' && $name !== null) {
+            $conditions['Users.name LIKE'] = '%' . $name . '%';
+        }
+
         // CSV出力モード
         if ($this->getQuery('cmd') == 'csv') {
             return $this->_exportCsv($conditions);

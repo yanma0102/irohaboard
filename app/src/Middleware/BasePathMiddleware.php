@@ -68,17 +68,20 @@ class BasePathMiddleware implements MiddlewareInterface
             $request = $request
                 ->withUri($request->getUri()->withPath($stripped === '' ? '/' : $stripped))
                 ->withAttribute('base', $base)
+                // アセットURL（/css/ /js/ /img/）は base ではなく webroot 属性から
+                // 構築される（Routing\Asset::requestWebroot）ため、接頭辞を付ける。
                 ->withAttribute('webroot', $base . $webroot);
 
             return $handler->handle($request);
         }
 
+        // パスに接頭辞が含まれていない場合は、webroot に接頭辞を付与しない。
+        // （ベースパス設定ありながらルート等でアクセスした際に、
+        // 誤って資産URLに接頭辞が付与されてファイルが見つからないのを防止）
         return $handler->handle(
             $request
                 ->withAttribute('base', $base)
-                // アセットURL（/css/ /js/ /img/）は base ではなく webroot 属性から
-                // 構築される（Routing\Asset::requestWebroot）ため、接頭辞を付ける。
-                ->withAttribute('webroot', $base . $webroot)
+                // そのままの webroot を維持する
         );
     }
 }

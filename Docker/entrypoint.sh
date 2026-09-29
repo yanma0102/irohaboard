@@ -12,6 +12,15 @@ mkdir -p /var/www/html/tmp \
          /var/www/html/files \
          /var/www/html/webroot/uploads
 
+# CakePHP のモデルスキーマキャッシュを削除する。
+# _cake_model_ キャッシュは本番(debug=false)では有効期限が「1年」で、
+# named volume (tmp) に永続化される。DB にマイグレーションで列を追加しても
+# 古いスキーマが使われ続けると、新しい列への save() が「成功」を返しながら
+# 実際には更新されない（例: ユーザの有効/無効が保存されない）ことがある。
+# 起動のたびに削除し、次回アクセス時に最新スキーマで再構築させる。
+rm -rf /var/www/html/tmp/cache/models
+mkdir -p /var/www/html/tmp/cache/models
+
 # uploads/.htaccess はディレクトリを volume で上書きすると失われるため復元する
 if [ ! -f /var/www/html/webroot/uploads/.htaccess ] \
    && [ -f /usr/local/share/irohaboard/uploads.htaccess ]; then

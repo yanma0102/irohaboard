@@ -47,8 +47,13 @@ trait UserLoginTrait
 
         $usersTable = $this->fetchTable('Users');
 
+        // is_active は「明示的に 0（無効）」のみ除外し、NULL は許容する。
+        // カラム未整備の環境で全ユーザーがログイン不能になる事故を防ぐ。
         $user = $usersTable->find()
-            ->where(['username' => $username, 'deleted IS NULL', 'is_active' => true])
+            ->where(['username' => $username, 'deleted IS NULL'])
+            ->andWhere(function ($exp) {
+                return $exp->or(['is_active IS NULL', 'is_active' => true]);
+            })
             ->first();
 
         $attributes = [];

@@ -76,7 +76,9 @@ class AuthController extends BaseController
             ->where(['username' => $username])
             ->first();
 
-        if (!$user || !empty($user->deleted) || !$user->is_active) {
+        // is_active は明示的な false/0 のみ無効扱い。NULL は有効として扱う
+        // （カラム未整備・値未投入の環境で全ユーザーがログイン不能になるのを防ぐ）
+        if (!$user || !empty($user->deleted) || ($user->is_active !== null && !$user->is_active)) {
             $this->logFailedAttempt($username);
             $this->fail(401, 'Invalid credentials');
         }

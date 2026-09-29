@@ -76,7 +76,10 @@ class AppController extends Controller
             if ($currentUser) {
                 $usersTable = $this->fetchTable('Users');
                 $user = $usersTable->get((int)$currentUser['id']);
-                if ($user && !$user->is_active) {
+                // 無効化 = 明示的に 0/false の行のみ。NULL は有効として扱う。
+                // （NULL を無効扱いすると、カラム未整備や値未投入の環境で
+                //   全ユーザーが即ログアウトされログイン不能になる）
+                if ($user && $user->is_active !== null && !$user->is_active) {
                     // Remember Me Cookie を削除
                     $this->deleteCookie('CookieAuth');
 

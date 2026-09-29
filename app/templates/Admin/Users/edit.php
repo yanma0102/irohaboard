@@ -32,7 +32,7 @@
 			
 			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
 			
-			echo $this->Form->control('is_active', ['type' => 'checkbox', 'label' => __('有効')]);
+			echo $this->Form->control('is_active', ['type' => 'checkbox', 'label' => __('有効'), 'checked' => ($user->is_active ?? true) !== false]);
 			
 			echo $this->Form->control('email',				['label' => __('メールアドレス')]);
 			echo $this->Form->control('groups._ids',				['label' => __('所属グループ'), 'options' => $groups]);

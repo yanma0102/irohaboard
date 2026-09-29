@@ -286,7 +286,8 @@ class UsersController extends AppController
         }
 
         $user = $usersTable->get((int)$user_id);
-        $newActive = !$user->is_active;
+        // NULL は有効として扱い、明示的な false/0 のみ無効とみなす
+        $newActive = !($user->is_active !== null && !$user->is_active);
 
         // 無効化の場合、最後の有効な管理者の無効化を禁止
         if (!$newActive && $user->role === 'admin') {

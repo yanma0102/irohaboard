@@ -61,10 +61,10 @@
 		<td><?= h($user['name']); ?></td>
 		<td nowrap><?= h(Configure::read('user_role.'.$user['role'])); ?>&nbsp;</td>
 		<td nowrap>
-			<?php if (!empty($user['is_active'])): ?>
-			<span class="label label-success"><?= __('有効'); ?></span>
-			<?php else: ?>
+			<?php if ($user['is_active'] !== null && !$user['is_active']): ?>
 			<span class="label label-default"><?= __('無効'); ?></span>
+			<?php else: ?>
+			<span class="label label-success"><?= __('有効'); ?></span>
 			<?php endif; ?>
 		</td>
 		<td><div class="reader" title="<?= h($user['group_title']); ?>"><p><?= h($user['group_title']); ?>&nbsp;</p></div></td>

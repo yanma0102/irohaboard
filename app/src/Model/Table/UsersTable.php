@@ -135,13 +135,24 @@ class UsersTable extends AppTable
     /**
      * 認証用 finder（Authentication plugin の OrmResolver 用）
      *
-     * 削除済みユーザ・無効ユーザを除外し、id/username/password を返す
+     * 削除済みユーザ・無効ユーザを除外し、id/username/password を返す。
+     *
+     * 注意: is_active は「明示的に 0（無効）」の行のみを除外する。
+     * NULL は許容する。これは、is_active カラム追加マイグレーションが
+     * 未適用の環境や、カラム追加後に値が入っていない行で、全ユーザーが
+     * ログイン不能になる事故を防ぐため（フェイルセーフ）。
      */
     public function findAuth(Query $query, array $options): Query
     {
         return $query
             ->select(['id', 'username', 'password', 'role', 'name'])
-            ->where(['deleted IS NULL', 'is_active' => true]);
+            ->where(['deleted IS NULL'])
+            ->andWhere(function ($exp) {
+                return $exp->or([
+                    'is_active IS NULL',
+                    'is_active' => true,
+                ]);
+            });
     }
 
     /**

@@ -156,6 +156,7 @@ $config['form_defaults'] = [
 	'templates' => [
 		'inputContainer' => '<div class="form-group {{required}}">{{content}}{{after}}</div>',
 		'formGroup' => '{{label}}<div class="col col-sm-9">{{input}}</div>',
+		'checkboxFormGroup' => '{{label}}<div class="col col-sm-9">{{input}}</div>',
 	]
 ];
 

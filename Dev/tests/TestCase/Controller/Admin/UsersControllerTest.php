@@ -218,6 +218,41 @@ class UsersControllerTest extends TestCase
     }
 
     /**
+     * 編集(edit) POST テスト — is_active を false に変更できること
+     *
+     * チェックボックスが未送信の場合、CakePHP 5 の hidden field が
+     * is_active=0 を送信する。patchEntity → save で DB に反映されることを確認する。
+     */
+    public function testEditPostDeactivateUser(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('deactivateuser');
+
+        // デフォルトでは is_active は true
+        $usersTable = $this->getTableLocator()->get('Users');
+        $before = $usersTable->get((int)$user->id);
+        $this->assertTrue((bool)$before->is_active, '作成直後は is_active が true であること');
+
+        // チェックボックス未送信（is_active=0）で編集
+        $this->post("/admin/users/edit/{$user->id}", [
+            'id' => $user->id,
+            'username' => 'deactivateuser',
+            'name' => '無効化テスト',
+            'role' => 'user',
+            'email' => 'deactivate@example.com',
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
+            'comment' => '',
+            // チェックボックス未チェック時、hidden field が is_active=0 を送信
+            'is_active' => 0,
+        ]);
+        $this->assertRedirect();
+
+        $after = $usersTable->get((int)$user->id);
+        $this->assertFalse((bool)$after->is_active, 'is_active が false に変更されていること');
+    }
+
+    /**
      * 編集(edit) POST テスト（パスワード変更なし）
      */
     public function testEditPostWithoutPasswordChange(): void

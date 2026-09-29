@@ -54,7 +54,7 @@ class PagesControllerTest extends TestCase
         $this->get('/pages/not_existing');
 
         $this->assertResponseError();
-        $this->assertResponseContains('Error');
+        $this->assertResponseContains('ページが見つかりません');
     }
 
     /**

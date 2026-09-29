@@ -86,7 +86,7 @@ class MigrationVerificationTest extends TestCase
         $this->assertTableHasColumns('ib_users', [
             'id', 'username', 'password', 'name', 'role', 'email',
             'comment', 'last_logined', 'started', 'ended',
-            'created', 'modified', 'deleted',
+            'created', 'modified', 'deleted', 'is_active',
         ]);
     }
 

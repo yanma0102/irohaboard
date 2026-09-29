@@ -21,6 +21,8 @@ services:
       - DB_USER=root
       - DB_PASS=rootpass
       - APP_FULL_BASE_URL=http://localhost:8083
+      # 本番想定: DebugKit を無効化して画面遷移を高速化する
+      - DEBUG=false
     depends_on:
       db:
         condition: service_healthy

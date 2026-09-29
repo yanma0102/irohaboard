@@ -29,16 +29,23 @@
 			
 			// root アカウント、もしくは admin 権限以外の場合、権限変更を許可しない
 			$disabled = (($username == 'root') || ($loginedUser['role'] != 'admin'));
+
+			// 権限の選択肢は運用で実際に使うもの（管理者/受講者）のみとする。
+			// ただし旧ロール(manager/editor/teacher)のユーザの場合、選択肢に
+			// 現在の値が無ければ required のラジオが1つも checked にならず、
+			// ブラウザがフォーム送信そのものをブロックしてしまう。
+			// 送信を妨げないよう、その場合のみ現在のロールを選択肢に含める。
+			$roleOptions = Configure::read('user_role');
+			$currentRole = $user->role ?? '';
+			if ($currentRole !== '' && !isset($roleOptions[$currentRole])) {
+				$roleOptions[$currentRole] = $currentRole . __('（旧権限）');
+			}
+
+			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => $roleOptions]);
 			
-			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
-			
-		echo $this->Form->control('is_active', [
-			'type' => 'checkbox',
-			'label' => __('有効'),
-			'checked' => ($user->is_active ?? true) !== false,
-			// CakePHP 5 の既定では checkbox は label 内にネストされる。
-			// ネストを解除し、ラベル(col-sm-3)と入力(col-sm-9)を横並びにする。
-			'nestedInput' => false,
+		echo $this->Form->inputRadio('is_active', [
+			'label' => __('アカウント状態'),
+			'options' => ['1' => __('有効'), '0' => __('無効')],
 		]);
 			
 			echo $this->Form->control('email',				['label' => __('メールアドレス')]);

@@ -233,7 +233,7 @@ class UsersControllerTest extends TestCase
         $before = $usersTable->get((int)$user->id);
         $this->assertTrue((bool)$before->is_active, '作成直後は is_active が true であること');
 
-        // チェックボックス未送信（is_active=0）で編集
+        // 「無効」(is_active=0) のラジオを選択した状態で編集
         $this->post("/admin/users/edit/{$user->id}", [
             'id' => $user->id,
             'username' => 'deactivateuser',
@@ -243,7 +243,7 @@ class UsersControllerTest extends TestCase
             'groups' => ['_ids' => []],
             'courses' => ['_ids' => []],
             'comment' => '',
-            // チェックボックス未チェック時、hidden field が is_active=0 を送信
+            // ラジオボタンで「無効」を選択
             'is_active' => 0,
         ]);
         $this->assertRedirect();
@@ -280,11 +280,18 @@ class UsersControllerTest extends TestCase
         $this->assertNoRedirect();
 
         $html = (string)$this->_response->getBody();
-        // チェックボックスが checked になっていないこと
-        $this->assertDoesNotMatchRegularExpression(
-            '/name="is_active"[^>]*checked/',
+        // 「無効」(is_active=0) のラジオが checked で再選択されていること。
+        // ラジオボタン化により、value="0" が選択状態になっていることを確認する。
+        $this->assertMatchesRegularExpression(
+            '/name="is_active" value="0"[^>]*checked/',
             $html,
-            '保存失敗時、無効(is_active=0)のチェック状態が維持されること'
+            '保存失敗時、無効(is_active=0)の選択状態が維持されること'
+        );
+        // 「有効」(is_active=1) は選択されていないこと
+        $this->assertDoesNotMatchRegularExpression(
+            '/name="is_active" value="1"[^>]*checked/',
+            $html,
+            '保存失敗時、有効(is_active=1)が誤って選択されていないこと'
         );
     }
 

@@ -253,6 +253,139 @@ class UsersControllerTest extends TestCase
     }
 
     /**
+     * 無効化の往復テスト — 一覧のバッジと編集画面のラジオ連動まで確認する。
+     *
+     * DB に保存されるだけでは「一覧は有効のまま」「編集画面も有効のまま」という
+     * 申告が上がるため、読み取り側（一覧バッジ・ラジオの checked）も含めて検証する。
+     */
+    public function testDeactivateReflectedInListAndEditScreen(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('roundtripuser');
+        $userId = (int)$user->id;
+        $usersTable = $this->getTableLocator()->get('Users');
+
+        // 初期状態: 一覧は「有効」、編集画面も「有効」が選択されている
+        $this->get('/admin');
+        $list = (string)$this->_response->getBody();
+        $this->assertMatchesRegularExpression(
+            '/roundtripuser.*?label-success[^>]*>有効/s',
+            $list,
+            '初期状態の一覧は「有効」であること',
+        );
+
+        $this->get("/admin/users/edit/{$userId}");
+        $this->assertResponseOk();
+        $this->assertMatchesRegularExpression(
+            '/name="is_active" value="1"[^>]*checked/',
+            (string)$this->_response->getBody(),
+            '初期状態の編集画面は「有効」が選択されていること',
+        );
+
+        // 「無効」で保存する（ブラウザと同じ文字列 "0" で送る）
+        $this->post("/admin/users/edit/{$userId}", [
+            'id' => $userId,
+            'username' => 'roundtripuser',
+            'name' => '往復テスト',
+            'role' => 'user',
+            'email' => 'roundtrip@example.com',
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
+            'new_password' => '',
+            'comment' => '',
+            'is_active' => '0',
+        ]);
+        $this->assertRedirect();
+        $this->assertStringEndsWith(
+            '/admin',
+            (string)$this->_response->getHeaderLine('Location'),
+            '保存が成功している（一覧へリダイレクトされる）',
+        );
+
+        // DB
+        $this->assertFalse(
+            (bool)$usersTable->get($userId)->is_active,
+            'DB の is_active が false であること',
+        );
+
+        // 一覧は「無効」バッジになる
+        $this->get('/admin');
+        $listAfter = (string)$this->_response->getBody();
+        $this->assertMatchesRegularExpression(
+            '/roundtripuser.*?label-default[^>]*>無効/s',
+            $listAfter,
+            '保存後の一覧は「無効」になること',
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/roundtripuser.*?label-success[^>]*>有効/s',
+            $listAfter,
+            '保存後に「有効」バッジが残っていないこと',
+        );
+
+        // 編集画面も「無効」が選択されている
+        $this->get("/admin/users/edit/{$userId}");
+        $editAfter = (string)$this->_response->getBody();
+        $this->assertMatchesRegularExpression(
+            '/name="is_active" value="0"[^>]*checked/',
+            $editAfter,
+            '保存後の編集画面は「無効」が選択されていること',
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/name="is_active" value="1"[^>]*checked/',
+            $editAfter,
+            '保存後に「有効」が選択されたまま残っていないこと',
+        );
+    }
+
+    /**
+     * アカウント状態が空文字で送信されても保存が失敗しないこと。
+     *
+     * CakePHP のラジオボタンは hidden 由来の空文字也跟着送ることがあり、
+     * 空文字のまま patchEntity に渡すと boolean 検証が
+     * 「The provided value must be a boolean」で失敗する。そのままでは
+     * 他の項目一并に保存されず、「無効化も変更もできない」ように見える。
+     */
+    public function testEditPostWithEmptyIsActiveStillSaves(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('emptyactive');
+        $userId = (int)$user->id;
+        $usersTable = $this->getTableLocator()->get('Users');
+
+        $this->post("/admin/users/edit/{$userId}", [
+            'id' => $userId,
+            'username' => 'emptyactive',
+            // 名前だけ変えて、is_active は空文字（未選択相当）
+            'name' => '空文字テスト',
+            'role' => 'user',
+            'email' => 'emptyactive@example.com',
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
+            'new_password' => '',
+            'comment' => 'この行が保存されていればOK',
+            'is_active' => '',
+        ]);
+
+        $this->assertRedirect();
+        $this->assertStringEndsWith(
+            '/admin',
+            (string)$this->_response->getHeaderLine('Location'),
+            'is_active が空文字でも保存は成功する（失敗時に 200 で再表示される）',
+        );
+
+        $after = $usersTable->get($userId);
+        $this->assertSame(
+            'この行が保存されていればOK',
+            (string)$after->comment,
+            '他の項目が保存されていること',
+        );
+        $this->assertTrue(
+            (bool)$after->is_active,
+            '空文字は既存値（有効）を維持する（勝手に無効化しない）',
+        );
+    }
+
+    /**
      * 編集(edit) POST テスト — 保存失敗時に送信された is_active=false を再表示すること
      *
      * 必須項目（氏名）を空にして保存を失敗させたとき、テンプレートが

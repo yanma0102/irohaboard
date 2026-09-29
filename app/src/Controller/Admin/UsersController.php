@@ -194,17 +194,26 @@ class UsersController extends AppController
                 if (array_key_exists('role', $userData) && trim((string)$userData['role']) === '') {
                     unset($userData['role']);
                 }
-                // is_active が NULL の環境では、patchEntity が NULL を
-                // そのまま保持して保存に失敗する（または変更が反映されない）。
-                // 明示的に「有効/無効」を送ってきた場合は必ず真偽値へ正規化し、
-                // 未送信時のみ既存の NULL を有効(true)として扱う。
-                if (array_key_exists('is_active', $userData)
-                    && $userData['is_active'] !== null
-                    && trim((string)$userData['is_active']) !== ''
-                ) {
-                    $userData['is_active'] = (bool)(int)$userData['is_active'];
-                } elseif ($entity->is_active === null) {
-                    $userData['is_active'] = true;
+                // アカウント状態（is_active）の正規化。
+                //
+                // ラジオボタンが 1 つも送信されず hidden の空文字だけが
+                // 飛んでくるケースがある（例: クライアント側のスクリプトで
+                // 選択肢が送信されない環境）。空文字のまま patchEntity に
+                // 渡すと boolean 検証が
+                // 「The provided value must be a boolean」で失敗し、
+                // 他の項目一并に「保存できませんでした」になってしまう。
+                // そのため空文字はキーごと外し、既存値を維持する。
+                $submittedActive = $userData['is_active'] ?? null;
+                $normalizedActive = is_scalar($submittedActive) ? trim((string)$submittedActive) : '';
+                if ($normalizedActive !== '') {
+                    $userData['is_active'] = (bool)(int)$normalizedActive;
+                } else {
+                    unset($userData['is_active']);
+                    // マイグレーションでカラム追加後に値が投入されておらず
+                    // NULL のままの環境は、有効として補完する。
+                    if ($entity->is_active === null) {
+                        $userData['is_active'] = true;
+                    }
                 }
                 $entity = $usersTable->patchEntity($entity, $userData);
             } else {

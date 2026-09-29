@@ -334,6 +334,36 @@ class UsersControllerTest extends TestCase
     }
 
     /**
+     * is_active が NULL の环境でも、編集画面のラジオが「有効」表示になること
+     *
+     * is_active カラム追加マイグレーションの実行後に値が投入されていない
+     * 環境では is_active が NULL になる。その場合、未設定のラジオボタンは
+     * 「有効」「無効」のどちらも選択されない表示となり、利用者角度来看ると
+     * アカウント状態が編集できないように見える。NULL は有効として扱う。
+     */
+    public function testIsActiveValueAccessorTreatsNullAsActive(): void
+    {
+        $cases = [
+            [null, '1'],
+            [true, '1'],
+            [false, '0'],
+            [1, '1'],
+            [0, '0'],
+            ['1', '1'],
+            ['0', '0'],
+        ];
+
+        foreach ($cases as [$input, $expected]) {
+            $entity = new \App\Model\Entity\User(['is_active' => $input]);
+            $this->assertSame(
+                $expected,
+                $entity->isActiveValue,
+                sprintf('is_active=%s のとき表示値は %s であること', var_export($input, true), $expected)
+            );
+        }
+    }
+
+    /**
      * 編集(edit) POST テスト（パスワード変更なし）
      */
     public function testEditPostWithoutPasswordChange(): void

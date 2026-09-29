@@ -46,6 +46,9 @@
 		echo $this->Form->inputRadio('is_active', [
 			'label' => __('アカウント状態'),
 			'options' => ['1' => __('有効'), '0' => __('無効')],
+			// is_active が NULL の環境でも「有効」が選択された状態にする
+			// （未設定だと「有効」「無効」のどちらも選択されない表示になる）
+			'value' => $user->isActiveValue ?? '1',
 		]);
 			
 			echo $this->Form->control('email',				['label' => __('メールアドレス')]);

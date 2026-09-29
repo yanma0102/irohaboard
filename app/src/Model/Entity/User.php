@@ -36,4 +36,19 @@ class User extends Entity
 
         return $roles[$this->role] ?? $this->role;
     }
+
+    /**
+     * アカウント状態の表示値を取得する。
+     *
+     * is_active が NULL の場合（マイグレーションでカラム追加後に値が
+     * 投入されていない環境など）は、有効として扱う。これにより管理画面の
+     * ラジオボタンで「有効」「無効」のどちらも選択されない状態になるのを防ぎ、
+     * 利用者が明示的に選択できる状態にする。
+     *
+     * @return string '1'（有効）または '0'（無効）
+     */
+    protected function _getIsActiveValue(): string
+    {
+        return ($this->is_active === null || $this->is_active) ? '1' : '0';
+    }
 }

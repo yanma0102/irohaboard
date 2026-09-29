@@ -194,6 +194,18 @@ class UsersController extends AppController
                 if (array_key_exists('role', $userData) && trim((string)$userData['role']) === '') {
                     unset($userData['role']);
                 }
+                // is_active が NULL の環境では、patchEntity が NULL を
+                // そのまま保持して保存に失敗する（または変更が反映されない）。
+                // 明示的に「有効/無効」を送ってきた場合は必ず真偽値へ正規化し、
+                // 未送信時のみ既存の NULL を有効(true)として扱う。
+                if (array_key_exists('is_active', $userData)
+                    && $userData['is_active'] !== null
+                    && trim((string)$userData['is_active']) !== ''
+                ) {
+                    $userData['is_active'] = (bool)(int)$userData['is_active'];
+                } elseif ($entity->is_active === null) {
+                    $userData['is_active'] = true;
+                }
                 $entity = $usersTable->patchEntity($entity, $userData);
             } else {
                 $entity = $usersTable->newEntity($userData);

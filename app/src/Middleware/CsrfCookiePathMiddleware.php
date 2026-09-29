@@ -48,14 +48,28 @@ class CsrfCookiePathMiddleware implements MiddlewareInterface
             // 検証失敗時に積まれた失効クッキーの path も補正してから再送出する
             $path = $this->browserBase($request);
             $headers = $e->getHeaders()['Set-Cookie'] ?? [];
+            $expired = [];
             if ($headers !== []) {
-                $e->setHeader('Set-Cookie', $this->replaceCookiePath($headers[0], $path));
+                $expired[] = $this->replaceCookiePath($headers[0], $path);
+            }
+
+            // 旧デプロイ由来で別 path に残った csrfToken を失効させる
+            $expired = array_merge($expired, $this->staleCookieEvictions($request));
+
+            if ($expired !== []) {
+                $e->setHeader('Set-Cookie', $expired);
             }
 
             throw $e;
         }
 
         $setCookies = $response->getHeader('Set-Cookie');
+
+        // 旧デプロイ由来で別 path に残った csrfToken を失効させる。
+        // これが無いと、古い path のクッキーが新しいクッキーに優先して送られ、
+        // 「body のトークンと cookie が不一致」の CSRF エラーが再発する。
+        $setCookies = array_merge($setCookies, $this->staleCookieEvictions($request));
+
         if ($setCookies === []) {
             return $response;
         }
@@ -66,7 +80,47 @@ class CsrfCookiePathMiddleware implements MiddlewareInterface
             $setCookies,
         );
 
+        // 同一内容の Set-Cookie を除去（失効ヘッダーの重複防止）
+        $rewritten = array_values(array_unique($rewritten));
+
         return $response->withHeader('Set-Cookie', $rewritten);
+    }
+
+    /**
+     * 現在の配置で使われない path に残った csrfToken クッキーを失効させる
+     * Set-Cookie ヘッダーを返す。
+     *
+     * 例: /lms/ 配置では path=/ と path=/lms の csrfToken を失効させる。
+     * これらは過去のデプロイ（ルート配置や末尾スラッシュ無し）で発行された
+     * 古いクッキーで、ブラウザが新しいクッキーと同時に送ることで
+     * CSRF トークンの不一致を引き起こす。
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request The request.
+     * @return list<string> 失効用 Set-Cookie ヘッダー値の配列
+     */
+    private function staleCookieEvictions(ServerRequestInterface $request): array
+    {
+        $base = $this->browserBase($request);
+        if ($base === '') {
+            // ルート配置では path=/ のみが正であり、失効させる対象は無い
+            return [];
+        }
+
+        $correctPaths = [
+            (string)$request->getAttribute('webroot', '/'),
+            $base . '/',
+        ];
+
+        $evictions = [];
+        foreach (array_unique(['/', $base, $base . '/']) as $stalePath) {
+            if (in_array($stalePath, $correctPaths, true)) {
+                continue;
+            }
+            $evictions[] = self::COOKIE_NAME . '=; path=' . $stalePath
+                . '; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0';
+        }
+
+        return $evictions;
     }
 
     /**

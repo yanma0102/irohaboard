@@ -81,7 +81,15 @@ $config['record_understanding_spn'] = [
 	'5'		=> '◎',
 ];
 
-$config['user_role'] = ['admin' => '管理者', 'user' => '受講者'];
+// 権限の選択肢。旧データとの互換のため manager/editor/teacher も残す
+// （RoleComponent / AccessControlService の staffRoles と一致させる）。
+$config['user_role'] = [
+	'admin' => '管理者',
+	'manager' => '担当者',
+	'editor' => '編集者',
+	'teacher' => '講師',
+	'user' => '受講者',
+];
 
 
 $config['upload_extensions'] = [

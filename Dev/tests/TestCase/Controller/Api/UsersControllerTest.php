@@ -1204,4 +1204,190 @@ class UsersControllerTest extends TestCase
         $body = json_decode((string)$this->_response->getBody(), true);
         $this->assertSame(403, $body['error']['code']);
     }
+
+    // ----------------------------------------------------------------
+    // ユーザ無効化 (is_active) 回帰テスト
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: admin が一般ユーザを無効化 → レスポンス & DB で is_active=false
+     */
+    public function testApiDeactivateUser(): void
+    {
+        $this->createUser('admin01', ['role' => 'admin']);
+        $target = $this->createUser('target01', ['role' => 'user']);
+
+        $tokenData = $this->issueToken('admin01', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $this->patch('/api/v1/users/' . $target->id, ['is_active' => false]);
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertFalse($body['data']['is_active'], 'レスポンスの is_active が false であること');
+
+        // DB 上でも確認
+        $usersTable = $this->getTableLocator()->get('Users');
+        $user = $usersTable->get($target->id);
+        $this->assertFalse((bool)$user->is_active, 'DB 上の is_active が false であること');
+    }
+
+    /**
+     * 無効化されたユーザのトークンが拒否される
+     *
+     * 1. 一般ユーザでトークン発行 → アクセス 200
+     * 2. admin が当該ユーザを無効化
+     * 3. 同じ（古い）トークンでアクセス → 401
+     */
+    public function testDeactivatedUserTokenRejected(): void
+    {
+        $this->createUser('admin01', ['role' => 'admin']);
+        $target = $this->createUser('target01', ['role' => 'user']);
+
+        // 1. target01 でトークン発行し、アクセスが通ることを確認
+        $userTokenData = $this->issueToken('target01', 'testpass');
+        $oldToken = $userTokenData['token'];
+
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $oldToken]]);
+        $this->get('/api/v1/users/' . $target->id);
+        $this->assertResponseOk();
+
+        // 2. admin01 で target01 を無効化
+        $adminTokenData = $this->issueToken('admin01', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $adminTokenData['token']]]);
+
+        $this->patch('/api/v1/users/' . $target->id, ['is_active' => false]);
+        $this->assertResponseOk();
+
+        // 3. 古いトークンでアクセス → 401
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $oldToken]]);
+        $this->get('/api/v1/users/' . $target->id);
+        $this->assertResponseCode(401);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('Invalid or expired API token', $body['error']['message']);
+    }
+
+    /**
+     * 無効化後、そのユーザでトークン発行ができない
+     */
+    public function testDeactivatedUserCannotIssueToken(): void
+    {
+        $this->createUser('admin01', ['role' => 'admin']);
+        $this->createUser('target01', ['role' => 'user']);
+
+        // admin01 で target01 を無効化
+        $adminTokenData = $this->issueToken('admin01', 'testpass');
+        $target = $this->getTableLocator()->get('Users')->find()->where(['username' => 'target01'])->firstOrFail();
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $adminTokenData['token']]]);
+
+        $this->patch('/api/v1/users/' . $target->id, ['is_active' => false]);
+        $this->assertResponseOk();
+
+        // 無効化された target01 でトークン発行 → 401
+        $this->post('/api/v1/auth/token', [
+            'username' => 'target01',
+            'password' => 'testpass',
+        ]);
+        $this->assertResponseCode(401);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('Invalid credentials', $body['error']['message']);
+    }
+
+    /**
+     * 自分自身の無効化は禁止 → 403
+     */
+    public function testCannotDeactivateSelf(): void
+    {
+        $this->createUser('admin01', ['role' => 'admin']);
+
+        $tokenData = $this->issueToken('admin01', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        // admin01 自身の ID を取得
+        $adminUser = $this->getTableLocator()->get('Users')->find()->where(['username' => 'admin01'])->firstOrFail();
+
+        $this->patch('/api/v1/users/' . $adminUser->id, ['is_active' => false]);
+        $this->assertResponseCode(403);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('Cannot deactivate your own account', $body['error']['message']);
+    }
+
+    /**
+     * 最後の有効な管理者の無効化は禁止 → 403
+     *
+     * シナリオ:
+     * 1. admin01 と admin02 の2人の有効な admin がいる状態で admin02 を無効化 → 成功
+     * 2. admin01 が最後の有効な admin になった後、admin02（既に無効）を再度無効化しようとする
+     *    → adminCount=1（admin01 のみ）で 403
+     */
+    public function testCannotDeactivateLastAdmin(): void
+    {
+        $this->createUser('admin01', ['role' => 'admin']);
+        $admin02 = $this->createUser('admin02', ['role' => 'admin']);
+
+        $tokenData = $this->issueToken('admin01', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        // 1. admin01 が admin02 を無効化 → 成功（有効な admin が2人なので）
+        $this->patch('/api/v1/users/' . $admin02->id, ['is_active' => false]);
+        $this->assertResponseOk();
+
+        // admin02 が無効化されたことを確認
+        $usersTable = $this->getTableLocator()->get('Users');
+        $admin02Refreshed = $usersTable->get($admin02->id);
+        $this->assertFalse((bool)$admin02Refreshed->is_active);
+
+        // 2. admin01（最後の有効な admin）が admin02 を再度無効化しようとする
+        //    → adminCount=1（admin01 のみ有効）で 403
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+        $this->patch('/api/v1/users/' . $admin02->id, ['is_active' => false]);
+        $this->assertResponseCode(403);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('Cannot deactivate the last active administrator', $body['error']['message']);
+    }
+
+    /**
+     * 無効化されたユーザを再有効化 → 200 & DB で true、再トークン発行でアクセス可能
+     */
+    public function testReactivateUser(): void
+    {
+        $this->createUser('admin01', ['role' => 'admin']);
+        $target = $this->createUser('target01', ['role' => 'user']);
+        $targetId = $target->id;
+
+        // admin01 で target01 を無効化
+        $adminTokenData = $this->issueToken('admin01', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $adminTokenData['token']]]);
+
+        $this->patch('/api/v1/users/' . $targetId, ['is_active' => false]);
+        $this->assertResponseOk();
+
+        // 無効化状態を DB で確認
+        $usersTable = $this->getTableLocator()->get('Users');
+        $user = $usersTable->get($targetId);
+        $this->assertFalse((bool)$user->is_active);
+
+        // 再有効化
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $adminTokenData['token']]]);
+        $this->patch('/api/v1/users/' . $targetId, ['is_active' => true]);
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertTrue($body['data']['is_active'], 'レスポンスの is_active が true であること');
+
+        // DB でも確認
+        $user = $usersTable->get($targetId);
+        $this->assertTrue((bool)$user->is_active, 'DB 上の is_active が true であること');
+
+        // 再度トークンを発行してアクセスできることを確認
+        $newTokenData = $this->issueToken('target01', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $newTokenData['token']]]);
+
+        $this->get('/api/v1/users/' . $targetId);
+        $this->assertResponseOk();
+    }
 }

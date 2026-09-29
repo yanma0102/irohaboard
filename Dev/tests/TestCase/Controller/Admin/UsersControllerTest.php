@@ -462,6 +462,41 @@ class UsersControllerTest extends TestCase
     }
 
     /**
+     * 編集(edit) GET — ラジオ/チェックボックスに form-control が付かないこと
+     *
+     * form_input_defaults の class(form-control) はテキスト入力用で、
+     * ラジオに付くと width:100%・高さ34px に膨らんで隣の選択肢を覆い、
+     * クリックできなくなる（見えるが選べない）。対象题材は全入力に波及する。
+     */
+    public function testEditRadioHasNoFormControlClass(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('radioclassuser');
+
+        $this->get("/admin/users/edit/{$user->id}");
+        $this->assertResponseOk();
+
+        $body = (string)$this->_response->getBody();
+
+        $this->assertDoesNotMatchRegularExpression(
+            '/<input[^>]*type="radio"[^>]*class="[^"]*form-control/',
+            $body,
+            'ラジオボタンに form-control が付与されている'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/<input[^>]*type="checkbox"[^>]*class="[^"]*form-control/',
+            $body,
+            'チェックボックスに form-control が付与されている'
+        );
+        // テキスト入力には従来どおり form-control が付くべき
+        $this->assertMatchesRegularExpression(
+            '/<input[^>]*type="email"[^>]*class="form-control"/',
+            $body,
+            'テキスト入力の form-control が失われている'
+        );
+    }
+
+    /**
      * 編集(edit) GET テスト（存在しないユーザー）
      */
     public function testEditGetNotFound(): void

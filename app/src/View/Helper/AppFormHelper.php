@@ -91,6 +91,15 @@ class AppFormHelper extends FormHelper
             }
         }
 
+        // form_input_defaults の class はテキスト入力/選択用の 'form-control'。
+        // ラジオボタンとチェックボックスに付けると width:100%・高さ34px に
+        // 膨らんで隣の選択肢の領域を覆い、クリックできなくなる
+        // （見えるが選べない／保存が反映されない、という症状になる）
+        $resolvedType = $options['type'] ?? $this->_getType($fieldName);
+        if (in_array($resolvedType, ['radio', 'checkbox'], true)) {
+            unset($options['class']);
+        }
+
         // CakePHP 2 legacy keys that CakePHP 5 does not recognize.
         // These leak as HTML attributes on <input> via Widget::formatAttributes().
         unset($options['wrapInput'], $options['div'], $options['_inputDefaultsApplied']);

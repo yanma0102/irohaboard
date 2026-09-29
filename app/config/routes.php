@@ -385,6 +385,23 @@ return function (RouteBuilder $routes): void {
                 'action' => 'unassignUser',
                 '_method' => 'DELETE',
             ], ['pass' => ['id', 'user_id']]);
+
+            // グループのコース割当
+            $builder->connect('/groups/{id}/courses', [
+                'controller' => 'Groups',
+                'action' => 'courses',
+                '_method' => 'GET',
+            ], ['id' => '\d+', 'pass' => ['id']]);
+            $builder->connect('/groups/{id}/courses', [
+                'controller' => 'Groups',
+                'action' => 'assignCourse',
+                '_method' => 'POST',
+            ], ['pass' => ['id']]);
+            $builder->connect('/groups/{id}/courses/{course_id}', [
+                'controller' => 'Groups',
+                'action' => 'unassignCourse',
+                '_method' => 'DELETE',
+            ], ['pass' => ['id', 'course_id']]);
         });
 
         // MCP (Model Context Protocol) Streamable HTTP エンドポイント

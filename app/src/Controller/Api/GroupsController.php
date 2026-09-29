@@ -356,4 +356,141 @@ class GroupsController extends BaseController
 
         return $this->ok(['group_id' => $id, 'user_id' => $userId, 'deleted' => $deleted]);
     }
+
+    /**
+     * グループに所属するコース一覧を取得する
+     *
+     * @param int $id グループID
+     * @return \Cake\Http\Response
+     */
+    public function courses(int $id): Response
+    {
+        $groupsTable = $this->fetchTable('Groups');
+
+        // グループ存在チェック
+        if (!$groupsTable->exists(['id' => $id])) {
+            $this->fail(404, 'Group not found');
+        }
+
+        $connection = $groupsTable->getConnection();
+
+        $sql = 'SELECT c.id, c.title, c.introduction, c.opened,'
+            . ' c.sort_no, c.user_id, c.created, c.modified'
+            . ' FROM ib_courses c'
+            . ' INNER JOIN ib_groups_courses gc ON gc.course_id = c.id'
+            . ' WHERE gc.group_id = :group_id'
+            . ' AND c.deleted IS NULL'
+            . ' ORDER BY c.sort_no asc';
+
+        $result = $connection->execute($sql, ['group_id' => $id])->fetchAll('assoc');
+
+        $courses = [];
+
+        foreach ($result as $row) {
+            $courses[] = [
+                'id' => isset($row['id']) ? (int)$row['id'] : 0,
+                'title' => $row['title'] ?? '',
+                'introduction' => $row['introduction'] ?? null,
+                'opened' => $row['opened'] ?? null,
+                'sort_no' => isset($row['sort_no']) ? (int)$row['sort_no'] : 0,
+                'user_id' => isset($row['user_id']) ? (int)$row['user_id'] : 0,
+                'created' => $row['created'] ?? null,
+                'modified' => $row['modified'] ?? null,
+            ];
+        }
+
+        return $this->okList($courses, ['count' => count($courses)]);
+    }
+
+    /**
+     * グループにコースを割り当てる
+     *
+     * @param int $id グループID
+     * @return \Cake\Http\Response
+     */
+    public function assignCourse(int $id): Response
+    {
+        $this->requireManager();
+
+        $groupsTable = $this->fetchTable('Groups');
+
+        // グループ存在チェック
+        if (!$groupsTable->exists(['id' => $id])) {
+            $this->fail(404, 'Group not found');
+        }
+
+        $input = $this->input();
+
+        if (!isset($input['course_id']) || $input['course_id'] === '' || $input['course_id'] === null) {
+            $this->fail(400, 'course_id is required');
+        }
+
+        $courseId = (int)$input['course_id'];
+
+        // コース存在チェック
+        $coursesTable = $this->fetchTable('Courses');
+
+        if (!$coursesTable->exists(['id' => $courseId])) {
+            $this->fail(404, 'Course not found');
+        }
+
+        // 既に割当済みかチェック
+        $groupsCoursesTable = $this->fetchTable('GroupsCourses');
+        $existing = $groupsCoursesTable->find()
+            ->where([
+                'group_id' => $id,
+                'course_id' => $courseId,
+            ])
+            ->first();
+
+        if ($existing) {
+            return $this->ok(['group_id' => $id, 'course_id' => $courseId, 'assigned' => true, 'created' => false]);
+        }
+
+        $entity = $groupsCoursesTable->newEntity([
+            'group_id' => $id,
+            'course_id' => $courseId,
+        ]);
+
+        if (!$groupsCoursesTable->save($entity)) {
+            $this->fail(500, 'Failed to assign course');
+        }
+
+        return $this->ok(['group_id' => $id, 'course_id' => $courseId, 'assigned' => true, 'created' => true], 201);
+    }
+
+    /**
+     * グループのコース割当を解除する
+     *
+     * @param int $id グループID
+     * @param int $courseId コースID
+     * @return \Cake\Http\Response
+     */
+    public function unassignCourse(int $id, int $courseId): Response
+    {
+        $this->requireManager();
+
+        $groupsTable = $this->fetchTable('Groups');
+
+        // グループ存在チェック
+        if (!$groupsTable->exists(['id' => $id])) {
+            $this->fail(404, 'Group not found');
+        }
+
+        $deleted = false;
+
+        $groupsCoursesTable = $this->fetchTable('GroupsCourses');
+        $existing = $groupsCoursesTable->find()
+            ->where([
+                'group_id' => $id,
+                'course_id' => $courseId,
+            ])
+            ->first();
+
+        if ($existing) {
+            $deleted = (bool)$groupsCoursesTable->delete($existing);
+        }
+
+        return $this->ok(['group_id' => $id, 'course_id' => $courseId, 'deleted' => $deleted]);
+    }
 }

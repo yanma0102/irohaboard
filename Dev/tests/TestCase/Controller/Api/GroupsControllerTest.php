@@ -495,4 +495,326 @@ class GroupsControllerTest extends TestCase
             'ib_users_groups の該当行が削除されている',
         );
     }
+
+    // ----------------------------------------------------------------
+    // GET /api/v1/groups/{id}/courses (courses)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: グループ所属コース一覧取得 → 200 + JSON が配列
+     */
+    public function testCourses(): void
+    {
+        $this->createUser('admin20', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin20', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('コース一覧テストグループ');
+        $owner = $this->createUser('owner01');
+
+        // コースを作成
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => 'テストコース',
+            'sort_no' => 1,
+            'user_id' => (int)$owner->id,
+        ]));
+
+        // グループにコースを割り当て
+        $groupsCoursesTable = $this->getTableLocator()->get('GroupsCourses');
+        $gcEntity = $groupsCoursesTable->newEntity([
+            'group_id' => $group->id,
+            'course_id' => $course->id,
+        ]);
+        $groupsCoursesTable->save($gcEntity);
+
+        $this->get('/api/v1/groups/' . $group->id . '/courses');
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertCount(1, $body['data']);
+        $this->assertSame('テストコース', $body['data'][0]['title']);
+    }
+
+    /**
+     * 異常系: 存在しないグループ → 404
+     */
+    public function testCoursesNotFound(): void
+    {
+        $this->createUser('admin21', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin21', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $this->get('/api/v1/groups/99999/courses');
+        $this->assertResponseCode(404);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('Group not found', $body['error']['message']);
+    }
+
+    // ----------------------------------------------------------------
+    // POST /api/v1/groups/{id}/courses (assignCourse)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: admin でコース割当 → 201 + created=true
+     */
+    public function testAssignCourse(): void
+    {
+        $this->createUser('admin22', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin22', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('コース割当テストグループ');
+        $owner = $this->createUser('owner02');
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => '割当コース',
+            'sort_no' => 1,
+            'user_id' => (int)$owner->id,
+        ]));
+
+        $this->post('/api/v1/groups/' . $group->id . '/courses', [
+            'course_id' => $course->id,
+        ]);
+
+        $this->assertResponseCode(201);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertTrue($body['data']['assigned']);
+        $this->assertTrue($body['data']['created']);
+
+        // DB にレコードが作成されたことを確認
+        $groupsCoursesTable = $this->getTableLocator()->get('GroupsCourses');
+        $this->assertTrue(
+            $groupsCoursesTable->exists(['group_id' => $group->id, 'course_id' => $course->id]),
+            'ib_groups_courses にレコードが作成されている',
+        );
+    }
+
+    /**
+     * 正常系: 既に割当済みの場合 → 200 + created=false
+     */
+    public function testAssignCourseAlreadyAssigned(): void
+    {
+        $this->createUser('admin23', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin23', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('既存コース割当グループ');
+        $owner = $this->createUser('owner03');
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => '既存コース',
+            'sort_no' => 1,
+            'user_id' => (int)$owner->id,
+        ]));
+
+        // 事前に割当
+        $groupsCoursesTable = $this->getTableLocator()->get('GroupsCourses');
+        $gcEntity = $groupsCoursesTable->newEntity([
+            'group_id' => $group->id,
+            'course_id' => $course->id,
+        ]);
+        $groupsCoursesTable->save($gcEntity);
+
+        $this->post('/api/v1/groups/' . $group->id . '/courses', [
+            'course_id' => $course->id,
+        ]);
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertTrue($body['data']['assigned']);
+        $this->assertFalse($body['data']['created']);
+    }
+
+    /**
+     * 異常系: course_id 未指定 → 400
+     */
+    public function testAssignCourseValidationError(): void
+    {
+        $this->createUser('admin24', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin24', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('バリデーションテストグループ');
+
+        $this->post('/api/v1/groups/' . $group->id . '/courses', []);
+
+        $this->assertResponseCode(400);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('course_id is required', $body['error']['message']);
+    }
+
+    /**
+     * 異常系: 存在しないコース → 404
+     */
+    public function testAssignCourseNotFound(): void
+    {
+        $this->createUser('admin25', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin25', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('コース未存在テストグループ');
+
+        $this->post('/api/v1/groups/' . $group->id . '/courses', [
+            'course_id' => 99999,
+        ]);
+
+        $this->assertResponseCode(404);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('Course not found', $body['error']['message']);
+    }
+
+    /**
+     * 異常系: 一般ユーザ → 403 Forbidden
+     */
+    public function testAssignCourseForbiddenForUser(): void
+    {
+        $this->createUser('user10', ['role' => 'user']);
+        $tokenData = $this->issueToken('user10', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('Forbiddenグループ');
+        $owner = $this->createUser('owner04');
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => 'Forbiddenコース',
+            'sort_no' => 1,
+            'user_id' => (int)$owner->id,
+        ]));
+
+        $this->post('/api/v1/groups/' . $group->id . '/courses', [
+            'course_id' => $course->id,
+        ]);
+
+        $this->assertResponseCode(403);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame(403, $body['error']['code']);
+    }
+
+    // ----------------------------------------------------------------
+    // DELETE /api/v1/groups/{id}/courses/{course_id} (unassignCourse)
+    // ----------------------------------------------------------------
+
+    /**
+     * 正常系: グループからコースを解除 → 200 + DB からレコード削除
+     */
+    public function testUnassignCourse(): void
+    {
+        $this->createUser('admin26', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin26', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('コース解除テストグループ');
+        $owner = $this->createUser('owner05');
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => '解除コース',
+            'sort_no' => 1,
+            'user_id' => (int)$owner->id,
+        ]));
+
+        // 事前にコースを割り当て
+        $groupsCoursesTable = $this->getTableLocator()->get('GroupsCourses');
+        $gcEntity = $groupsCoursesTable->newEntity([
+            'group_id' => $group->id,
+            'course_id' => $course->id,
+        ]);
+        $groupsCoursesTable->save($gcEntity);
+        $this->assertTrue(
+            $groupsCoursesTable->exists(['group_id' => $group->id, 'course_id' => $course->id]),
+            '事前確認: ib_groups_courses にレコードが存在する',
+        );
+
+        $this->delete('/api/v1/groups/' . $group->id . '/courses/' . $course->id);
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertArrayHasKey('data', $body);
+        $this->assertTrue($body['data']['deleted']);
+
+        // DB からレコードが削除されたことを確認
+        $this->assertFalse(
+            $groupsCoursesTable->exists(['group_id' => $group->id, 'course_id' => $course->id]),
+            'ib_groups_courses の該当行が削除されている',
+        );
+    }
+
+    /**
+     * 正常系: 割当がない場合でも deleted=false で 200 を返す
+     */
+    public function testUnassignCourseNotAssigned(): void
+    {
+        $this->createUser('admin27', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin27', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('未割当コースグループ');
+        $owner = $this->createUser('owner06');
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => '未割当コース',
+            'sort_no' => 1,
+            'user_id' => (int)$owner->id,
+        ]));
+
+        $this->delete('/api/v1/groups/' . $group->id . '/courses/' . $course->id);
+
+        $this->assertResponseOk();
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertFalse($body['data']['deleted']);
+    }
+
+    /**
+     * 異常系: 存在しないグループ → 404
+     */
+    public function testUnassignCourseGroupNotFound(): void
+    {
+        $this->createUser('admin28', ['role' => 'admin']);
+        $tokenData = $this->issueToken('admin28', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $this->delete('/api/v1/groups/99999/courses/1');
+        $this->assertResponseCode(404);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame('Group not found', $body['error']['message']);
+    }
+
+    /**
+     * 異常系: 一般ユーザ → 403 Forbidden
+     */
+    public function testUnassignCourseForbiddenForUser(): void
+    {
+        $this->createUser('user11', ['role' => 'user']);
+
+        $tokenData = $this->issueToken('user11', 'testpass');
+        $this->configRequest(['headers' => ['Authorization' => 'Bearer ' . $tokenData['token']]]);
+
+        $group = $this->createGroup('Forbidden解除グループ');
+        $owner = $this->createUser('owner07');
+        $coursesTable = $this->getTableLocator()->get('Courses');
+        $course = $coursesTable->save($coursesTable->newEntity([
+            'title' => 'Forbiddenコース',
+            'sort_no' => 1,
+            'user_id' => (int)$owner->id,
+        ]));
+
+        $this->delete('/api/v1/groups/' . $group->id . '/courses/' . $course->id);
+
+        $this->assertResponseCode(403);
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertSame(403, $body['error']['code']);
+    }
 }

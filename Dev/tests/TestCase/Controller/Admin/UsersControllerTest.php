@@ -253,6 +253,42 @@ class UsersControllerTest extends TestCase
     }
 
     /**
+     * 編集(edit) POST テスト — 保存失敗時に送信された is_active=false を再表示すること
+     *
+     * 必須項目（氏名）を空にして保存を失敗させたとき、テンプレートが
+     * $user 未定義で「有効」に戻ってしまわないことを確認する。
+     */
+    public function testEditPostSaveFailureKeepsUncheckedIsActive(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('failuser');
+
+        // 氏名を空にしてバリデーションエラーを起こす + is_active=0
+        $this->post("/admin/users/edit/{$user->id}", [
+            'id' => $user->id,
+            'username' => 'failuser',
+            'name' => '',
+            'role' => 'user',
+            'email' => 'fail@example.com',
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
+            'comment' => '',
+            'is_active' => 0,
+        ]);
+
+        // 保存に失敗しているのでリダイレクトしない
+        $this->assertNoRedirect();
+
+        $html = (string)$this->_response->getBody();
+        // チェックボックスが checked になっていないこと
+        $this->assertDoesNotMatchRegularExpression(
+            '/name="is_active"[^>]*checked/',
+            $html,
+            '保存失敗時、無効(is_active=0)のチェック状態が維持されること'
+        );
+    }
+
+    /**
      * 編集(edit) POST テスト（パスワード変更なし）
      */
     public function testEditPostWithoutPasswordChange(): void

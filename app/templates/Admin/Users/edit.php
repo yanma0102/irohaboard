@@ -36,9 +36,6 @@
 			'type' => 'checkbox',
 			'label' => __('有効'),
 			'checked' => ($user->is_active ?? true) !== false,
-			// form_input_defaults の form-control はテキスト入力用のため
-			// チェックボックスに付くと幅100%になり左端に張り付く。除外する。
-			'class' => false,
 			// CakePHP 5 の既定では checkbox は label 内にネストされる。
 			// ネストを解除し、ラベル(col-sm-3)と入力(col-sm-9)を横並びにする。
 			'nestedInput' => false,

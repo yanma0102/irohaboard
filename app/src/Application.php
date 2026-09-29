@@ -19,6 +19,7 @@ namespace App;
 use App\Middleware\ApiErrorMiddleware;
 use App\Middleware\ApiRateLimitMiddleware;
 use App\Middleware\BasePathMiddleware;
+use App\Middleware\CsrfCookiePathMiddleware;
 use App\Middleware\HostHeaderMiddleware;
 use App\Middleware\SecurityHeadersMiddleware;
 use App\Service\AppConfigService;
@@ -154,7 +155,12 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
                     return false;
                 }),
-            );
+            )
+
+            // CSRF クッキーの path をブラウザから見た接頭辞にそろえる。
+            // base_path/サブディレクトリ配置で csrfToken が送られず
+            // 「Missing or invalid CSRF cookie」となる問題を防ぐ。
+            ->add(new CsrfCookiePathMiddleware());
 
         return $middlewareQueue;
     }

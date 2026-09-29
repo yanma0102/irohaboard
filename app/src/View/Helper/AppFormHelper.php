@@ -163,7 +163,9 @@ class AppFormHelper extends FormHelper
             'type' => 'radio',
             'separator' => "\n",
             'legend' => false,
-            'class' => false,
+            // 'class' => false は指定しない。CakePHP 5 の Helper::addClass() は
+            // trim() に渡すため false だと TypeError になる（バリデーション
+            // エラーでフォーム再表示する際に 500 になる）。
             'before' => '',
             'div' => false,
         ];

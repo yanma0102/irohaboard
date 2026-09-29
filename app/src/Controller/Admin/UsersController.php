@@ -210,6 +210,11 @@ class UsersController extends AppController
                 return $this->redirect(['action' => 'index']);
             } else {
                 $this->Flash->error(__('ユーザ情報が保存できませんでした'));
+                // 保存失敗時も送信内容を画面に再表示する。
+                // ここで $user を設定しないと、テンプレートの
+                // ($user->is_active ?? true) が true になり、
+                // チェックを外しても有効のままに見えてしまう。
+                $user = $entity;
             }
         } else {
             $user = $user_id !== null ? $usersTable->get((int)$user_id, contain: ['Groups', 'Courses']) : $usersTable->newEmptyEntity();

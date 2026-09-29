@@ -133,6 +133,10 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             ->add(
                 (new CsrfProtectionMiddleware([
                     'httponly' => true,
+                    // セッションクッキー（AppSession）と SameSite をそろえる。
+                    // 未設定だとブラウザ（特に Chrome）が警告を出し、
+                    // 状況によって csrfToken を送信せず POST が 403 になる。
+                    'samesite' => 'Lax',
                 ]))->skipCheckCallback(function ($request) {
                     $uri = $this->baseRelativePath($request);
                     // REST API は Bearer トークン認証のため CSRF スキップ

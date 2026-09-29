@@ -74,13 +74,6 @@
 		<?php if($loginedUser['role'] == 'admin') {?>
 		<td class="ib-col-action">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $user['id']]) ?>'"><?= __('編集')?></button>
-			<?php if ((int)$user['id'] !== (int)$loginedUser['id']): ?>
-				<?php if (!empty($user['is_active'])): ?>
-				<?= $this->Form->postLink(__('無効化'), ['action' => 'toggleActive', $user['id']], ['class' => 'btn btn-warning'], __('[%s] を無効化してもよろしいですか?', $user['name'])); ?>
-				<?php else: ?>
-				<?= $this->Form->postLink(__('有効化'), ['action' => 'toggleActive', $user['id']], ['class' => 'btn btn-info'], __('[%s] を有効化してもよろしいですか?', $user['name'])); ?>
-				<?php endif; ?>
-			<?php endif; ?>
 			<?= $this->Form->postLink(__('削除'), ['action' => 'delete', $user['id']], ['class' => 'btn btn-danger'],__('[%s] を削除してもよろしいですか?', $user['name']));?>
 		</td>
 		<?php }?>

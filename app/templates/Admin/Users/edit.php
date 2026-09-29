@@ -32,7 +32,15 @@
 			
 			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
 			
-			echo $this->Form->control('is_active', ['type' => 'checkbox', 'label' => __('有効'), 'checked' => ($user->is_active ?? true) !== false]);
+			echo $this->Form->control('is_active', [
+				'type' => 'checkbox',
+				'label' => __('有効'),
+				'checked' => ($user->is_active ?? true) !== false,
+				// form_input_defaults の form-control はテキスト入力用のため
+				// チェックボックスに付くと幅100%になり左端に張り付く。除外する。
+				'class' => false,
+				'_inputDefaultsApplied' => true,
+			]);
 			
 			echo $this->Form->control('email',				['label' => __('メールアドレス')]);
 			echo $this->Form->control('groups._ids',				['label' => __('所属グループ'), 'options' => $groups]);

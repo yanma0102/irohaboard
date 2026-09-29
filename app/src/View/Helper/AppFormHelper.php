@@ -93,7 +93,7 @@ class AppFormHelper extends FormHelper
 
         // CakePHP 2 legacy keys that CakePHP 5 does not recognize.
         // These leak as HTML attributes on <input> via Widget::formatAttributes().
-        unset($options['wrapInput'], $options['div']);
+        unset($options['wrapInput'], $options['div'], $options['_inputDefaultsApplied']);
 
         // CakePHP 2 'before'/'after' rendered content before/after the control.
         // CakePHP 5's _inputContainerTemplate() supports {{after}} via templateVars,

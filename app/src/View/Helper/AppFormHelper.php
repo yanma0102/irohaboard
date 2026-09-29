@@ -177,11 +177,18 @@ class AppFormHelper extends FormHelper
             }
         }
 
-        // HTML labels (e.g. content_kind_comment contains <span> tags).
+		// HTML labels (e.g. content_kind_comment contains <span> tags).
         // CakePHP 5 RadioWidget defaults to escape => true which escapes HTML.
         if (!isset($options['escape'])) {
             $options['escape'] = false;
         }
+
+        // required はブラウザ側の必須検証を発生させる。選択肢に現在の値が
+        // 含まれない場合（例: 旧ロールのユーザで選択肢を絞り込んだ場合）は
+        // どのラジオも checked にならず、フォーム送信自体がブロックされる。
+        // 送信を妨げないよう必須検証は付けない（サーバ側のバリデーションで
+        // 検証されるため、不正値は保存されない）。
+        $options['required'] = false;
 
         if ($exp !== '') {
             $afterHtml = '<div class="col-sm-4">' . $exp . '</div>';

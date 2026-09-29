@@ -187,6 +187,13 @@ class UsersController extends AppController
 
             if ($user_id !== null) {
                 $entity = $usersTable->get((int)$user_id);
+                // 権限選択肢に現在のロールが含まれない場合（例: 旧ロールの
+                // ユーザで選択肢を絞り込んだ場合）、フォームの hidden により
+                // role が空文字で送信される。空文字で上書きすると不正な値に
+                // なるため、既存値を維持する。
+                if (array_key_exists('role', $userData) && trim((string)$userData['role']) === '') {
+                    unset($userData['role']);
+                }
                 $entity = $usersTable->patchEntity($entity, $userData);
             } else {
                 $entity = $usersTable->newEntity($userData);

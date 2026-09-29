@@ -289,6 +289,44 @@ class UsersControllerTest extends TestCase
     }
 
     /**
+     * 編集(edit) POST テスト — 権限選択肢に含まれないロールの用户でも保存できる
+     *
+     * 権限の選択肢を admin / user のみに絞った場合、旧ロール
+     * (manager/editor/teacher) のユーザではどのラジオも checked にならない。
+     * フォームの hidden により role が空文字で送信されるため、既存ロールを
+     * 維持したまま is_active を変更できること（およびロールが破壊されない
+     * こと）を確認する。
+     */
+    public function testEditPostKeepsRoleNotInOptions(): void
+    {
+        $this->loginAsAdmin();
+        $user = $this->createUser('legacyroleuser', 'editor');
+
+        $this->post("/admin/users/edit/{$user->id}", [
+            'id' => $user->id,
+            'username' => 'legacyroleuser',
+            'name' => '旧ロールユーザ',
+            // 選択肢に含まれないロールは hidden により空文字で送信される
+            'role' => '',
+            'email' => 'legacy@example.com',
+            'groups' => ['_ids' => []],
+            'courses' => ['_ids' => []],
+            'comment' => '',
+            'is_active' => 0,
+        ]);
+        $this->assertRedirect();
+
+        $usersTable = $this->getTableLocator()->get('Users');
+        $after = $usersTable->get((int)$user->id);
+        $this->assertSame(
+            'editor',
+            $after->role,
+            '選択肢に含まれない既存ロールが保存で破壊されないこと'
+        );
+        $this->assertFalse((bool)$after->is_active, '旧ロールのユーザも無効化できること');
+    }
+
+    /**
      * 編集(edit) POST テスト（パスワード変更なし）
      */
     public function testEditPostWithoutPasswordChange(): void

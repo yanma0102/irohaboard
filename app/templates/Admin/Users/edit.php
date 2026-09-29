@@ -32,6 +32,8 @@
 			
 			echo $this->Form->inputRadio('role',	['label' => __('権限'), 'options' => Configure::read('user_role')]);
 			
+			echo $this->Form->control('is_active', ['type' => 'checkbox', 'label' => __('有効')]);
+			
 			echo $this->Form->control('email',				['label' => __('メールアドレス')]);
 			echo $this->Form->control('groups._ids',				['label' => __('所属グループ'), 'options' => $groups]);
 			echo $this->Form->control('courses._ids',				['label' => __('受講コース'), 'options' => $courses]);

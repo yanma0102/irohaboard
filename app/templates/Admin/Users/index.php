@@ -44,6 +44,7 @@
 		<th nowrap><?= $this->Paginator->sort('username', __('ログインID')); ?></th>
 		<th nowrap class="col-width"><?= $this->Paginator->sort('name', __('氏名')); ?></th>
 		<th nowrap><?= $this->Paginator->sort('role', '権限'); ?></th>
+		<th nowrap><?= __('状態'); ?></th>
 		<th nowrap><?= __('所属グループ'); ?></th>
 		<th nowrap class="ib-col-datetime"><?= __('受講コース'); ?></th>
 		<th class="ib-col-datetime"><?= $this->Paginator->sort('last_logined', __('最終ログイン日時')); ?></th>
@@ -59,6 +60,13 @@
 		<td><?= h($user['username']); ?>&nbsp;</td>
 		<td><?= h($user['name']); ?></td>
 		<td nowrap><?= h(Configure::read('user_role.'.$user['role'])); ?>&nbsp;</td>
+		<td nowrap>
+			<?php if (!empty($user['is_active'])): ?>
+			<span class="label label-success"><?= __('有効'); ?></span>
+			<?php else: ?>
+			<span class="label label-default"><?= __('無効'); ?></span>
+			<?php endif; ?>
+		</td>
 		<td><div class="reader" title="<?= h($user['group_title']); ?>"><p><?= h($user['group_title']); ?>&nbsp;</p></div></td>
 		<td><div class="reader" title="<?= h($user['course_title']); ?>"><p><?= h($user['course_title']); ?>&nbsp;</p></div></td>
 		<td class="ib-col-datetime"><?= h(\App\Utility\Utils::getYMDHN($user['last_logined'])); ?>&nbsp;</td>
@@ -66,6 +74,13 @@
 		<?php if($loginedUser['role'] == 'admin') {?>
 		<td class="ib-col-action">
 			<button type="button" class="btn btn-success" onclick="location.href='<?= $this->Url->build(['action' => 'edit', $user['id']]) ?>'"><?= __('編集')?></button>
+			<?php if ((int)$user['id'] !== (int)$loginedUser['id']): ?>
+				<?php if (!empty($user['is_active'])): ?>
+				<?= $this->Form->postLink(__('無効化'), ['action' => 'toggleActive', $user['id']], ['class' => 'btn btn-warning'], __('[%s] を無効化してもよろしいですか?', $user['name'])); ?>
+				<?php else: ?>
+				<?= $this->Form->postLink(__('有効化'), ['action' => 'toggleActive', $user['id']], ['class' => 'btn btn-info'], __('[%s] を有効化してもよろしいですか?', $user['name'])); ?>
+				<?php endif; ?>
+			<?php endif; ?>
 			<?= $this->Form->postLink(__('削除'), ['action' => 'delete', $user['id']], ['class' => 'btn btn-danger'],__('[%s] を削除してもよろしいですか?', $user['name']));?>
 		</td>
 		<?php }?>

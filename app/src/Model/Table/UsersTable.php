@@ -12,6 +12,7 @@ namespace App\Model\Table;
 
 use ArrayObject;
 use Cake\Datasource\EntityInterface;
+use Cake\Datasource\FactoryLocator;
 use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\Validation\Validator;
@@ -125,6 +126,9 @@ class UsersTable extends AppTable
             ])
             ->allowEmptyString('new_password');
 
+        $validator
+            ->boolean('is_active');
+
         return $validator;
     }
 
@@ -137,7 +141,7 @@ class UsersTable extends AppTable
     {
         return $query
             ->select(['id', 'username', 'password', 'role', 'name'])
-            ->where(['deleted IS NULL']);
+            ->where(['deleted IS NULL', 'is_active' => true]);
     }
 
     /**
@@ -176,6 +180,28 @@ class UsersTable extends AppTable
             'DELETE FROM ib_records WHERE user_id = :user_id',
             ['user_id' => $userId],
         );
+    }
+
+    /**
+     * ユーザの有効/無効を切り替え、無効化時はトークンを全失効する
+     *
+     * @param int $userId 対象ユーザID
+     * @param bool $active true=有効化, false=無効化
+     * @return \App\Model\Entity\User 保存後のエンティティ
+     */
+    public function toggleActive(int $userId, bool $active): \App\Model\Entity\User
+    {
+        $user = $this->get($userId);
+        $user->is_active = $active;
+        $this->saveOrFail($user);
+
+        if (!$active) {
+            $userTokensTable = FactoryLocator::get('Table')->get('UserTokens');
+            $userTokensTable->revokeAllForUser($userId);
+            $userTokensTable->revokeAllApiForUser($userId);
+        }
+
+        return $user;
     }
 
     /**

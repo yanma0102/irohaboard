@@ -48,7 +48,7 @@ trait UserLoginTrait
         $usersTable = $this->fetchTable('Users');
 
         $user = $usersTable->find()
-            ->where(['username' => $username, 'deleted IS NULL'])
+            ->where(['username' => $username, 'deleted IS NULL', 'is_active' => true])
             ->first();
 
         $attributes = [];

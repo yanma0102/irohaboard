@@ -69,6 +69,32 @@ class AppController extends Controller
     {
         $this->set('loginedUser', $this->readAuthUser()); // ログインユーザ情報（旧バージョン用）
 
+        // 認証済みユーザの無効化チェック（リクエスト毎に確認）
+        // API コントローラは独自の Bearer トークン認証を利用するため除外
+        if ($this->request->getParam('prefix') !== 'Api') {
+            $currentUser = $this->readAuthUser();
+            if ($currentUser) {
+                $usersTable = $this->fetchTable('Users');
+                $user = $usersTable->get((int)$currentUser['id']);
+                if ($user && !$user->is_active) {
+                    // Remember Me Cookie を削除
+                    $this->deleteCookie('CookieAuth');
+
+                    // セッション破棄
+                    $this->request->getSession()->destroy();
+
+                    $this->Flash->error(__('このアカウントは無効化されました。管理者にお問い合わせください。'));
+
+                    $logoutRedirect = $this->Authentication->logout();
+                    $url = $logoutRedirect ?? '/users/login';
+
+                    $event->setResult($this->redirect($url));
+
+                    return null;
+                }
+            }
+        }
+
         // ログイン/ログアウトは認証不要
         $action = (string)$this->request->getParam('action');
         if (in_array($action, ['login', 'logout'], true)) {

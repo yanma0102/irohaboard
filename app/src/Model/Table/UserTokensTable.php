@@ -198,7 +198,7 @@ class UserTokensTable extends AppTable
 
             $usersTable = FactoryLocator::get('Table')->get('Users');
             $user = $usersTable->find()
-                ->where(['id' => $token->user_id, 'deleted IS NULL'])
+                ->where(['id' => $token->user_id, 'deleted IS NULL', 'is_active' => true])
                 ->first();
 
             if (!$user) {
@@ -385,7 +385,7 @@ class UserTokensTable extends AppTable
 
             $usersTable = FactoryLocator::get('Table')->get('Users');
             $user = $usersTable->find()
-                ->where(['id' => $token->user_id, 'deleted IS NULL'])
+                ->where(['id' => $token->user_id, 'deleted IS NULL', 'is_active' => true])
                 ->first();
 
             if (!$user) {
@@ -450,7 +450,7 @@ class UserTokensTable extends AppTable
 
             $usersTable = FactoryLocator::get('Table')->get('Users');
             $user = $usersTable->find()
-                ->where(['id' => $token->user_id, 'deleted IS NULL'])
+                ->where(['id' => $token->user_id, 'deleted IS NULL', 'is_active' => true])
                 ->first();
 
             if (!$user) {

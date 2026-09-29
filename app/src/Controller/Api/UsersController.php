@@ -65,6 +65,7 @@ class UsersController extends BaseController
             'id', 'username', 'name', 'role',
             'email', 'comment', 'last_logined',
             'started', 'ended', 'created', 'modified',
+            'is_active',
         ];
 
         $order = ['id' => 'asc'];
@@ -123,7 +124,7 @@ class UsersController extends BaseController
         $input = $this->input();
         $usersTable = $this->fetchTable('Users');
 
-        $allowedFields = ['username', 'password', 'name', 'role', 'email', 'comment', 'started', 'ended'];
+        $allowedFields = ['username', 'password', 'name', 'role', 'email', 'comment', 'started', 'ended', 'is_active'];
         $fields = [];
 
         foreach ($allowedFields as $field) {
@@ -170,7 +171,7 @@ class UsersController extends BaseController
         }
 
         $input = $this->input();
-        $allowed = ['role', 'name', 'email', 'comment', 'started', 'ended'];
+        $allowed = ['role', 'name', 'email', 'comment', 'started', 'ended', 'is_active'];
         $fields = [];
 
         foreach ($allowed as $field) {
@@ -195,10 +196,38 @@ class UsersController extends BaseController
             }
         }
 
+        if (array_key_exists('is_active', $fields)) {
+            // 自分自身の無効化を禁止
+            if ($id === $this->currentUserId() && !$fields['is_active']) {
+                $this->fail(403, 'Cannot deactivate your own account');
+            }
+
+            // 最後の有効な管理者の無効化を禁止
+            if (!$fields['is_active'] && $target->role === 'admin') {
+                $adminCount = $usersTable->find()
+                    ->where(['role' => 'admin', 'deleted IS NULL', 'is_active' => true])
+                    ->count();
+                if ($adminCount <= 1) {
+                    $this->fail(403, 'Cannot deactivate the last active administrator');
+                }
+            }
+        }
+
+        // 無効化前の状態を記録（トークン失効判定用）
+        $wasActive = (bool)($target->is_active ?? true);
+
         $entity = $usersTable->patchEntity($target, $fields);
 
         if (!$usersTable->save($entity)) {
             $this->fail(400, 'Validation failed', $entity->getErrors());
+        }
+
+        // 無効化時はトークンを全失効する
+        $isActiveNow = (bool)($entity->is_active ?? true);
+        if ($wasActive && !$isActiveNow) {
+            $userTokensTable = $this->fetchTable('UserTokens');
+            $userTokensTable->revokeAllForUser($id);
+            $userTokensTable->revokeAllApiForUser($id);
         }
 
         $data = $entity->toArray();

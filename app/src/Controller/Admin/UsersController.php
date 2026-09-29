@@ -259,6 +259,60 @@ class UsersController extends AppController
     }
 
     /**
+     * ユーザの有効/無効を切り替え
+     *
+     * @param string|int|null $user_id 切替対象のユーザID
+     * @return \Cake\Http\Response
+     */
+    public function toggleActive($user_id = null): Response
+    {
+        if (Configure::read('demo_mode')) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $this->request->allowMethod(['post']);
+
+        $usersTable = $this->fetchTable('Users');
+
+        if (!$usersTable->exists(['id' => $user_id])) {
+            throw new NotFoundException(__('Invalid user'));
+        }
+
+        // 自分自身の無効化を禁止
+        if ((int)$user_id === (int)$this->readAuthUser('id')) {
+            $this->Flash->error(__('自分自身の有効/無効を変更することはできません'));
+
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $user = $usersTable->get((int)$user_id);
+        $newActive = !$user->is_active;
+
+        // 無効化の場合、最後の有効な管理者の無効化を禁止
+        if (!$newActive && $user->role === 'admin') {
+            $activeAdminCount = $usersTable->find()
+                ->where(['role' => 'admin', 'is_active' => true, 'deleted IS NULL'])
+                ->count();
+
+            if ($activeAdminCount <= 1) {
+                $this->Flash->error(__('最後の有効な管理者を無効化することはできません'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+        }
+
+        $usersTable->toggleActive((int)$user_id, $newActive);
+
+        if ($newActive) {
+            $this->Flash->success(__('ユーザ [%s] を有効化しました', h($user->name)));
+        } else {
+            $this->Flash->success(__('ユーザ [%s] を無効化しました', h($user->name)));
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+
+    /**
      * ユーザの学習履歴のクリア
      *
      * @param string|int $user_id 学習履歴をクリアするユーザのID

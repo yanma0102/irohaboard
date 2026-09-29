@@ -76,7 +76,7 @@ class AuthController extends BaseController
             ->where(['username' => $username])
             ->first();
 
-        if (!$user || !empty($user->deleted)) {
+        if (!$user || !empty($user->deleted) || !$user->is_active) {
             $this->logFailedAttempt($username);
             $this->fail(401, 'Invalid credentials');
         }

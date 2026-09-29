@@ -24,6 +24,10 @@ services:
       - DB_USER=root
       - DB_PASS=rootpass
       - APP_FULL_BASE_URL=http://localhost:8082
+      # debug=false に固定する。debug=true のままだと DebugKit が常時起動し、
+      # 画面右下のツールバーが画面のリロードごとに大量の AJAX を発行するため
+      # 体感速度が大幅に低下する。開発時はこの行を true に変更すること。
+      - DEBUG=false
     depends_on:
       db:
         condition: service_healthy

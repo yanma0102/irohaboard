@@ -9,6 +9,7 @@
 		echo $this->Html->meta('icon');
 
 		echo $this->Html->css('common');
+		echo $this->Html->css('error');
 
 		echo $this->fetch('meta');
 		echo $this->fetch('css');
@@ -22,7 +23,5 @@
 			<?= $this->fetch('content'); ?>
 		</div>
 	</div>
-	<?php /* sql_dump 要素は CakePHP 5 には存在しない。呼ぶと MissingElementException →
-	         エラー描画の無限再帰（debug=false でハング）になるため呼び出さない。 */ ?>
 </body>
 </html>

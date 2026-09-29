@@ -7,11 +7,9 @@
 use Cake\Core\Configure;
 
 $this->setLayout('error');
+$this->assign('title', 'ページが見つかりません');
 
 if (Configure::read('debug')) :
-    $this->setLayout('dev_error');
-
-    $this->assign('title', $message);
     $this->assign('templateName', 'error400.php');
 
     $this->start('file');
@@ -19,8 +17,23 @@ if (Configure::read('debug')) :
     $this->end();
 endif;
 ?>
-<h2><?= h($message) ?></h2>
-<p class="error">
-    <strong><?= __d('cake', 'Error') ?>: </strong>
-    <?= __d('cake', 'The requested address {0} was not found on this server.', "<strong>'" . h($url) . "'</strong>") ?>
-</p>
+<div class="ib-error">
+	<div class="ib-error-icon">404</div>
+	<h1>ページが見つかりません</h1>
+	<p>
+		お探しのページは削除されたか、URLが変更された可能性があります。<br>
+		恐れ入りますが、トップページから改めてお探しください。
+	</p>
+	<div class="ib-error-nav">
+		<a href="/" class="ib-error-btn-primary">トップページへ</a>
+		<a href="javascript:history.back()" class="ib-error-btn-secondary">前のページへ戻る</a>
+	</div>
+
+<?php if (Configure::read('debug')) : ?>
+	<div class="ib-error-debug">
+		<strong>Debug information</strong>
+		<pre><?= h($message) . "\n" . h($url) ?></pre>
+		<?= $this->fetch('file') ?>
+	</div>
+<?php endif; ?>
+</div>

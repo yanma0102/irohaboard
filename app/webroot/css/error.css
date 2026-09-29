@@ -1,0 +1,119 @@
+/* ============================================
+   Error Page Styles
+   Calm, business-oriented error pages
+   ============================================ */
+
+.ib-error {
+	max-width: 560px;
+	margin: 80px auto 40px;
+	padding: 0 20px;
+	text-align: center;
+}
+
+/* Error icon — a subtle circle with the status code */
+.ib-error-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 80px;
+	height: 80px;
+	margin-bottom: 24px;
+	border-radius: 50%;
+	background-color: #f0f0f0;
+	color: #888;
+	font-size: 28px;
+	font-weight: bold;
+	letter-spacing: 0.02em;
+}
+
+/* Heading */
+.ib-error h1 {
+	font-size: 22px;
+	font-weight: bold;
+	color: #333;
+	margin: 0 0 12px;
+}
+
+/* Description */
+.ib-error p {
+	font-size: 15px;
+	color: #666;
+	line-height: 1.7;
+	margin: 0 0 32px;
+}
+
+/* Navigation links */
+.ib-error-nav {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.ib-error-nav a {
+	display: inline-block;
+	padding: 10px 28px;
+	font-size: 14px;
+	text-decoration: none;
+	border-radius: 4px;
+	transition: background-color 0.15s, color 0.15s;
+}
+
+.ib-error-nav .ib-error-btn-primary {
+	background-color: #337ab7;
+	color: #fff;
+}
+
+.ib-error-nav .ib-error-btn-primary:hover {
+	background-color: #285f8f;
+}
+
+.ib-error-nav .ib-error-btn-secondary {
+	background-color: #fff;
+	color: #337ab7;
+	border: 1px solid #337ab7;
+}
+
+.ib-error-nav .ib-error-btn-secondary:hover {
+	background-color: #f5f9fc;
+}
+
+/* Debug information block (only shown when debug=true) */
+.ib-error-debug {
+	margin-top: 40px;
+	text-align: left;
+	background-color: #fdf6f0;
+	border: 1px solid #e8d5c4;
+	border-radius: 4px;
+	padding: 16px 20px;
+	font-size: 13px;
+	color: #555;
+	line-height: 1.6;
+}
+
+.ib-error-debug strong {
+	color: #333;
+}
+
+.ib-error-debug pre {
+	margin-top: 10px;
+	padding: 12px;
+	background-color: #fff;
+	border: 1px solid #e0d5ca;
+	border-radius: 3px;
+	font-size: 12px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+/* Responsive */
+@media only screen and (max-width: 800px) {
+	.ib-error {
+		margin-top: 40px;
+	}
+
+	.ib-error h1 {
+		font-size: 20px;
+	}
+}

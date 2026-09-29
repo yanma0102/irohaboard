@@ -143,7 +143,12 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                         return true;
                     }
                     // ログイン/ログアウト POST は CSRF チェックをスキップ
-                    if (str_starts_with($uri, '/users/login') || str_starts_with($uri, '/users/logout')) {
+                    // 管理画面は /admin/users/login のようにプレフィックスが付くため、
+                    // '/users/login' と '/admin/users/login' の両方を許可する。
+                    if (
+                        str_starts_with($uri, '/users/login') || str_starts_with($uri, '/users/logout')
+                        || str_starts_with($uri, '/admin/users/login') || str_starts_with($uri, '/admin/users/logout')
+                    ) {
                         return true;
                     }
 

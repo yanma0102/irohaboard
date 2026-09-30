@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
@@ -565,6 +566,77 @@ class McpControllerTest extends TestCase
             'POST, DELETE, OPTIONS',
             $this->_response->getHeaderLine('Allow'),
         );
+    }
+
+    // ----------------------------------------------------------------
+    // DNS リバインディング保護 / Host 許可リスト
+    // ----------------------------------------------------------------
+
+    /**
+     * 許可リスト外の Host ヘッダは 403 になる（既定は localhost 系のみ）
+     */
+    public function testDisallowedHostIsForbidden(): void
+    {
+        $this->configRequest([
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Host' => '192.168.20.161:8082',
+            ],
+        ]);
+        $this->post('/mcp', json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'initialize',
+        ]));
+
+        $this->assertResponseCode(403);
+    }
+
+    /**
+     * mcp_allowed_hosts に追加したホストは許可され、403 にならない
+     *
+     * 認証は別レイヤのため、Host 検証を通過したことは 401/200 等
+     * （403 以外）で確認する。
+     */
+    public function testAllowedHostFromConfigPassesDnsRebinding(): void
+    {
+        Configure::write('mcp_allowed_hosts', ['localhost', '127.0.0.1', '[::1]', '192.168.20.161']);
+
+        $this->configRequest([
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Host' => '192.168.20.161:8082',
+            ],
+        ]);
+        $this->post('/mcp', json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'initialize',
+        ]));
+
+        // Host 検証は通過 → 認証ミドルウェアで 401（403 ではない）
+        $this->assertNotSame(403, $this->_response->getStatusCode());
+        $this->assertResponseCode(401);
+    }
+
+    /**
+     * 許可オリジンリストの Host も検証される（Origin ヘッダ経由）
+     */
+    public function testDisallowedOriginIsForbidden(): void
+    {
+        $this->configRequest([
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Origin' => 'http://192.168.20.161:8082',
+            ],
+        ]);
+        $this->post('/mcp', json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'initialize',
+        ]));
+
+        $this->assertResponseCode(403);
     }
 
     // ----------------------------------------------------------------

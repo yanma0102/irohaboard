@@ -103,11 +103,15 @@ class McpController extends Controller
 
         $allowedOrigins = Configure::read('mcp_cors_allowed_origins') ?? [];
 
+        // DNS リバインディング保護で許可するホスト名。
+        // 未設定時は SDK 既定（localhost 系のみ）。
+        $allowedHosts = Configure::read('mcp_allowed_hosts') ?? [];
+
         $transport = new StreamableHttpTransport(
             request: $this->request,
             middleware: [
                 new CorsMiddleware($allowedOrigins),
-                new DnsRebindingProtectionMiddleware(),
+                new DnsRebindingProtectionMiddleware($allowedHosts),
                 new IrohaAuthMiddleware($validator, $responseFactory),
                 new McpRateLimitMiddleware(
                     $this->fetchTable('Logs'),

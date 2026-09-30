@@ -28,6 +28,11 @@ services:
       # 画面右下のツールバーが画面のリロードごとに大量の AJAX を発行するため
       # 体感速度が大幅に低下する。開発時はこの行を true に変更すること。
       - DEBUG=false
+      # MCP の Host/Origin ヘッダ許可リスト（カンマ区切り）。
+      # 本番ではサーバの IP / ホスト名を追加しないと MCP が 403 になる。
+      # 例: MCP_ALLOWED_HOSTS=localhost,127.0.0.1,[::1],192.168.20.161
+      # 未設定なら localhost 系のみ許可。
+      - MCP_ALLOWED_HOSTS=
     depends_on:
       db:
         condition: service_healthy

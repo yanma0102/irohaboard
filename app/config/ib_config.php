@@ -222,7 +222,25 @@ $config['api_rate_limit_per_minute'] = 120;
 // MCP CORS 許可オリジンリスト（ブラウザ内 MCP クライアント接続用）
 // 空配列 [] で全オリジン拒否（既定・セキュア）。['*'] で全オリジン許可。
 // 例: ['https://example.com', 'https://app.example.com']
-$config['mcp_cors_allowed_origins'] = [];
+// 環境変数 MCP_CORS_ALLOWED_ORIGINS（カンマ区切り）でも指定可能。
+$config['mcp_cors_allowed_origins'] = array_values(array_filter(array_map(
+    'trim',
+    explode(',', (string)env('MCP_CORS_ALLOWED_ORIGINS', ''))
+)));
+
+// MCP DNS リバインディング保護で許可するホスト名リスト
+// DnsRebindingProtectionMiddleware は Host / Origin ヘッダをこのリストと照合し、
+// 一致しない場合は 403 Forbidden を返す（DNS リバインディング攻撃対策）。
+// 既定は localhost 系のみ。本番環境ではサーバの IP / ホスト名を追加すること。
+// 例: ['localhost', '127.0.0.1', '[::1]', '192.168.20.161', 'iroha.example.com']
+// 環境変数 MCP_ALLOWED_HOSTS（カンマ区切り）でも指定可能。
+// 未設定時の既定値:
+$__mcp_default_hosts = ['localhost', '127.0.0.1', '[::1]'];
+$__mcp_env_hosts = (string)env('MCP_ALLOWED_HOSTS', '');
+$config['mcp_allowed_hosts'] = $__mcp_env_hosts !== ''
+    ? array_values(array_filter(array_map('trim', explode(',', $__mcp_env_hosts))))
+    : $__mcp_default_hosts;
+unset($__mcp_default_hosts, $__mcp_env_hosts);
 
 // インストーラー・アップデータへのアクセス拒否 (true : 拒否, false : 許可)
 $config['deny_install_update_access'] = false;

@@ -576,6 +576,45 @@ class McpControllerTest extends TestCase
         );
     }
 
+    /**
+     * GET /mcp: Accept に text/event-stream を含む場合は SSE で応答する。
+     *
+     * MCP クライアントが SSE ストリームを期待するケースへの対応。
+     * Content-Type が text/event-stream で、SSE として解釈可能な
+     * 有限ストリーム（コメント行 + retry）を返すことを検証する。
+     */
+    public function testGetWithAcceptEventStreamReturnsSse(): void
+    {
+        $this->configRequest([
+            'headers' => ['Accept' => 'text/event-stream'],
+        ]);
+        $this->get('/mcp');
+
+        $this->assertResponseCode(200);
+        $this->assertContentType('text/event-stream');
+
+        $body = (string)$this->_response->getBody();
+        // SSE コメント行（: 始まり）を含む
+        $this->assertStringContainsString(': ', $body);
+        // retry ヒントを含む
+        $this->assertStringContainsString('retry:', $body);
+    }
+
+    /**
+     * GET /mcp: Accept に application/json, text/event-stream の両方を含む場合も
+     * SSE を優先して返す（MCP クライアントは両方を送る場合がある）。
+     */
+    public function testGetWithBothAcceptTypesReturnsSse(): void
+    {
+        $this->configRequest([
+            'headers' => ['Accept' => 'application/json, text/event-stream'],
+        ]);
+        $this->get('/mcp');
+
+        $this->assertResponseCode(200);
+        $this->assertContentType('text/event-stream');
+    }
+
     // ----------------------------------------------------------------
     // DNS リバインディング保護 / Host 許可リスト
     // ----------------------------------------------------------------

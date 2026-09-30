@@ -67,21 +67,44 @@ class McpController extends Controller
     }
 
     /**
-     * GET /mcp — ヘルスチェック用の応答（200 + JSON）。
+     * GET /mcp — サーバー主導メッセージ用の SSE ストリームを開く（認証不要）。
      *
-     * MCP Streamable HTTP 仕様で GET はサーバー主導メッセージ用の SSE ストリームを
-     * 開くためのものだが、PHP はリクエスト毎に処理を完結させるため接続維持型の
-     * SSE は提供できない（提供するとワーカーを占有する）。
+     * MCP Streamable HTTP 仕様では、GET はサーバー→クライアントの SSE ストリームを
+     * 開くために使う。仕様上は 405 を返すことも認められているが、クライアントが
+     * `Accept: text/event-stream` を送って SSE を期待するケースがあるため、
+     * その場合は Content-Type: text/event-stream で応答する必要がある。
      *
-     * 一方で、クライアントや監視ツールが GET を疎通確認（ヘルスチェック）に
-     * 使うケースがある。その場合は 405 だと「異常」と判定されるため、
-     * 認証不要で 200 + JSON を返し、エンドポイントの存在とトランスポート種別を
-     * 通知する。JSON-RPC の処理は行わない（POST のみ）。
+     * PHP はリクエスト毎に処理を完結させるため接続維持型の SSE は提供できない。
+     * そこで仕様が許容する「有限の SSE ストリーム」（keep-alive コメントと retry
+     * ヒントを送って即座に閉じる）を返す。クライアントは text/event-stream を
+     * 受け取り、イベントが無いままストリーム終了 → retry 間隔で再接続する。
+     *
+     * `Accept` に text/event-stream を含まない（監視ツール等）場合は、
+     * 従来どおり 200 + JSON のヘルスチェック応答を返す。
      *
      * @return \Cake\Http\Response
      */
     public function health(): Response
     {
+        $accept = $this->request->getHeaderLine('Accept');
+
+        // SSE を期待するクライアントには text/event-stream で応答する
+        if (str_contains(strtolower($accept), 'text/event-stream')) {
+            // SSE コメント行（: 始まり）と retry ヒント。有限ストリームとして閉じる。
+            $body = ": irohaboard mcp\n"
+                . ": server-initiated SSE stream is not available (stateless PHP)\n"
+                . "retry: 3000\n\n";
+
+            return (new Response())
+                ->withStatus(200)
+                ->withHeader('Content-Type', 'text/event-stream; charset=UTF-8')
+                ->withHeader('Cache-Control', 'no-cache')
+                ->withHeader('X-Accel-Buffering', 'no')
+                ->withHeader('Allow', 'POST, DELETE, OPTIONS, GET')
+                ->withStringBody($body);
+        }
+
+        // 疎通確認（ヘルスチェック）用途: 200 + JSON
         $payload = [
             'status' => 'ok',
             'service' => 'irohaboard',

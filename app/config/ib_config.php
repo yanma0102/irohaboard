@@ -233,14 +233,70 @@ $config['mcp_cors_allowed_origins'] = array_values(array_filter(array_map(
 // 一致しない場合は 403 Forbidden を返す（DNS リバインディング攻撃対策）。
 // 既定は localhost 系のみ。本番環境ではサーバの IP / ホスト名を追加すること。
 // 例: ['localhost', '127.0.0.1', '[::1]', '192.168.20.161', 'iroha.example.com']
+// IPv4 の CIDR（セグメント）も指定可能。例: '192.168.20.0/24' → .1〜.254 に展開。
 // 環境変数 MCP_ALLOWED_HOSTS（カンマ区切り）でも指定可能。
+//   MCP_ALLOWED_HOSTS=192.168.20.0/24,iroha.example.com,localhost
 // 未設定時の既定値:
+$__mcp_cidr_to_hosts = static function (string $entry): array {
+    // CIDR でない（/ を含まない）場合はそのまま返す
+    if (!str_contains($entry, '/')) {
+        return [$entry];
+    }
+
+    [$subnet, $bitsRaw] = explode('/', $entry, 2);
+    // ネットワーク部が IPv4 で、プレフィックス長が 0〜32 の整数であること
+    if (
+        filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false
+        || !ctype_digit($bitsRaw)
+        || (int)$bitsRaw < 0 || (int)$bitsRaw > 32
+    ) {
+        // 不正な CIDR はそのまま 1 エントリとして扱う（照合で不一致になるだけ）
+        return [$entry];
+    }
+
+    $bits = (int)$bitsRaw;
+    $ipLong = ip2long($subnet);
+    $mask = $bits === 0 ? 0 : (-1 << (32 - $bits));
+    $network = $ipLong & $mask;
+    $broadcast = $network | (~$mask & 0xFFFFFFFF);
+
+    // /31 は 2 アドレス、/32 は 1 アドレス（host 数が膨らむ巨大セグメントは許可しない）
+    $hostCount = $broadcast - $network + 1;
+    if ($hostCount > 1024) {
+        return [$entry];
+    }
+
+    $hosts = [];
+    for ($i = 0; $i < $hostCount; $i++) {
+        $hosts[] = long2ip(($network + $i) & 0xFFFFFFFF);
+    }
+
+    return $hosts;
+};
+
 $__mcp_default_hosts = ['localhost', '127.0.0.1', '[::1]'];
 $__mcp_env_hosts = (string)env('MCP_ALLOWED_HOSTS', '');
-$config['mcp_allowed_hosts'] = $__mcp_env_hosts !== ''
+$__mcp_raw_hosts = $__mcp_env_hosts !== ''
     ? array_values(array_filter(array_map('trim', explode(',', $__mcp_env_hosts))))
     : $__mcp_default_hosts;
-unset($__mcp_default_hosts, $__mcp_env_hosts);
+
+$__mcp_expanded_hosts = [];
+foreach ($__mcp_raw_hosts as $__mcp_entry) {
+    foreach ($__mcp_cidr_to_hosts($__mcp_entry) as $__mcp_host) {
+        $__mcp_expanded_hosts[] = $__mcp_host;
+    }
+}
+
+$config['mcp_allowed_hosts'] = array_values(array_unique($__mcp_expanded_hosts));
+unset(
+    $__mcp_cidr_to_hosts,
+    $__mcp_default_hosts,
+    $__mcp_env_hosts,
+    $__mcp_raw_hosts,
+    $__mcp_expanded_hosts,
+    $__mcp_entry,
+    $__mcp_host
+);
 
 // インストーラー・アップデータへのアクセス拒否 (true : 拒否, false : 許可)
 $config['deny_install_update_access'] = false;

@@ -639,6 +639,62 @@ class McpControllerTest extends TestCase
         $this->assertResponseCode(403);
     }
 
+    /**
+     * MCP_ALLOWED_HOSTS の CIDR（セグメント）がホスト一覧へ展開される
+     *
+     * ib_config.php の読み込みロジックを直接検証する。
+     * /30 → 4アドレス、/32 → 1アドレス、巨大セグメント（/8）は安全のため展開しない。
+     */
+    public function testMcpAllowedHostsExpandsCidr(): void
+    {
+        $load = function (?string $envValue): array {
+            if ($envValue === null) {
+                putenv('MCP_ALLOWED_HOSTS');
+            } else {
+                putenv('MCP_ALLOWED_HOSTS=' . $envValue);
+            }
+            $config = [];
+            require CONFIG . 'ib_config.php';
+
+            return $config['mcp_allowed_hosts'];
+        };
+
+        try {
+            // 既定（未設定）は localhost 系のみ
+            $this->assertSame(
+                ['localhost', '127.0.0.1', '[::1]'],
+                $load(null)
+            );
+
+            // /30 は 4 アドレスに展開される
+            $this->assertSame(
+                ['192.168.20.0', '192.168.20.1', '192.168.20.2', '192.168.20.3'],
+                $load('192.168.20.0/30')
+            );
+
+            // CIDR・ホスト名・localhost の混在
+            $mixed = $load('192.168.30.0/24,iroha.example.com,localhost');
+            $this->assertCount(258, $mixed);
+            $this->assertContains('192.168.30.150', $mixed);
+            $this->assertContains('iroha.example.com', $mixed);
+            $this->assertContains('localhost', $mixed);
+
+            // /32 は単一アドレス
+            $this->assertSame(['192.168.20.161'], $load('192.168.20.161/32'));
+
+            // 巨大セグメント（1024 超）は展開せずリテラルのまま（安全弁）
+            $this->assertSame(['10.0.0.0/8'], $load('10.0.0.0/8'));
+
+            // 不正な CIDR / 非 IP はそのまま（照合で不一致になるだけ）
+            $this->assertSame(
+                ['192.168.20.0/99', 'foo/bar'],
+                $load('192.168.20.0/99,foo/bar')
+            );
+        } finally {
+            putenv('MCP_ALLOWED_HOSTS');
+        }
+    }
+
     // ----------------------------------------------------------------
     // DELETE / セッション破棄
     // ----------------------------------------------------------------

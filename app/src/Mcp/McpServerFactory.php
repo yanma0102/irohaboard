@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Mcp;
 
 use App\Mcp\Tool\CreateContentTool;
+use App\Mcp\Tool\CreateTestQuestionTool;
 use App\Mcp\Tool\GetContentHtmlTool;
 use App\Mcp\Tool\GetContentTool;
 use App\Mcp\Tool\GetCourseTool;
@@ -19,6 +20,7 @@ use App\Mcp\Tool\ListContentsTool;
 use App\Mcp\Tool\ListCoursesTool;
 use App\Mcp\Tool\ListRecordsTool;
 use App\Mcp\Tool\UpdateContentTool;
+use App\Mcp\Tool\UpdateTestQuestionTool;
 use App\Service\AccessControlService;
 use Mcp\Server;
 use Mcp\Server\Session\FileSessionStore;
@@ -121,6 +123,18 @@ class McpServerFactory
                 name: 'update_content',
                 description: 'Update fields of an existing content (staff only, course membership required). '
                     . 'Only the provided fields are changed (partial update).',
+            )
+            ->addTool(
+                [new CreateTestQuestionTool($accessControl), '__invoke'],
+                name: 'create_test_question',
+                description: 'Create a test question in a test content (staff only, course membership required). '
+                    . 'For question_type=single, provide options and correct (1-based indexes); for text, omit them.',
+            )
+            ->addTool(
+                [new UpdateTestQuestionTool($accessControl), '__invoke'],
+                name: 'update_test_question',
+                description: 'Update fields of an existing test question (staff only, course membership required). '
+                    . 'Only provided fields are changed. options/correct are arrays.',
             )
             ->build();
     }

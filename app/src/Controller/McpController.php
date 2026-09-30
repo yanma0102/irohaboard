@@ -67,21 +67,33 @@ class McpController extends Controller
     }
 
     /**
-     * GET /mcp — サーバー主導メッセージ用 SSE ストリームは非対応（405）。
+     * GET /mcp — ヘルスチェック用の応答（200 + JSON）。
      *
-     * MCP Streamable HTTP 仕様では、GET 未対応のサーバーは 405 Method Not Allowed
-     * を返す。PHP はリクエスト毎に処理を完結させるため、接続を維持する
-     * SSE ストリームは提供できない（提供するとワーカーを占有する）。
-     * ルート未定義の 404 (HTML) はクライアント（Inspector / Claude Desktop 等）の
-     * 接続フローを壊すため、405 + Allow ヘッダで明示する。
+     * MCP Streamable HTTP 仕様で GET はサーバー主導メッセージ用の SSE ストリームを
+     * 開くためのものだが、PHP はリクエスト毎に処理を完結させるため接続維持型の
+     * SSE は提供できない（提供するとワーカーを占有する）。
+     *
+     * 一方で、クライアントや監視ツールが GET を疎通確認（ヘルスチェック）に
+     * 使うケースがある。その場合は 405 だと「異常」と判定されるため、
+     * 認証不要で 200 + JSON を返し、エンドポイントの存在とトランスポート種別を
+     * 通知する。JSON-RPC の処理は行わない（POST のみ）。
      *
      * @return \Cake\Http\Response
      */
-    public function getNotAllowed(): Response
+    public function health(): Response
     {
+        $payload = [
+            'status' => 'ok',
+            'service' => 'irohaboard',
+            'transport' => 'streamable-http',
+            'methods' => 'POST, DELETE, OPTIONS',
+        ];
+
         return (new Response())
-            ->withStatus(405)
-            ->withHeader('Allow', 'POST, DELETE, OPTIONS');
+            ->withStatus(200)
+            ->withHeader('Content-Type', 'application/json; charset=UTF-8')
+            ->withHeader('Allow', 'POST, DELETE, OPTIONS, GET')
+            ->withStringBody((string)json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**

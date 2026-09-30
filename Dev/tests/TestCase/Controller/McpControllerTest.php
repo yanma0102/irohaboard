@@ -552,18 +552,26 @@ class McpControllerTest extends TestCase
     }
 
     /**
-     * GET /mcp — SSE 非対応のため 405 + Allow（MCP Streamable HTTP 仕様）。
+     * GET /mcp — ヘルスチェック用に 200 + JSON を返す（認証不要）。
      *
-     * ルート未定義の 404 はクライアント接続フローを壊すため、
-     * Inspector / Claude Desktop 等が試行する GET には 405 を返す。
+     * SSE ストリームは提供しないが、疎通確認で 405 だと異常扱いされるため、
+     * エンドポイントの存在とトランスポート種別を JSON で通知する。
      */
-    public function testGetReturns405MethodNotAllowed(): void
+    public function testGetReturns200HealthCheck(): void
     {
         $this->get('/mcp');
 
-        $this->assertResponseCode(405);
+        $this->assertResponseCode(200);
+        $this->assertContentType('application/json');
+
+        $body = json_decode((string)$this->_response->getBody(), true);
+        $this->assertIsArray($body);
+        $this->assertSame('ok', $body['status']);
+        $this->assertSame('streamable-http', $body['transport']);
+
+        // Allow ヘッダ（GET を含む）
         $this->assertSame(
-            'POST, DELETE, OPTIONS',
+            'POST, DELETE, OPTIONS, GET',
             $this->_response->getHeaderLine('Allow'),
         );
     }

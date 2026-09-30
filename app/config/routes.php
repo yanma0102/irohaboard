@@ -409,7 +409,7 @@ return function (RouteBuilder $routes): void {
             $builder->post('/', ['controller' => 'Mcp', 'action' => 'endpoint'], 'mcp:post');
             $builder->delete('/', ['controller' => 'Mcp', 'action' => 'deleteSession'], 'mcp:delete');
             $builder->options('/', ['controller' => 'Mcp', 'action' => 'options'], 'mcp:options');
-            $builder->get('/', ['controller' => 'Mcp', 'action' => 'getNotAllowed'], 'mcp:get');
+            $builder->get('/', ['controller' => 'Mcp', 'action' => 'health'], 'mcp:get');
         });
 
         // 未定義の /api/* は Api/Errors::notFound（JSON 404）

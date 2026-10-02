@@ -188,24 +188,22 @@ html, body
 		max-width		: 100%;
 	}
 
+	/* 狭い画面でも本文が固定フッタ(理解度確認)の下に隠れないよう、
+	   デスクトップ同様にflex縦レイアウトを維持する。
+	   フッタはin-flow(sticky)なflex itemなので高さ分の余白が自動で確保され、
+	   ボタンの折り返し等で高さが変動しても本文と重ならない。 */
 	.content-view
 	{
-		display			: block;
 		padding-bottom	: 0;
-	}
-	
-	.content-body
-	{
-		height			: initial;
-		min-height		: calc(100% - 100px);
-		overflow-y			: scroll;
 	}
 
 	.content-foot
 	{
-		height			: initial;
+		position		: sticky;
+		bottom			: 0;
+		height			: auto;
+		flex-shrink		: 0;
 		padding-bottom	: 10px;
-
 	}
 
 	.content-foot button

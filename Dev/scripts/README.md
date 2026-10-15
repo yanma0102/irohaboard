@@ -12,6 +12,7 @@ They require `curl` and `jq` to be installed on the machine where they are execu
 | Docker app running on `http://localhost:8082` | Target application |
 | `curl` | HTTP requests |
 | `jq` | JSON parsing |
+| Python 3.10+ / Playwright (Chromium) | GUI 操作テスト（`gui-image-upload.py`） |
 
 ## Environment Variables
 
@@ -43,7 +44,7 @@ BASE_URL=http://localhost:8081 bash Dev/scripts/smoke-api.sh
 MCP (Model Context Protocol) smoke test. Checks:
 
 1. **initialize** — sends an MCP initialize request and establishes a session.
-2. **tools/list** — asserts all 9 expected tools are listed (7 read-only + 2 write).
+2. **tools/list** — asserts the expected tools are listed (現行 11、拡張後は拡張後の数。最小集合を検証)。
 3. **tools/call list_courses** — calls the `list_courses` tool and asserts a result.
 
 ```bash
@@ -74,6 +75,28 @@ bash Dev/scripts/test-fresh.sh ../Dev/tests/TestCase/Controller/Api/ApiContractT
 | `DB_USER` / `DB_PASS` | `root` / `rootpass` | DB 資格情報 |
 | `DB_NAME` | `irohaboard_test` | 作り直すテスト DB 名 |
 
+## scripts/gui-image-upload.py
+
+管理画面 EasyMDE の Markdown 画像アップロード/貼付けを実ブラウザで検証する GUI 操作テスト
+（`Dev/Docs/design/15-mcp-extension-markdown-image.md` §9.6）。PHPUnit では検出できない
+JS/DOM の不良（貼付けハンドラ未登録、admin prefix 混入による 404 URL など）を検出する。
+
+- 前提: Python 3.10+ / Playwright（`pip install playwright && playwright install chromium`）
+- コンテンツは保存しない（新規作成画面でアップロードのみ行う）
+
+```bash
+python3 Dev/scripts/gui-image-upload.py
+
+BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
+  COURSE_ID=1 python3 Dev/scripts/gui-image-upload.py
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BASE_URL` | `http://localhost:8082` | Application base URL |
+| `API_USER` / `API_PASS` | `admin` / `adminpass` | 管理者ログイン |
+| `COURSE_ID` | `1` | 検証に使うコース ID |
+
 ## Exit Codes
 
 | Code | Meaning |
@@ -83,6 +106,7 @@ bash Dev/scripts/test-fresh.sh ../Dev/tests/TestCase/Controller/Api/ApiContractT
 
 ## Notes
 
-- These scripts do **not** create or modify test data (they only read).
+- curl 系スクリプト（`smoke-api.sh` / `smoke-mcp.sh`）はデータを変更しない。
+  `gui-image-upload.py` は画像ファイルを `webroot/uploads` へアップロードする（コンテンツは保存しない）。
 - The MCP smoke requires the `/mcp` endpoint to be active (Phase 2+ build).
-- Both scripts print `PASS` / `FAIL` per check and a summary at the end.
+- Each script prints `PASS` / `FAIL` per check and a summary at the end.

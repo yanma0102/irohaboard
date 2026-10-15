@@ -297,6 +297,12 @@ return function (RouteBuilder $routes): void {
                 'action' => 'index',
                 '_method' => 'GET',
             ]);
+            // 画像アップロード（/contents/{id} より前に配置する）
+            $builder->connect('/contents/images', [
+                'controller' => 'Contents',
+                'action' => 'uploadImage',
+                '_method' => 'POST',
+            ]);
             $builder->connect('/contents/{id}', [
                 'controller' => 'Contents',
                 'action' => 'view',

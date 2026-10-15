@@ -10,8 +10,12 @@ declare(strict_types=1);
 
 namespace App\Mcp;
 
+use App\Mcp\Tool\CopyContentTool;
 use App\Mcp\Tool\CreateContentTool;
+use App\Mcp\Tool\CreateRecordTool;
 use App\Mcp\Tool\CreateTestQuestionTool;
+use App\Mcp\Tool\DeleteContentTool;
+use App\Mcp\Tool\DeleteTestQuestionTool;
 use App\Mcp\Tool\GetContentHtmlTool;
 use App\Mcp\Tool\GetContentTool;
 use App\Mcp\Tool\GetCourseTool;
@@ -19,6 +23,7 @@ use App\Mcp\Tool\GetUserProfileTool;
 use App\Mcp\Tool\ListContentsTool;
 use App\Mcp\Tool\ListCoursesTool;
 use App\Mcp\Tool\ListRecordsTool;
+use App\Mcp\Tool\ReorderContentsTool;
 use App\Mcp\Tool\UpdateContentTool;
 use App\Mcp\Tool\UpdateTestQuestionTool;
 use App\Mcp\Tool\UploadImageTool;
@@ -144,6 +149,36 @@ class McpServerFactory
                 description: 'Upload an image and return its public URL. Staff only. '
                     . 'Use the returned url in Markdown: ![alt](url). '
                     . 'Allowed: png, gif, jpg, jpeg; max upload_image_maxsize.',
+            )
+            // --- コンテンツ・履歴の管理ツール（Phase 5） ---
+            ->addTool(
+                [new DeleteContentTool($accessControl), '__invoke'],
+                name: 'delete_content',
+                description: 'Delete a content (staff only, course membership required). '
+                    . 'Related test questions are also deleted.',
+            )
+            ->addTool(
+                [new ReorderContentsTool($accessControl), '__invoke'],
+                name: 'reorder_contents',
+                description: 'Reorder contents in a course (staff only, course membership required). '
+                    . 'content_ids must list every content of the course in the desired order.',
+            )
+            ->addTool(
+                [new CopyContentTool($accessControl), '__invoke'],
+                name: 'copy_content',
+                description: 'Copy a content and its test questions (staff only, course membership required). '
+                    . 'The copy is created as a draft (status=0) with "の複製" appended to the title.',
+            )
+            ->addTool(
+                [new DeleteTestQuestionTool($accessControl), '__invoke'],
+                name: 'delete_test_question',
+                description: 'Delete a test question (staff only, course membership required).',
+            )
+            ->addTool(
+                [new CreateRecordTool($accessControl), '__invoke'],
+                name: 'create_record',
+                description: 'Record learning progress for the authenticated user (non-test content only). '
+                    . 'Access to the course is required; unpublished content can only be recorded by admins.',
             )
             ->build();
     }

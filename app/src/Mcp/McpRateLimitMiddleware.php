@@ -66,7 +66,8 @@ class McpRateLimitMiddleware implements MiddlewareInterface
      */
     private const WRITE_TOOLS = [
         'create_content', 'update_content',
-        'create_test_question', 'update_test_question',
+        'create_test_question', 'update_test_question', 'delete_test_question',
+        'delete_content', 'reorder_contents', 'copy_content', 'create_record',
         'upload_image',
     ];
 

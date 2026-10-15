@@ -346,6 +346,8 @@ class McpControllerTest extends TestCase
             'create_content', 'update_content',
             'create_test_question', 'update_test_question',
             'upload_image',
+            'delete_content', 'reorder_contents', 'copy_content',
+            'delete_test_question', 'create_record',
         ];
 
         foreach ($expected as $name) {

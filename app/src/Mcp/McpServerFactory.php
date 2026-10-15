@@ -10,16 +10,20 @@ declare(strict_types=1);
 
 namespace App\Mcp;
 
+use App\Mcp\Tool\AssignGroupCourseTool;
+use App\Mcp\Tool\AssignGroupUserTool;
 use App\Mcp\Tool\AssignUserCourseTool;
 use App\Mcp\Tool\ChangeUserPasswordTool;
 use App\Mcp\Tool\CopyContentTool;
 use App\Mcp\Tool\CreateContentTool;
 use App\Mcp\Tool\CreateCourseTool;
+use App\Mcp\Tool\CreateGroupTool;
 use App\Mcp\Tool\CreateRecordTool;
 use App\Mcp\Tool\CreateTestQuestionTool;
 use App\Mcp\Tool\CreateUserTool;
 use App\Mcp\Tool\DeleteContentTool;
 use App\Mcp\Tool\DeleteCourseTool;
+use App\Mcp\Tool\DeleteGroupTool;
 use App\Mcp\Tool\DeleteTestQuestionTool;
 use App\Mcp\Tool\DeleteUserTool;
 use App\Mcp\Tool\GetContentHtmlTool;
@@ -30,9 +34,12 @@ use App\Mcp\Tool\ListContentsTool;
 use App\Mcp\Tool\ListCoursesTool;
 use App\Mcp\Tool\ListRecordsTool;
 use App\Mcp\Tool\ReorderContentsTool;
+use App\Mcp\Tool\UnassignGroupCourseTool;
+use App\Mcp\Tool\UnassignGroupUserTool;
 use App\Mcp\Tool\UnassignUserCourseTool;
 use App\Mcp\Tool\UpdateContentTool;
 use App\Mcp\Tool\UpdateCourseTool;
+use App\Mcp\Tool\UpdateGroupTool;
 use App\Mcp\Tool\UpdateTestQuestionTool;
 use App\Mcp\Tool\UpdateUserTool;
 use App\Mcp\Tool\UploadImageTool;
@@ -240,6 +247,43 @@ class McpServerFactory
                 [new UnassignUserCourseTool($accessControl), '__invoke'],
                 name: 'unassign_user_course',
                 description: 'Remove a course assignment from a user (admin or manager only).',
+            )
+            // --- グループ管理ツール（Phase 6） ---
+            ->addTool(
+                [new CreateGroupTool($accessControl), '__invoke'],
+                name: 'create_group',
+                description: 'Create a group (admin or manager only).',
+            )
+            ->addTool(
+                [new UpdateGroupTool($accessControl), '__invoke'],
+                name: 'update_group',
+                description: 'Update fields of an existing group (admin or manager only). '
+                    . 'Only the provided fields are changed.',
+            )
+            ->addTool(
+                [new DeleteGroupTool($accessControl), '__invoke'],
+                name: 'delete_group',
+                description: 'Delete a group and its user/course assignments (admin or manager only).',
+            )
+            ->addTool(
+                [new AssignGroupUserTool($accessControl), '__invoke'],
+                name: 'assign_group_user',
+                description: 'Assign a user to a group (admin or manager only). Idempotent.',
+            )
+            ->addTool(
+                [new UnassignGroupUserTool($accessControl), '__invoke'],
+                name: 'unassign_group_user',
+                description: 'Remove a user from a group (admin or manager only).',
+            )
+            ->addTool(
+                [new AssignGroupCourseTool($accessControl), '__invoke'],
+                name: 'assign_group_course',
+                description: 'Assign a course to a group (admin or manager only). Idempotent.',
+            )
+            ->addTool(
+                [new UnassignGroupCourseTool($accessControl), '__invoke'],
+                name: 'unassign_group_course',
+                description: 'Remove a course assignment from a group (admin or manager only).',
             )
             ->build();
     }

@@ -351,6 +351,9 @@ class McpControllerTest extends TestCase
             'create_course', 'update_course', 'delete_course',
             'create_user', 'update_user', 'change_user_password', 'delete_user',
             'assign_user_course', 'unassign_user_course',
+            'create_group', 'update_group', 'delete_group',
+            'assign_group_user', 'unassign_group_user',
+            'assign_group_course', 'unassign_group_course',
         ];
 
         foreach ($expected as $name) {

@@ -71,6 +71,9 @@ class McpRateLimitMiddleware implements MiddlewareInterface
         'create_course', 'update_course', 'delete_course',
         'create_user', 'update_user', 'delete_user', 'change_user_password',
         'assign_user_course', 'unassign_user_course',
+        'create_group', 'update_group', 'delete_group',
+        'assign_group_user', 'unassign_group_user',
+        'assign_group_course', 'unassign_group_course',
         'upload_image',
     ];
 

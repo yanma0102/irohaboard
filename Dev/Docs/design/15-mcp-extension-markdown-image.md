@@ -1,7 +1,7 @@
 # 15 MCP ツール網羅拡張 & Markdown 画像添付 設計書
 
-- **バージョン**: 1.1（2026-10-15 起案／GUI 操作テスト結果を反映）
-- **状態**: 設計（実装前レビュー待ち）
+- **バージョン**: 1.2（2026-10-15 起案／GUI 操作テスト結果・実装結果を反映）
+- **状態**: 実装済み（`dev` ブランチ。検証結果は §13 実装状況を参照）
 - **関連**:
   - `Dev/Docs/design/13-markdown-mcp.md`（Markdown 対応 & MCP サーバ統合。本設計はその拡張）
   - `Dev/Docs/design/08-rest-api.md` / `Dev/Docs/API.md`（REST API v1。MCP ツールの意味論の正）
@@ -886,6 +886,46 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 | `Dev/tests/TestCase/Controller/McpControllerTest.php` | `tools/list` 期待値更新（現状の赤も解消） |
 | `Dev/scripts/README.md` | `gui-image-upload.py` の実行方法を追記 |
 | `Dev/scripts/smoke-mcp.sh` | ツール数のコメント更新 |
+
+---
+
+## 13. 実装状況（2026-10-15）
+
+`dev` ブランチで以下を実装済み（コミット単位）。
+
+| 段階 | 内容 | コミット |
+|---|---|---|
+| 基盤 | `ImageStorageService` / `ImageUploadException` / `AccessControlService::isManager()` / `mcp_image_maxbytes` | `6045cd4` |
+| 管理画面 | F-1・F-2 修正、`uploadImage` のサービス化、`imageAccept` / `imageMaxSize` | `80c7888` |
+| REST | `POST /api/v1/contents/images` | `82b1099` |
+| MCP 画像 | `upload_image`、`create_content` / `update_content` の `images[]` | `200f55b` |
+| MCP 管理 | `delete_content` `reorder_contents` `copy_content` `delete_test_question` `create_record` | `bd683b8` |
+| MCP 管理 | コース・ユーザ管理 9 ツール | `7b97178` |
+| MCP 管理 | グループ管理 7 ツール | `e18f202` |
+| MCP 参照 | 参照系 11 ツール | `056c567` |
+
+- MCP ツールは **44 個**（既存 11 + 追加 33）。
+- `WRITE_TOOLS` は追加した書き込みツールを網羅（既存の `create_test_question` /
+  `update_test_question` の漏れも是正）。
+- §12 の「予定」からの差分:
+  - `HasUserPayloadTrait`（password を応答に含めない共通処理）と
+    `HandlesImageDataTrait`（base64 画像の検証・保存・Markdown 埋め込み）を追加。
+  - テストはツールごとの個別ファイル（`Dev/tests/TestCase/Mcp/Tool/*Test.php`）に追加。
+
+### 13.1 検証結果
+
+| 検証 | コマンド | 結果 |
+|---|---|---|
+| 全テスト | `bash Dev/scripts/test-fresh.sh` | 938 tests / 4620 assertions / OK（PHPUnit notice 8 は §9.5 の既知事象） |
+| MCP スモーク（実機） | `bash Dev/scripts/smoke-mcp.sh` | 6/6 PASS（tools/list 44 件、`upload_image`、`list_users`） |
+| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 16/16 PASS |
+| コーディング規約 | `composer cs-check` | 追加・変更した `app/src` は 0 error（警告は既存慣習の `@unlink` 等） |
+
+### 13.2 未対応（本設計の対象外・任意）
+
+- PHPUnit notice 8 件（`Dev/tests/TestCase/Mcp/ToolErrorPropagationTest.php`。§9.5）。
+- `phpstan.neon` は存在するが `vendor/bin/phpstan` が未導入のため静的解析は未実行。
+- 孤児画像の削除、画像配信のアクセス制御（§8 の非目標）。
 
 ---
 

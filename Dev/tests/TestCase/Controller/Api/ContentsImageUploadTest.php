@@ -167,7 +167,7 @@ class ContentsImageUploadTest extends TestCase
      */
     public function testUploadImageAcceptsImageFieldName(): void
     {
-        $admin = $this->createUser('admin01', ['role' => 'admin']);
+        $this->createUser('admin01', ['role' => 'admin']);
         $tokenData = $this->issueToken('admin01', 'testpass');
 
         $tmpFile = $this->tempFile(base64_decode(self::PNG_BASE64), 'png');

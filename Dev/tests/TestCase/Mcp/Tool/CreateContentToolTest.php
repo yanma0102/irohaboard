@@ -27,6 +27,11 @@ use Mcp\Server\Session\SessionInterface;
  */
 class CreateContentToolTest extends TestCase
 {
+    /**
+     * 1x1 の有効な PNG
+     */
+    private const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
     private CreateContentTool $tool;
 
     public function setUp(): void
@@ -35,6 +40,9 @@ class CreateContentToolTest extends TestCase
 
         // Application::bootstrap() 相当（単体テストは Application を起動しないため）
         Configure::load('ib_config');
+
+        // ImageStorageService::url() はルート定義を必要とする
+        $this->loadRoutes();
 
         foreach (
             [
@@ -299,6 +307,101 @@ class CreateContentToolTest extends TestCase
             'タイトル',
             'markdown',
             '',
+        );
+    }
+
+    // ----------------------------------------------------------------
+    // images[]（Phase E）
+    // ----------------------------------------------------------------
+
+    /**
+     * kind=markdown + images[] で本文末尾に画像記法が追記される
+     */
+    public function testCreateContentWithImagesAppendsMarkdown(): void
+    {
+        $course = $this->createCourse();
+        $admin = $this->createUser('wadmin07', 'admin');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+
+        $result = $this->tool->__invoke(
+            $this->makeContext((int)$admin->id, 'admin'),
+            (int)$course->id,
+            '画像付きレッスン',
+            'markdown',
+            '# 見出し',
+            1,
+            [
+                ['file_name' => 'diagram.png', 'data' => self::PNG_BASE64, 'alt' => '図1'],
+            ],
+        );
+
+        $this->assertArrayHasKey('images', $result['data']);
+        $image = $result['data']['images'][0];
+        $this->assertSame('図1', $image['alt']);
+
+        $saved = $this->getTableLocator()->get('Contents')->get((int)$result['data']['id']);
+        $this->assertSame("# 見出し\n\n![図1](" . $image['url'] . ')', $saved->body);
+
+        @unlink(ROOT . DS . 'webroot' . DS . 'uploads' . DS . $image['file_name']);
+    }
+
+    /**
+     * kind=markdown 以外で images[] を指定すると拒否される
+     */
+    public function testImagesRejectedForNonMarkdown(): void
+    {
+        $course = $this->createCourse();
+        $admin = $this->createUser('wadmin08', 'admin');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('images can only be used with kind=markdown.');
+
+        $this->tool->__invoke(
+            $this->makeContext((int)$admin->id, 'admin'),
+            (int)$course->id,
+            'タイトル',
+            'html',
+            '<p>x</p>',
+            0,
+            [
+                ['file_name' => 'diagram.png', 'data' => self::PNG_BASE64],
+            ],
+        );
+    }
+
+    /**
+     * 画像の保存に失敗した場合はコンテンツを作成しない
+     */
+    public function testImageFailureDoesNotCreateContent(): void
+    {
+        $course = $this->createCourse();
+        $admin = $this->createUser('wadmin09', 'admin');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+
+        $before = $this->getTableLocator()->get('Contents')->find()->count();
+
+        try {
+            $this->tool->__invoke(
+                $this->makeContext((int)$admin->id, 'admin'),
+                (int)$course->id,
+                '失敗するレッスン',
+                'markdown',
+                '# 見出し',
+                0,
+                [
+                    ['file_name' => 'fake.png', 'data' => base64_encode('not an image')],
+                ],
+            );
+            $this->fail('ToolCallException がスローされていない');
+        } catch (ToolCallException $e) {
+            $this->assertStringContainsString('images[0]', $e->getMessage());
+        }
+
+        $this->assertSame(
+            $before,
+            $this->getTableLocator()->get('Contents')->find()->count(),
+            '画像保存に失敗した場合はコンテンツを作成しない',
         );
     }
 }

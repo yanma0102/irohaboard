@@ -162,8 +162,8 @@ NOTIF_STATUS=$(echo "$NOTIF_RESPONSE" | tail -n1)
 pass "notifications/initialized sent"
 
 # ---------------------------------------------------------------------------
-# 2. tools/list — expect 9 tools (7 read-only + 2 write)
-#    The McpServerFactory registers 9 tools total.
+# 2. tools/list — verify the expected tool set is registered
+#    (kept as a minimum-set check so adding tools does not break the smoke)
 # ---------------------------------------------------------------------------
 printf "\n2. MCP tools/list\n"
 
@@ -188,7 +188,8 @@ get_user_profile
 list_contents
 list_courses
 list_records
-update_content"
+update_content
+upload_image"
 
     ALL_FOUND=true
     for tool in $EXPECTED_TOOLS; do
@@ -231,6 +232,35 @@ else
             fail "tools/call list_courses returned empty content"
             printf "Response body: %s\n" "$CALL_BODY"
         fi
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# 4. tools/call upload_image — base64 PNG must return a public URL
+# ---------------------------------------------------------------------------
+printf "\n4. MCP tools/call upload_image\n"
+
+PNG_BASE64="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+COURSE_ID="${COURSE_ID:-1}"
+UPLOAD_ARGS=$(jq -nc --arg data "$PNG_BASE64" --argjson course "$COURSE_ID" \
+    '{name:"upload_image",arguments:{course_id:$course,file_name:"smoke.png",data:$data,alt:"smoke"}}')
+
+UPLOAD_RESPONSE=$(mcp_request "tools/call" "$UPLOAD_ARGS" 30)
+UPLOAD_BODY=$(echo "$UPLOAD_RESPONSE" | sed '$d')
+UPLOAD_STATUS=$(echo "$UPLOAD_RESPONSE" | tail -n1)
+
+if [ "$UPLOAD_STATUS" -ne 200 ]; then
+    fail "Expected HTTP 200 from upload_image, got $UPLOAD_STATUS"
+    printf "Response body: %s\n" "$UPLOAD_BODY"
+elif [ "$(echo "$UPLOAD_BODY" | jq -r '.result.isError // false')" = "true" ]; then
+    UPLOAD_ERROR=$(echo "$UPLOAD_BODY" | jq -r '.result.content[]?.text // empty' | head -1)
+    fail "upload_image returned an error: ${UPLOAD_ERROR:-unknown}"
+else
+    UPLOAD_TEXT=$(echo "$UPLOAD_BODY" | jq -r '.result.content[0].text // empty')
+    if echo "$UPLOAD_TEXT" | grep -q '/contents/file-image/'; then
+        pass "upload_image returned a public URL ($(echo "$UPLOAD_TEXT" | jq -r '.data.url // empty'))"
+    else
+        fail "upload_image response does not contain /contents/file-image/: $UPLOAD_TEXT"
     fi
 fi
 

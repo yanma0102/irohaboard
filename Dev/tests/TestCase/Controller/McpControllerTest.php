@@ -319,7 +319,7 @@ class McpControllerTest extends TestCase
     }
 
     /**
-     * tools/list → 読み取り系ツール7個 + 書き込み系ツール2個が返る
+     * tools/list → 登録済みの全ツールが返る
      */
     public function testToolsListContainsAllTools(): void
     {
@@ -340,17 +340,19 @@ class McpControllerTest extends TestCase
         $body = json_decode((string)$this->_response->getBody(), true);
         $names = array_column($body['result']['tools'], 'name');
 
-        foreach (
-            [
+        $expected = [
             'list_courses', 'get_course', 'list_contents', 'get_content',
             'get_content_html', 'list_records', 'get_user_profile',
             'create_content', 'update_content',
-            ] as $expected
-        ) {
-            $this->assertContains($expected, $names, "{$expected} が登録されている");
+            'create_test_question', 'update_test_question',
+            'upload_image',
+        ];
+
+        foreach ($expected as $name) {
+            $this->assertContains($name, $names, "{$name} が登録されている");
         }
 
-        $this->assertCount(9, $names, 'ツールは 9 個（読み取り7 + 書き込み2）');
+        $this->assertCount(count($expected), $names, '登録ツール数が期待どおり');
     }
 
     // ----------------------------------------------------------------

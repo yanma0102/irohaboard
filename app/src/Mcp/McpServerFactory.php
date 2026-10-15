@@ -21,6 +21,7 @@ use App\Mcp\Tool\ListCoursesTool;
 use App\Mcp\Tool\ListRecordsTool;
 use App\Mcp\Tool\UpdateContentTool;
 use App\Mcp\Tool\UpdateTestQuestionTool;
+use App\Mcp\Tool\UploadImageTool;
 use App\Service\AccessControlService;
 use Mcp\Server;
 use Mcp\Server\Session\FileSessionStore;
@@ -135,6 +136,14 @@ class McpServerFactory
                 name: 'update_test_question',
                 description: 'Update fields of an existing test question (staff only, course membership required). '
                     . 'Only provided fields are changed. options/correct are arrays.',
+            )
+            // --- 画像ツール（Phase 4） ---
+            ->addTool(
+                [new UploadImageTool($accessControl), '__invoke'],
+                name: 'upload_image',
+                description: 'Upload an image and return its public URL. Staff only. '
+                    . 'Use the returned url in Markdown: ![alt](url). '
+                    . 'Allowed: png, gif, jpg, jpeg; max upload_image_maxsize.',
             )
             ->build();
     }

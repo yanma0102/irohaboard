@@ -28,7 +28,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * 認証済みユーザごとに計測する。
  *
  * - 読み取り（それ以外のリクエスト）: 60 リクエスト/分（log_type=mcp_request）
- * - 書き込みツール（create_content / update_content の tools/call）:
+ * - 書き込みツール（WRITE_TOOLS の tools/call）:
  *   20 リクエスト/分（log_type=mcp_write）
  */
 class McpRateLimitMiddleware implements MiddlewareInterface
@@ -60,8 +60,15 @@ class McpRateLimitMiddleware implements MiddlewareInterface
 
     /**
      * 書き込み系ツール名（このツール群の tools/call だけ書き込みカウンタ対象）
+     *
+     * 読み取り枠（60 回/分）で実行されないよう、状態を変更するツールは
+     * すべてここに列挙する。
      */
-    private const WRITE_TOOLS = ['create_content', 'update_content'];
+    private const WRITE_TOOLS = [
+        'create_content', 'update_content',
+        'create_test_question', 'update_test_question',
+        'upload_image',
+    ];
 
     /**
      * @param \App\Model\Table\LogsTable $logsTable ログテーブル

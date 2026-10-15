@@ -24,6 +24,7 @@ use Mcp\Server\RequestContext;
 class UpdateContentTool
 {
     use HasOAuthContextTrait;
+    use HandlesImageDataTrait;
 
     /**
      * @param \App\Service\AccessControlService $accessControl 権限チェックサービス
@@ -43,12 +44,14 @@ class UpdateContentTool
      * @param string|null $kind コンテンツ種別（省略時は変更なし）
      * @param string|null $body 本文（省略時は変更なし）
      * @param int|null $status 公開状態（0=下書き, 1=公開）
+     * @param array<int, mixed> $images 追加する画像（kind=markdown のみ）
      * @return array<string, mixed>
      */
     #[McpTool(
         name: 'update_content',
         description: 'Update fields of an existing content (staff only, course membership required). '
-            . 'Only the provided fields are changed (partial update).',
+            . 'Only the provided fields are changed (partial update). '
+            . 'images[] (kind=markdown only) uploads base64 images and appends them to the body.',
     )]
     public function __invoke(
         RequestContext $context,
@@ -58,6 +61,7 @@ class UpdateContentTool
         ?string $kind = null,
         ?string $body = null,
         ?int $status = null,
+        array $images = [],
     ): array {
         $userId = $this->getUserId($context);
         $role = $this->getRole($context);
@@ -87,6 +91,18 @@ class UpdateContentTool
             }
         }
 
+        // 既存 Markdown の部分更新を壊さないため、更新前後とも markdown のときのみ許可する
+        if ($images !== []) {
+            $currentKind = (string)$content->kind;
+            $effectiveKind = $kind ?? $currentKind;
+            if ($currentKind !== 'markdown' || $effectiveKind !== 'markdown') {
+                throw new ToolCallException('images can only be used with kind=markdown.');
+            }
+            if ($body === null) {
+                $body = (string)$content->body;
+            }
+        }
+
         $patchData = [];
         if ($title !== null) {
             $patchData['title'] = $title;
@@ -101,8 +117,15 @@ class UpdateContentTool
             $patchData['status'] = $status;
         }
 
-        if ($patchData === []) {
+        if ($patchData === [] && $images === []) {
             throw new ToolCallException('No fields to update.');
+        }
+
+        // 画像はコンテンツ保存前に確定させる（保存失敗時はコンテンツを更新しない）
+        $attached = [];
+        if ($images !== []) {
+            $attached = $this->attachImages($images, $body);
+            $patchData['body'] = $body;
         }
 
         // patchEntity のバリデーションコンテキストには既存 kind が入らないため、
@@ -129,15 +152,19 @@ class UpdateContentTool
             );
         }
 
-        return [
-            'data' => [
-                'id' => $entity->id,
-                'course_id' => $entity->course_id,
-                'title' => $entity->title,
-                'kind' => $entity->kind,
-                'status' => $entity->status,
-                'sort_no' => $entity->sort_no,
-            ],
+        $data = [
+            'id' => $entity->id,
+            'course_id' => $entity->course_id,
+            'title' => $entity->title,
+            'kind' => $entity->kind,
+            'status' => $entity->status,
+            'sort_no' => $entity->sort_no,
         ];
+
+        if ($attached !== []) {
+            $data['images'] = $attached;
+        }
+
+        return ['data' => $data];
     }
 }

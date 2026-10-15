@@ -139,6 +139,11 @@ $config['close_on_select'] = true;
 // リッチテキストエディタの画像アップロード機能の設定 (true ; 使用する, false : 使用しない)
 $config['use_upload_image'] = true;
 
+// MCP 経由で受け付ける画像の base64 文字列長の上限（バイト）。
+// JSON ボディ（SDK の上限 4 MiB）に載るため、デコード後の upload_image_maxsize
+// より大きめの余裕を持たせつつ、ボディ肥大による 413 / タイムアウトを防ぐ。
+$config['mcp_image_maxbytes'] = 3500000;
+
 // デモモード (true ; 設定する, false : 設定しない)
 $config['demo_mode'] = false;
 

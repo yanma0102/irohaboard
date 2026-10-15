@@ -265,6 +265,30 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# 5. tools/call list_users — read-only tool added in Phase 7
+# ---------------------------------------------------------------------------
+printf "\n5. MCP tools/call list_users\n"
+
+USERS_RESPONSE=$(mcp_request "tools/call" '{"name":"list_users","arguments":{"limit":1}}' 40)
+USERS_BODY=$(echo "$USERS_RESPONSE" | sed '$d')
+USERS_STATUS=$(echo "$USERS_RESPONSE" | tail -n1)
+
+if [ "$USERS_STATUS" -ne 200 ]; then
+    fail "Expected HTTP 200 from list_users, got $USERS_STATUS"
+    printf "Response body: %s\n" "$USERS_BODY"
+elif [ "$(echo "$USERS_BODY" | jq -r '.result.isError // false')" = "true" ]; then
+    USERS_ERROR=$(echo "$USERS_BODY" | jq -r '.result.content[]?.text // empty' | head -1)
+    fail "list_users returned an error: ${USERS_ERROR:-unknown}"
+else
+    USERS_TEXT=$(echo "$USERS_BODY" | jq -r '.result.content[0].text // empty')
+    if echo "$USERS_TEXT" | jq -e '.data | type == "array"' >/dev/null 2>&1; then
+        pass "list_users returned an array ($(echo "$USERS_TEXT" | jq '.meta.total') user(s) total)"
+    else
+        fail "list_users response is not the expected envelope: $USERS_TEXT"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 printf "\n==============================\n"

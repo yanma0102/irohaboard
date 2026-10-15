@@ -343,6 +343,10 @@ class McpControllerTest extends TestCase
         $expected = [
             'list_courses', 'get_course', 'list_contents', 'get_content',
             'get_content_html', 'list_records', 'get_user_profile',
+            'list_users', 'get_user', 'list_groups', 'get_group',
+            'list_group_users', 'list_group_courses', 'list_user_courses',
+            'get_record', 'list_test_questions', 'get_test_question',
+            'list_enquete_questions',
             'create_content', 'update_content',
             'create_test_question', 'update_test_question',
             'upload_image',

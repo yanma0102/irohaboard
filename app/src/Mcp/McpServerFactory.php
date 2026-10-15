@@ -29,10 +29,21 @@ use App\Mcp\Tool\DeleteUserTool;
 use App\Mcp\Tool\GetContentHtmlTool;
 use App\Mcp\Tool\GetContentTool;
 use App\Mcp\Tool\GetCourseTool;
+use App\Mcp\Tool\GetGroupTool;
+use App\Mcp\Tool\GetRecordTool;
+use App\Mcp\Tool\GetTestQuestionTool;
 use App\Mcp\Tool\GetUserProfileTool;
+use App\Mcp\Tool\GetUserTool;
 use App\Mcp\Tool\ListContentsTool;
 use App\Mcp\Tool\ListCoursesTool;
+use App\Mcp\Tool\ListEnqueteQuestionsTool;
+use App\Mcp\Tool\ListGroupCoursesTool;
+use App\Mcp\Tool\ListGroupsTool;
+use App\Mcp\Tool\ListGroupUsersTool;
 use App\Mcp\Tool\ListRecordsTool;
+use App\Mcp\Tool\ListTestQuestionsTool;
+use App\Mcp\Tool\ListUserCoursesTool;
+use App\Mcp\Tool\ListUsersTool;
 use App\Mcp\Tool\ReorderContentsTool;
 use App\Mcp\Tool\UnassignGroupCourseTool;
 use App\Mcp\Tool\UnassignGroupUserTool;
@@ -132,6 +143,71 @@ class McpServerFactory
                 name: 'get_user_profile',
                 description: 'Get a user profile. Defaults to the authenticated user; '
                     . 'staff can query any user by user_id.',
+            )
+            // --- 参照ツール（Phase 7） ---
+            ->addTool(
+                [new ListUsersTool($accessControl), '__invoke'],
+                name: 'list_users',
+                description: 'List users with pagination. Staff can filter by username/name/role; '
+                    . 'non-staff users only see their own record. Password is never returned.',
+            )
+            ->addTool(
+                [new GetUserTool($accessControl), '__invoke'],
+                name: 'get_user',
+                description: 'Get a user profile by user_id. Staff can query any user; '
+                    . 'non-staff users can only query themselves. Password is never returned.',
+            )
+            ->addTool(
+                [new ListGroupsTool($accessControl), '__invoke'],
+                name: 'list_groups',
+                description: 'List groups with pagination. Staff see all groups; '
+                    . 'non-staff users only see the groups they belong to.',
+            )
+            ->addTool(
+                [new GetGroupTool($accessControl), '__invoke'],
+                name: 'get_group',
+                description: 'Get group details. Non-staff users can only view groups they belong to.',
+            )
+            ->addTool(
+                [new ListGroupUsersTool($accessControl), '__invoke'],
+                name: 'list_group_users',
+                description: 'List users of a group with pagination. '
+                    . 'Non-staff users can only list groups they belong to.',
+            )
+            ->addTool(
+                [new ListGroupCoursesTool($accessControl), '__invoke'],
+                name: 'list_group_courses',
+                description: 'List courses assigned to a group with pagination. '
+                    . 'Non-staff users can only list groups they belong to.',
+            )
+            ->addTool(
+                [new ListUserCoursesTool($accessControl), '__invoke'],
+                name: 'list_user_courses',
+                description: 'List courses assigned to a user with pagination. '
+                    . 'Non-staff users can only list their own courses.',
+            )
+            ->addTool(
+                [new GetRecordTool($accessControl), '__invoke'],
+                name: 'get_record',
+                description: 'Get a learning record by record_id. '
+                    . 'Non-staff users can only view their own records.',
+            )
+            ->addTool(
+                [new ListTestQuestionsTool($accessControl), '__invoke'],
+                name: 'list_test_questions',
+                description: 'List test questions of a content (staff only, course membership required). '
+                    . 'Includes options and correct answers.',
+            )
+            ->addTool(
+                [new GetTestQuestionTool($accessControl), '__invoke'],
+                name: 'get_test_question',
+                description: 'Get a test question by question_id (staff only, course membership required). '
+                    . 'Includes options and correct answers.',
+            )
+            ->addTool(
+                [new ListEnqueteQuestionsTool($accessControl), '__invoke'],
+                name: 'list_enquete_questions',
+                description: 'List enquete questions of a content (staff only, course membership required).',
             )
             // --- Write ツール（Phase 3） ---
             ->addTool(

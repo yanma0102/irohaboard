@@ -148,6 +148,25 @@ class ContentsControllerTest extends TestCase
     }
 
     /**
+     * テスト用の有効な PNG ファイルを作成
+     *
+     * ImageStorageService は実体が画像か検証するため、実データが必要。
+     */
+    private function createTempPngFile(): string
+    {
+        $tmpPath = tempnam(sys_get_temp_dir(), 'test_upload_');
+        $newPath = $tmpPath . '.png';
+        rename($tmpPath, $newPath);
+
+        // 1x1 の PNG
+        file_put_contents($newPath, base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        ));
+
+        return $newPath;
+    }
+
+    /**
      * アップロードで保存されたファイルと一時ファイルを削除
      *
      * @param string|false $fileUrl uploadImage() が返した URL
@@ -158,7 +177,7 @@ class ContentsControllerTest extends TestCase
         if (is_string($fileUrl) && $fileUrl !== '') {
             $savedName = basename(parse_url($fileUrl, PHP_URL_PATH) ?? '');
             if ($savedName !== '') {
-                @unlink(ROOT . DS . 'files' . DS . $savedName);
+                @unlink(ROOT . DS . 'webroot' . DS . 'uploads' . DS . $savedName);
             }
         }
         @unlink($tmpFile);
@@ -393,24 +412,17 @@ class ContentsControllerTest extends TestCase
     }
 
     /**
-     * 画像アップロード — 正常な画像のテスト（S-1 回帰 + 実装バグ記録）
+     * 画像アップロード — 正常な画像のテスト（S-1 回帰）
      *
-     * 許可拡張子（.png）かつサイズ内であるにもかかわらず、
-     * [false] が返される（已知のバグ）。
-     *
-     * 原因: src/Controller/Admin/ContentsController.php の
-     *   $result = $file->moveTo($dest);
-     *   $response = $result ? [$file_url] : [false];
-     * において、Laminas\Diactoros\UploadedFile::moveTo() は void を返すため
-     * $result は常に null（falsy）となり、$response は常に [false] になる。
-     * 実際にはファイルは ROOT/files/ に保存されている。
+     * 許可拡張子（.png）・サイズ内・実体が画像 → 保存され URL が返ること。
+     * URL は front の配信ルート（/contents/file-image/）で、admin prefix が
+     * 混入しないこと（F-2 の回帰）。
      */
     public function testUploadImageAcceptsValidImage(): void
     {
         $this->loginAsAdmin();
 
-        // 100 バイトのダミー PNG ファイル
-        $tmpFile = $this->createTempFile('png', 100);
+        $tmpFile = $this->createTempPngFile();
         $uploadedFile = new UploadedFile(
             $tmpFile,
             filesize($tmpFile),
@@ -430,13 +442,92 @@ class ContentsControllerTest extends TestCase
         $decoded = json_decode($body, true);
         $this->assertNotNull($decoded, 'JSON レスポンスがパースできない');
 
-        // 拡張子・サイズ検証を通過したため、保存後の URL 配列が返る。
+        // 拡張子・サイズ・実体の検証を通過したため、保存後の URL 配列が返る。
         $this->assertArrayHasKey(0, $decoded);
         $this->assertNotFalse($decoded[0], '許可画像は保存され URL が返ること');
         $this->assertStringContainsString('/contents/file-image/', $decoded[0]);
+        $this->assertStringNotContainsString('/admin/', $decoded[0], '配信 URL に admin prefix が混入しないこと');
 
-        // 保存されたファイルのクリーンアップ
+        // 保存先は webroot/uploads
+        $savedName = basename(parse_url($decoded[0], PHP_URL_PATH) ?? '');
+        $this->assertFileExists(ROOT . DS . 'webroot' . DS . 'uploads' . DS . $savedName);
+
         $this->cleanupUploadedFile($decoded[0], $tmpFile);
+    }
+
+    /**
+     * 画像アップロード — 実体が画像でないファイルの拒否テスト
+     *
+     * 拡張子を .png に偽装した非画像 → [false] が返されること。
+     */
+    public function testUploadImageRejectsFakeImage(): void
+    {
+        $this->loginAsAdmin();
+
+        $tmpFile = $this->createTempFile('png', 100);
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            filesize($tmpFile),
+            UPLOAD_ERR_OK,
+            'fake.png',
+        );
+
+        $this->configRequest([
+            'headers' => ['X-Requested-With' => 'XMLHttpRequest'],
+            'files' => ['file' => $uploadedFile],
+        ]);
+
+        $this->post('/admin/contents/upload-image');
+        $this->assertResponseOk();
+
+        $decoded = json_decode((string)$this->_response->getBody(), true);
+        $this->assertNotNull($decoded, 'JSON レスポンスがパースできない');
+        $this->assertFalse($decoded[0], '実体が画像でないファイルが拒否されていない');
+
+        @unlink($tmpFile);
+    }
+
+    /**
+     * 画像アップロード — use_upload_image=false のときは受け付けない
+     *
+     * 設定は DB オーバーライド（ib_config_overrides）で与える。Configure への
+     * 直接書き込みはリクエスト開始時の Application::bootstrap() で上書きされるため。
+     */
+    public function testUploadImageRejectsWhenDisabled(): void
+    {
+        $this->loginAsAdmin();
+
+        $configOverrides = $this->getTableLocator()->get('ConfigOverrides');
+        $configOverrides->saveOverride('use_upload_image', '0');
+
+        $tmpFile = null;
+
+        try {
+            $tmpFile = $this->createTempPngFile();
+            $uploadedFile = new UploadedFile(
+                $tmpFile,
+                filesize($tmpFile),
+                UPLOAD_ERR_OK,
+                'test_image.png',
+            );
+
+            $this->configRequest([
+                'headers' => ['X-Requested-With' => 'XMLHttpRequest'],
+                'files' => ['file' => $uploadedFile],
+            ]);
+
+            $this->post('/admin/contents/upload-image');
+            $this->assertResponseOk();
+
+            $decoded = json_decode((string)$this->_response->getBody(), true);
+            $this->assertNotNull($decoded, 'JSON レスポンスがパースできない');
+            $this->assertFalse($decoded[0], '無効設定時に受け付けている');
+        } finally {
+            $configOverrides->deleteOverride('use_upload_image');
+            if ($tmpFile !== null) {
+                @unlink($tmpFile);
+            }
+        }
     }
 
     /**

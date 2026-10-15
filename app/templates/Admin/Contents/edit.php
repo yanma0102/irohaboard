@@ -81,6 +81,29 @@
 		if (markdownEditor)
 			return;
 
+		<?php
+			// 画像アップロードの有効/無効（サーバ側 uploadImage と同一の設定を参照）
+			$useImageUpload = Configure::read('use_upload_image') === true;
+
+			// サーバが許可する拡張子から accept / エラーメッセージを組み立てる
+			$imageAccept = [];
+			$imageExtLabels = [];
+			foreach ((array)Configure::read('upload_image_extensions') as $ext)
+			{
+				$ext = strtolower((string)$ext);
+				$imageExtLabels[] = ltrim($ext, '.');
+				$imageAccept[] = match ($ext) {
+					'.jpg', '.jpeg' => 'image/jpeg',
+					'.png' => 'image/png',
+					'.gif' => 'image/gif',
+					'.avif' => 'image/avif',
+					default => 'image/' . ltrim($ext, '.'),
+				};
+			}
+			$imageAccept = implode(', ', array_unique($imageAccept));
+			$imageExtLabel = implode('/', $imageExtLabels);
+			$imageMaxSize = (int)Configure::read('upload_image_maxsize');
+		?>
 		markdownEditor = new EasyMDE({
 			element: $('#body')[0],
 			spellChecker: false,
@@ -91,12 +114,26 @@
 			toolbar: [
 				'bold', 'italic', 'heading', '|',
 				'quote', 'unordered-list', 'ordered-list', '|',
-				'link', 'upload-image', '|',
+				'link',
+				<?= $useImageUpload ? "'upload-image'," : '' ?>
+				'|',
 				'preview', 'side-by-side', 'fullscreen', 'guide'
 			],
-			imageUpload: true,
+			// EasyMDE のオプション名は uploadImage。imageUpload は無視され、
+			// 貼付け/ドラッグ&ドロップのハンドラが登録されないため注意。
+			uploadImage: <?= $useImageUpload ? 'true' : 'false' ?>,
+			imageAccept: '<?= $imageAccept ?>',
+			imageMaxSize: <?= $imageMaxSize ?>,
 			imageUploadFunction: function(file, onSuccess, onError)
 			{
+				// EasyMDE は独自関数（imageUploadFunction）利用時に imageMaxSize を
+				// 検証しないため、送信前にサイズを確認する。
+				if (file.size > <?= $imageMaxSize ?>)
+				{
+					onError('画像のサイズが上限（<?= (int)round($imageMaxSize / 1024 / 1024) ?> MB）を超えています');
+					return;
+				}
+
 				var data = new FormData();
 				data.append('file', file);
 				data.append('_csrfToken', $('input[name="_csrfToken"]').val());
@@ -119,7 +156,7 @@
 						}
 						else
 						{
-							onError('画像のアップロードに失敗しました');
+							onError('画像をアップロードできません。形式（<?= $imageExtLabel ?>）とサイズ上限を確認してください');
 						}
 					},
 					error: function()

@@ -79,7 +79,8 @@ bash Dev/scripts/test-fresh.sh ../Dev/tests/TestCase/Controller/Api/ApiContractT
 
 管理画面 EasyMDE の Markdown 画像アップロード/貼付けを実ブラウザで検証する GUI 操作テスト
 （`Dev/Docs/design/15-mcp-extension-markdown-image.md` §9.6）。PHPUnit では検出できない
-JS/DOM の不良（貼付けハンドラ未登録、admin prefix 混入による 404 URL など）を検出する。
+JS/DOM の不良（貼付け・ドラッグ&ドロップのハンドラ未登録、admin prefix 混入による 404 URL など）
+を検出する。18 チェック（ツールバー / Ctrl+V / ドラッグ&ドロップ / 非画像拒否 / コンソールエラー）。
 
 - 前提: Python 3.10+ / Playwright（`pip install playwright && playwright install chromium`）
 - コンテンツは保存しない（新規作成画面でアップロードのみ行う）

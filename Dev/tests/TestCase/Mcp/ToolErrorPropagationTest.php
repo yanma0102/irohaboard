@@ -118,9 +118,9 @@ class ToolErrorPropagationTest extends TestCase
      */
     private function createMockContext(int $userId, string $role): RequestContext
     {
-        $session = $this->createMock(SessionInterface::class);
+        $session = $this->createStub(SessionInterface::class);
 
-        $request = $this->createMock(Request::class);
+        $request = $this->createStub(Request::class);
         $request->method('getMeta')->willReturn([
             'oauth' => [
                 'oauth.user_id' => $userId,

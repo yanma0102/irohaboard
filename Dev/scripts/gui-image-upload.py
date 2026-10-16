@@ -158,18 +158,52 @@ def main() -> int:
         after = page.evaluate("markdownEditor.value()")
         check("13. Ctrl+V 貼付けで画像が挿入", after.count("![") > before.count("!["), after[-120:])
 
-        # 6. 非画像ファイルは拒否され、理由が通知される
+        # 6. ドラッグ&ドロップ（HTML5 DataTransfer + drop イベント）
+        #    EasyMDE の uploadImage は CodeMirror の drop ハンドラ経由で発火する。
+        before_drop = page.evaluate("markdownEditor.value()")
+        with page.expect_response(lambda r: "upload-image" in r.url, timeout=15000) as drop_resp_info:
+            dispatched = page.evaluate(
+                """async (b64) => {
+                    const bin = atob(b64);
+                    const bytes = new Uint8Array(bin.length);
+                    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                    const dt = new DataTransfer();
+                    dt.items.add(new File([bytes], 'drop-test.png', { type: 'image/png' }));
+                    const el = document.querySelector('.EasyMDEContainer .CodeMirror-scroll');
+                    if (!el) return false;
+                    el.dispatchEvent(new DragEvent('drop', {
+                        bubbles: true, cancelable: true, dataTransfer: dt,
+                    }));
+                    return true;
+                }""",
+                base64.b64encode(PNG).decode(),
+            )
+        drop_body = drop_resp_info.value.text()
+        check(
+            "14. D&D でアップロード HTTP 200",
+            dispatched and drop_resp_info.value.status == 200,
+            f"{drop_resp_info.value.status} {drop_body[:80]}",
+        )
+        page.wait_for_timeout(500)
+        after_drop = page.evaluate("markdownEditor.value()")
+        check(
+            "15. D&D で本文に画像記法が挿入",
+            after_drop.count("![") > before_drop.count("!["),
+            after_drop[-120:],
+        )
+
+        # 7. 非画像ファイルは拒否され、理由が通知される
         before_dialogs = len(dialogs)
         with page.expect_response(lambda r: "upload-image" in r.url, timeout=15000) as resp_info2:
             with page.expect_file_chooser() as fc_info2:
                 page.click(".editor-toolbar .fa-image")
             fc_info2.value.set_files(txt_path)
-        check("14. 非画像は [false]", resp_info2.value.text().strip() == "[false]")
+        check("16. 非画像は [false]", resp_info2.value.text().strip() == "[false]")
         page.wait_for_timeout(700)
-        check("15. エラー通知が表示", len(dialogs) > before_dialogs, dialogs[-1][:80] if dialogs else "")
+        check("17. エラー通知が表示", len(dialogs) > before_dialogs, dialogs[-1][:80] if dialogs else "")
 
-        # 7. コンソールエラー（画像の 404 等）が無いこと
-        check("16. JS コンソールエラーなし", len(console_errors) == 0, "; ".join(console_errors[:3]))
+        # 8. コンソールエラー（画像の 404 等）が無いこと
+        check("18. JS コンソールエラーなし", len(console_errors) == 0, "; ".join(console_errors[:3]))
 
         context.close()
         browser.close()

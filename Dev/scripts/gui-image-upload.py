@@ -18,6 +18,8 @@
 
 注意:
   - コンテンツは保存しない（新規作成画面でアップロードのみ行う）。
+  - プレビューはフォームの「プレビュー」ボタン（セッション経由のサーバサイド
+    プレビュー）を開いて検証する。EasyMDE のリアルタイムプレビューとは別経路。
   - アップロードされた画像ファイルは webroot/uploads に残る。
   - 終了コード: 全チェック PASS なら 0、1 件でも FAIL なら 1。
 """
@@ -74,6 +76,13 @@ def main() -> int:
         page.on("dialog", lambda d: (dialogs.append(d.message), d.accept()))
         console_errors: list[str] = []
         page.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
+        # 画像配信（/contents/file-image/）の HTTP ステータスを記録する。
+        # プレビュー popup の読込は別ページのため context 単位で捕捉する。
+        net: list[tuple[str, int]] = []
+        context.on(
+            "response",
+            lambda r: net.append((r.url, r.status)) if "file-image" in r.url else None,
+        )
 
         # 1. 管理者ログイン
         page.goto(f"{BASE_URL}/admin/users/login", wait_until="domcontentloaded")
@@ -192,18 +201,50 @@ def main() -> int:
             after_drop[-120:],
         )
 
-        # 7. 非画像ファイルは拒否され、理由が通知される
+        # 7. コンテンツのプレビュー（#btnPreview → セッション経由のサーバサイドプレビュー）
+        #    EasyMDE の編集中の値が textarea に同期されていないと本文が空のまま
+        #    プレビューされ、画像も表示されない（#16 / #17 の回帰チェック）。
+        net_mark = len(net)
+        with context.expect_page(timeout=15000) as popup_info:
+            with page.expect_response(lambda r: "/admin/contents/preview" in r.url, timeout=15000):
+                page.click("#btnPreview")
+        popup = popup_info.value
+        popup.wait_for_load_state("domcontentloaded")
+        popup.wait_for_timeout(1500)
+        rendered = popup.evaluate("() => document.querySelector('.content-body').innerHTML")
+        check(
+            "16. プレビューに編集中の本文が反映される",
+            rendered.strip() != "" and "<img" in rendered,
+            rendered[:120],
+        )
+        loaded = popup.evaluate(
+            "() => Array.from(document.querySelectorAll('.content-body img')).map(i => i.naturalWidth)"
+        )
+        check(
+            "17. プレビューの画像が読み込める",
+            len(loaded) > 0 and all(w > 0 for w in loaded),
+            f"naturalWidth={loaded}",
+        )
+        preview_net = net[net_mark:]
+        check(
+            "18. プレビューの画像リクエストが 200",
+            len(preview_net) > 0 and all(s == 200 for _, s in preview_net),
+            str(preview_net[:5]),
+        )
+        popup.close()
+
+        # 8. 非画像ファイルは拒否され、理由が通知される
         before_dialogs = len(dialogs)
         with page.expect_response(lambda r: "upload-image" in r.url, timeout=15000) as resp_info2:
             with page.expect_file_chooser() as fc_info2:
                 page.click(".editor-toolbar .fa-image")
             fc_info2.value.set_files(txt_path)
-        check("16. 非画像は [false]", resp_info2.value.text().strip() == "[false]")
+        check("19. 非画像は [false]", resp_info2.value.text().strip() == "[false]")
         page.wait_for_timeout(700)
-        check("17. エラー通知が表示", len(dialogs) > before_dialogs, dialogs[-1][:80] if dialogs else "")
+        check("20. エラー通知が表示", len(dialogs) > before_dialogs, dialogs[-1][:80] if dialogs else "")
 
-        # 8. コンソールエラー（画像の 404 等）が無いこと
-        check("18. JS コンソールエラーなし", len(console_errors) == 0, "; ".join(console_errors[:3]))
+        # 9. コンソールエラー（画像の 404 等）が無いこと
+        check("21. JS コンソールエラーなし", len(console_errors) == 0, "; ".join(console_errors[:3]))
 
         context.close()
         browser.close()

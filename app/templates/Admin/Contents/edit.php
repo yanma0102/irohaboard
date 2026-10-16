@@ -229,6 +229,14 @@
 		var content_key  = $('input[name="_csrfToken"]').val();
 		var content_url  = $('#url').val();
 
+		// Markdown エディタの編集中の内容を textarea に同期してからプレビューする
+		// （EasyMDE/CodeMirror は編集中の値を textarea に書き戻さないため、
+		//   同期しないと本文が空のままプレビューされ、画像も表示されない）
+		if (markdownEditor)
+		{
+			$('#body').val(markdownEditor.value());
+		}
+
 		if((content_kind == 'movie') && (!content_url.startsWith('http')))
 		{
 			file_name = content_url.split('/').pop();

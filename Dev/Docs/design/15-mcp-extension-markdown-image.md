@@ -829,24 +829,31 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 - 前提: Docker アプリ起動（既定 `http://localhost:8082`）、Python 3.10+、Playwright + Chromium
 - 実行: `python3 Dev/scripts/gui-image-upload.py`
   （`BASE_URL` / `API_USER` / `API_PASS` / `COURSE_ID` で上書き可）
-- 内容（18 チェック）: 管理者ログイン → markdown の新規作成画面 → EasyMDE 初期化 →
+- 内容（21 チェック）: 管理者ログイン → markdown の新規作成画面 → EasyMDE 初期化 →
   `upload-image` ボタンでアップロード → 応答 URL が `/contents/file-image/`（admin prefix なし）→
-  本文への画像記法挿入 → 画像 URL の取得（200 / `image/*`）→ プレビュー描画 →
+  本文への画像記法挿入 → 画像 URL の取得（200 / `image/*`）→ EasyMDE リアルタイムプレビュー描画 →
   実クリップボード Ctrl+V 貼付け → ドラッグ&ドロップ貼付け（DataTransfer + `drop` イベント）→
-  非画像の拒否と通知 → コンソールエラー 0 件
+  フォームの「プレビュー」ボタン（セッション経由のサーバサイドプレビュー）で本文反映・画像読込・
+  画像リクエスト 200 → 非画像の拒否と通知 → コンソールエラー 0 件
 
-**実施結果（2026-10-15・Docker 実機）**:
+**実施結果（Docker 実機）**:
 
 | 状態 | 結果 | 備考 |
 |---|---|---|
 | 現行実装（修正前） | 11/16 PASS | #6 貼付けハンドラ / #9 URL prefix / #11 画像取得 / #13 Ctrl+V / #16 コンソールエラー が FAIL |
-| F-1 / F-2 を一時適用して検証 | 16/16 PASS | URL は `http://localhost:8082/contents/file-image/...` を返し、Ctrl+V 貼付けも動作 |
+| F-1 / F-2 を一時適用して検証（2026-10-15） | 16/16 PASS | URL は `http://localhost:8082/contents/file-image/...` を返し、Ctrl+V 貼付けも動作 |
 | 実装完了後（D&D チェック追加） | 18/18 PASS | #14 / #15 として D&D のアップロードと本文挿入を追加 |
+| 「プレビュー」ボタンの回帰追加（2026-10-16） | 21/21 PASS | #16〜#18 を追加（下記の不具合 B-1 の回帰） |
 
 - ドラッグ&ドロップは「HTML5 `DataTransfer` を組み立てて `drop` イベントを
   `.CodeMirror-scroll` に dispatch する」方式で自動化した（#14 / #15）。
+- **B-1（2026-10-16 修正）**: フォームの「プレビュー」ボタンは `$('#body').val()` を送信して
+  いたが、EasyMDE/CodeMirror は編集中の値を textarea に書き戻さないため、本文が空のまま
+  プレビューされ画像も表示されなかった（保存後は textarea に保存値が入るため表示された）。
+  `preview()` で `markdownEditor.value()` を textarea に同期してから送信するよう修正し、
+  #16〜#18 で回帰を検出する。
 - 学習者画面での画像表示（front のコンテンツ閲覧）はリリース前の手動確認項目に含める。
-- 実装完了時の完了条件は本スクリプト 18/18 PASS とする。
+- 実装完了時の完了条件は本スクリプト 21/21 PASS とする。
 
 ### 9.7 画像配信の権限制御・孤児画像（追加実装）
 
@@ -944,6 +951,7 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 | 検証 | PHPUnit notice 解消、GUI テストに D&D 検証追加（18 チェック） | `80d61d2` |
 | 静的解析 | phpstan 導入（level 8 / baseline）、`composer stan`、CI 追加 | `9697c6a` |
 | 画像配信/孤児画像 | `ib_content_images` による配信制御、`image_sync` / `image_gc`、`ib_content_images` migration | `958c8b9` |
+| 不具合修正 | 「プレビュー」ボタンで編集中の本文が反映されない不具合（B-1）を修正、GUI 21 チェック化 | 本コミット |
 
 - MCP ツールは **44 個**（既存 11 + 追加 33）。
 - `WRITE_TOOLS` は追加した書き込みツールを網羅（既存の `create_test_question` /
@@ -961,7 +969,7 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 |---|---|---|
 | 全テスト | `bash Dev/scripts/test-fresh.sh` | 960 tests / 4697 assertions / OK（notice 0 件） |
 | MCP スモーク（実機） | `bash Dev/scripts/smoke-mcp.sh` | 6/6 PASS（tools/list 44 件、`upload_image`、`list_users`） |
-| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 18/18 PASS |
+| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 21/21 PASS |
 | コーディング規約 | `composer cs-check` | 追加・変更した `app/src` は 0 error（警告は既存慣習の `@unlink` 等） |
 | 静的解析 | `composer stan` | `OK No errors`（level 8 / baseline 691 件） |
 
@@ -1010,7 +1018,7 @@ bin/cake image_gc --delete
 |---|---|---|
 | 全テスト（DB 再作成） | `bash Dev/scripts/test-fresh.sh` | 960 tests / 4697 assertions / OK |
 | MCP スモーク（実機） | `bash Dev/scripts/smoke-mcp.sh` | 6/6 PASS |
-| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 18/18 PASS |
+| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 21/21 PASS（B-1 の回帰を含む） |
 | 静的解析 | `composer stan` | `OK No errors` |
 | コーディング規約 | `composer cs-check` | 追加・変更ファイルは 0 error |
 

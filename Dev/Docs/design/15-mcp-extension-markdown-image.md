@@ -46,13 +46,12 @@ CRUD・割当を含む **28 ルート**を提供しており、MCP は本来の�
 - MCP プロトコル機能: Resources / Prompts / ツールアノテーション / `tools/list`
   ページネーション / `resources/templates`（別スコープ）
 - MCP の認証・運用強化: OAuth Protected Resource Metadata、監査ログ、レート制限の細分化
-- 画像配信の権限制御の見直し、孤児画像の自動削除、保存先（`files/` と
-  `webroot/uploads/`）の方針統一（`development-gaps.md` C-5 の残課題。別スコープ）
+- 保存先（`files/` と `webroot/uploads/`）の方針統一（`development-gaps.md` C-5 の残課題。別スコープ）
 - テスト採点を伴う学習履歴の登録（`kind='test'` の受験フロー）。本設計の
   `create_record` は非テストコンテンツの進捗記録に限定する。
 
-> **前提（As-Is のまま据え置く）**: `Contents::fileImage` はランダムファイル名による
-> 事実上の保護のみで、認証なしに配信する。この挙動は本設計で変更しない。
+> **当初非目標だった項目の追加実施**: 画像配信の権限制御（§8）と孤児画像の削除（§13.3）は、
+> 実装後の残課題として本設計の続きで対応した。設計判断は §8 に追記する。
 
 ---
 
@@ -729,8 +728,33 @@ public function __invoke(
 | 権限 | admin/REST/MCP とも staff 必須。MCP/REST は `course_id` のアクセス権を追加検証 |
 | CSRF | admin 経路は `_csrfToken` を維持（既存どおり） |
 | 監査 | 画像アップロード拒否理由を debug ログに記録（`$this->log(...)`） |
-| 孤児画像 | **本設計の対象外**（アップロードしたが本文参照されない画像は残存する） |
-| 配信の権限制御 | **現状維持**（`fileImage` は名前の推測困難性のみ）。別スコープ |
+| 孤児画像 | `bin/cake image_gc` で検出・削除（既定 dry-run、`--delete` で削除）。§13.3 |
+| 配信の権限制御 | `ib_content_images`（本文が参照する画像）を追加し、参照元コンテンツのコース権限で判定。§8.1 |
+| `/uploads/` 直アクセス | webroot 直下のため Apache が配信する。既存の `uploads/.htaccess`（`LoginStatus` Cookie ゲート）を維持。残余リスクは §8.2 |
+
+### 8.1 画像配信の権限制御
+
+`Contents::fileImage` は次の順で判定する。
+
+1. ファイル名の形式検証（既存どおり: 文字種・長さ・先頭ドット）。
+2. `ib_content_images` から参照元コンテンツを引き、いずれか 1 件でも
+   `AccessControlService::canAccessCourse` を満たせば配信する。
+   staff は全コースにアクセスできるため従来どおり配信される。
+3. 参照元コンテンツが `status != 1`（非公開）の場合、非スタッフには配信しない。
+4. **参照が未登録の画像は従来どおり配信する**（保存前プレビュー、および
+   `image_sync` 未実行時の後方互換のため）。
+
+参照は `ContentsTable::afterSave` / `afterDelete` で同期するため、管理画面・REST・MCP の
+どの経路で保存しても自動的に更新される。既存コンテンツは
+`bin/cake image_sync` で遡及展開する。
+
+### 8.2 残余リスク
+
+`webroot/uploads/` は Apache が直接配信するため、`LoginStatus` Cookie による
+既存の粗いゲートを通過すれば `Contents::fileImage` の権限判定を迂回できる。
+URL はランダムなファイル名であり推測は困難だが、URL を知る第三者には到達し得る。
+根治には配信を `fileImage` 経由に一本化（保存先変更または Apache 設定変更）が必要で、
+インフラ影響が大きいため本設計では対応しない。
 
 ---
 
@@ -787,15 +811,14 @@ public function __invoke(
 
 ### 9.5 回帰
 
-- **現状の赤**: `McpControllerTest::testToolsListContainsAllTools` が失敗中（期待 9 / 実 11。
-  `c7e51b9` のテスト問題ツール追加時に未更新）。本拡張の実装時に実装後のツール数へ更新して緑に戻す。
+- **解消済み**: `McpControllerTest::testToolsListContainsAllTools` の赤は本拡張で
+  実装後のツール数（44）へ更新して緑に戻した。
 - `tools/list` 件数の増加に伴う既存アサーションの見直し。
-- `Dev/scripts/smoke-mcp.sh` の「9 tools」コメントを実態（拡張後は拡張後の数）に合わせる
-  （アサーションは最小集合のため現状でも緑）。
-- PHPUnit notice 8 件（`Mcp/ToolErrorPropagationTest` の 8 テスト。`SessionInterface` /
-  `Request` の mock に期待値を設定していない）。失敗ではないが、任意で stub 化または
-  `#[AllowMockObjectsWithoutExpectations]` により解消する。
-- `phpcs` / `phpstan`（`app/phpcs.xml`, `app/phpstan.neon`）を実行。
+- `Dev/scripts/smoke-mcp.sh` の「9 tools」コメントを実態（44 tools）に更新済み。
+- PHPUnit notice 8 件（`Mcp/ToolErrorPropagationTest` の 8 テスト）は `createStub` 化して解消済み
+  （`80d61d2`）。
+- `phpcs` / `phpstan`（`app/phpcs.xml`, `app/phpstan.neon`）は実装後に必ず実行する。
+  phpstan は `9697c6a` で導入済み（`composer stan`）。
 
 ### 9.6 GUI 操作テスト（Playwright・必須）
 
@@ -806,10 +829,11 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 - 前提: Docker アプリ起動（既定 `http://localhost:8082`）、Python 3.10+、Playwright + Chromium
 - 実行: `python3 Dev/scripts/gui-image-upload.py`
   （`BASE_URL` / `API_USER` / `API_PASS` / `COURSE_ID` で上書き可）
-- 内容（16 チェック）: 管理者ログイン → markdown の新規作成画面 → EasyMDE 初期化 →
+- 内容（18 チェック）: 管理者ログイン → markdown の新規作成画面 → EasyMDE 初期化 →
   `upload-image` ボタンでアップロード → 応答 URL が `/contents/file-image/`（admin prefix なし）→
   本文への画像記法挿入 → 画像 URL の取得（200 / `image/*`）→ プレビュー描画 →
-  実クリップボード Ctrl+V 貼付け → 非画像の拒否と通知 → コンソールエラー 0 件
+  実クリップボード Ctrl+V 貼付け → ドラッグ&ドロップ貼付け（DataTransfer + `drop` イベント）→
+  非画像の拒否と通知 → コンソールエラー 0 件
 
 **実施結果（2026-10-15・Docker 実機）**:
 
@@ -817,11 +841,21 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 |---|---|---|
 | 現行実装（修正前） | 11/16 PASS | #6 貼付けハンドラ / #9 URL prefix / #11 画像取得 / #13 Ctrl+V / #16 コンソールエラー が FAIL |
 | F-1 / F-2 を一時適用して検証 | 16/16 PASS | URL は `http://localhost:8082/contents/file-image/...` を返し、Ctrl+V 貼付けも動作 |
+| 実装完了後（D&D チェック追加） | 18/18 PASS | #14 / #15 として D&D のアップロードと本文挿入を追加 |
 
-- ドラッグ&ドロップは合成 DragEvent では再現できず自動化できないため手動確認項目とする
-  （paste と同一ブロックで有効化されるため、F-1 の修正で有効になる）。
-- 学習者画面での画像表示（front のコンテンツ閲覧）もリリース前の手動確認項目に含める。
-- 実装完了時の完了条件は本スクリプト 16/16 PASS とする。
+- ドラッグ&ドロップは「HTML5 `DataTransfer` を組み立てて `drop` イベントを
+  `.CodeMirror-scroll` に dispatch する」方式で自動化した（#14 / #15）。
+- 学習者画面での画像表示（front のコンテンツ閲覧）はリリース前の手動確認項目に含める。
+- 実装完了時の完了条件は本スクリプト 18/18 PASS とする。
+
+### 9.7 画像配信の権限制御・孤児画像（追加実装）
+
+| # | ファイル | ケース |
+|---|---|---|
+| 1 | `Dev/tests/TestCase/Service/ContentImageServiceTest.php` | Markdown/HTML からのファイル名抽出、`afterSave` での参照同期、削除、逆引き、全件再構築 |
+| 2 | `Dev/tests/TestCase/Controller/ContentsControllerTest.php` | 未受講コースの画像は 404 / 非公開コンテンツの画像は非スタッフに 404 / 受講済み・staff・グループ受講は 200 / 参照未登録は 200 |
+| 3 | `Dev/tests/TestCase/Migration/MigrationVerificationTest.php` | `ib_content_images` の存在とカラム構成 |
+| 4 | 実機 | `bin/cake image_sync` / `image_gc`（dry-run と `--delete`） |
 
 ---
 
@@ -849,8 +883,10 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 | K-4 | `images[]` の挿入位置 | 本文末尾に追記。位置制御が必要なら `upload_image` 併用を案内 |
 | K-5 | `mcp_image_maxbytes` | 既定 3,500,000 文字。運用で調整 |
 | K-6 | `list_users` の一般ユーザ挙動 | 自レコード 1 件のみ返す（`GET /users` と同一） |
-| K-7 | 画像配信・孤児削除 | 本設計の非目標。別設計で扱う |
+| K-7 | 画像配信・孤児削除 | 続きで対応（§8.1 / §13.3）。`ib_content_images` による権限判定 + `image_gc` コマンド |
 | K-8 | MCP プロトコル機能（Resources 等） | 本設計の非目標。別設計で扱う |
+| K-9 | 参照未登録画像の配信 | 従来どおり配信する（保存前プレビュー・遡及前の後方互換） |
+| K-10 | 静的解析（phpstan） | dev 依存に追加。level 8 / `src/` を対象とし、既存指摘は baseline で固定（§13.4） |
 
 ---
 
@@ -887,9 +923,11 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 | `Dev/scripts/README.md` | `gui-image-upload.py` の実行方法を追記 |
 | `Dev/scripts/smoke-mcp.sh` | ツール数のコメント更新 |
 
+> 続きで対応した画像配信制御・孤児画像・phpstan 導入のファイル一覧は §13.3 / §13.4 を参照。
+
 ---
 
-## 13. 実装状況（2026-10-15）
+## 13. 実装状況（2026-10-16 更新）
 
 `dev` ブランチで以下を実装済み（コミット単位）。
 
@@ -903,6 +941,9 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 | MCP 管理 | コース・ユーザ管理 9 ツール | `7b97178` |
 | MCP 管理 | グループ管理 7 ツール | `e18f202` |
 | MCP 参照 | 参照系 11 ツール | `056c567` |
+| 検証 | PHPUnit notice 解消、GUI テストに D&D 検証追加（18 チェック） | `80d61d2` |
+| 静的解析 | phpstan 導入（level 8 / baseline）、`composer stan`、CI 追加 | `9697c6a` |
+| 画像配信/孤児画像 | `ib_content_images` による配信制御、`image_sync` / `image_gc`、`ib_content_images` migration | `958c8b9` |
 
 - MCP ツールは **44 個**（既存 11 + 追加 33）。
 - `WRITE_TOOLS` は追加した書き込みツールを網羅（既存の `create_test_question` /
@@ -914,18 +955,64 @@ PHPUnit / HTTP クライアントでは JS・DOM の不良（F-1 / F-2）を検�
 
 ### 13.1 検証結果
 
+最終検証は §13.5 を参照。実装各段階での結果は次のとおり。
+
 | 検証 | コマンド | 結果 |
 |---|---|---|
-| 全テスト | `bash Dev/scripts/test-fresh.sh` | 938 tests / 4620 assertions / OK（PHPUnit notice 8 は §9.5 の既知事象） |
+| 全テスト | `bash Dev/scripts/test-fresh.sh` | 960 tests / 4697 assertions / OK（notice 0 件） |
 | MCP スモーク（実機） | `bash Dev/scripts/smoke-mcp.sh` | 6/6 PASS（tools/list 44 件、`upload_image`、`list_users`） |
-| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 16/16 PASS |
+| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 18/18 PASS |
 | コーディング規約 | `composer cs-check` | 追加・変更した `app/src` は 0 error（警告は既存慣習の `@unlink` 等） |
+| 静的解析 | `composer stan` | `OK No errors`（level 8 / baseline 691 件） |
 
 ### 13.2 未対応（本設計の対象外・任意）
 
-- PHPUnit notice 8 件（`Dev/tests/TestCase/Mcp/ToolErrorPropagationTest.php`。§9.5）。
-- `phpstan.neon` は存在するが `vendor/bin/phpstan` が未導入のため静的解析は未実行。
-- 孤児画像の削除、画像配信のアクセス制御（§8 の非目標）。
+- `/uploads/` 直アクセス（`webroot` 配信）の根治。§8.2 の残余リスクとして記載。
+- 保存先（`files/` と `webroot/uploads/`）の方針統一（`development-gaps.md` C-5）。
+- MCP プロトコル機能（Resources / Prompts）と MCP 認証・運用強化（§1.3）。
+
+### 13.3 画像配信の権限制御と孤児画像（追加実装）
+
+| ファイル | 内容 |
+|---|---|
+| `app/config/Migrations/20261016120000_CreateContentImages.php` | `ib_content_images`（`content_id` / `course_id` / `file_name` / `created`） |
+| `app/src/Service/ContentImageService.php` | 本文からの画像ファイル名抽出、参照の同期・削除・逆引き、全件再構築 |
+| `app/src/Command/ImageSyncCommand.php` | `bin/cake image_sync`（既存コンテンツへ参照を遡及展開） |
+| `app/src/Command/ImageGcCommand.php` | `bin/cake image_gc`（孤児画像の検出。既定 dry-run、`--delete` / `--min-age` / `--upload-dir`） |
+| `app/src/Model/Table/ContentsTable.php` | `afterSave` / `afterDelete` で参照同期（管理画面・REST・MCP を自動カバー） |
+| `app/src/Model/Table/CoursesTable.php` | `deleteCourse()` でコース配下の参照を削除 |
+| `app/src/Controller/ContentsController.php` | `fileImage` に参照元コース権限の判定（`isImageViewable`）を追加 |
+| `Dev/tests/TestCase/Service/ContentImageServiceTest.php` | 抽出・同期・削除・逆引きの単体テスト |
+| `Dev/tests/TestCase/Controller/ContentsControllerTest.php` | fileImage のアクセス制御（未受講 / 非公開 / 受講済 / staff / グループ受講） |
+| `Dev/tests/TestCase/Migration/MigrationVerificationTest.php` | `ib_content_images` の存在とカラム構成 |
+
+運用:
+
+```bash
+# 既存コンテンツから画像参照を遡及展開（migration 適用後に 1 回）
+bin/cake image_sync
+
+# 孤児画像の確認（既定 dry-run）。削除は --delete
+bin/cake image_gc
+bin/cake image_gc --delete
+```
+
+### 13.4 静的解析（phpstan）
+
+- `phpstan/phpstan ^2.3` を dev 依存に追加。`app/phpstan.neon` は level 8 / `src/` を対象。
+- 既存の指摘 **691 件** は `app/phpstan-baseline.neon` に固定し、新規指摘のみをゲートする。
+- `composer stan` で実行。CI（`.github/workflows/ci.yml`）にもステップを追加。
+- 新規実装（`ContentImageService` / 画像系コマンド / 参照同期フック）は baseline 追加なしで 0 error。
+
+### 13.5 最終検証（2026-10-16）
+
+| 検証 | コマンド | 結果 |
+|---|---|---|
+| 全テスト（DB 再作成） | `bash Dev/scripts/test-fresh.sh` | 960 tests / 4697 assertions / OK |
+| MCP スモーク（実機） | `bash Dev/scripts/smoke-mcp.sh` | 6/6 PASS |
+| GUI 操作（実ブラウザ） | `python3 Dev/scripts/gui-image-upload.py` | 18/18 PASS |
+| 静的解析 | `composer stan` | `OK No errors` |
+| コーディング規約 | `composer cs-check` | 追加・変更ファイルは 0 error |
 
 ---
 

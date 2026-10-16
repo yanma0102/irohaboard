@@ -35,7 +35,7 @@ class ListContentsTool
      * 一般ユーザは受講可能なコースの公開コンテンツのみ。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $courseId コースID
+     * @param int $course_id コースID
      * @param string|null $kind コース種別フィルタ（省略可）
      * @param int $page ページ番号（1 以上）
      * @param int $limit 取得件数（1〜200）

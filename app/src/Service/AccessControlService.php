@@ -50,6 +50,17 @@ class AccessControlService
     }
 
     /**
+     * 管理者・マネージャ判定（Api\BaseController::requireManager() と同一ロジック）
+     *
+     * @param string $role ロール
+     * @return bool admin / manager の場合 true
+     */
+    public function isManager(string $role): bool
+    {
+        return in_array($role, ['admin', 'manager'], true);
+    }
+
+    /**
      * 指定ユーザが受講可能なコースIDを取得する
      *
      * ib_users_courses と ib_groups_courses/ib_users_groups の UNION。

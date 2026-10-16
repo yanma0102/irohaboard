@@ -27,6 +27,11 @@ use Mcp\Server\Session\SessionInterface;
  */
 class UpdateContentToolTest extends TestCase
 {
+    /**
+     * 1x1 の有効な PNG
+     */
+    private const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
     private UpdateContentTool $tool;
 
     public function setUp(): void
@@ -35,6 +40,9 @@ class UpdateContentToolTest extends TestCase
 
         // Application::bootstrap() 相当（単体テストは Application を起動しないため）
         Configure::load('ib_config');
+
+        // ImageStorageService::url() はルート定義を必要とする
+        $this->loadRoutes();
 
         foreach (
             [
@@ -365,6 +373,93 @@ class UpdateContentToolTest extends TestCase
             null,
             null,
             '',
+        );
+    }
+
+    // ----------------------------------------------------------------
+    // images[]（Phase E）
+    // ----------------------------------------------------------------
+
+    /**
+     * kind=markdown のコンテンツに images[] で画像を追記できる
+     */
+    public function testUpdateContentWithImagesAppendsMarkdown(): void
+    {
+        $course = $this->createCourse();
+        $admin = $this->createUser('uadmin10', 'admin');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+        $content = $this->createContent((int)$course->id);
+
+        $result = $this->tool->__invoke(
+            $this->makeContext((int)$admin->id, 'admin'),
+            (int)$content->id,
+            null,
+            null,
+            null,
+            null,
+            [
+                ['file_name' => 'diagram.png', 'data' => self::PNG_BASE64, 'alt' => '図1'],
+            ],
+        );
+
+        $this->assertArrayHasKey('images', $result['data']);
+        $image = $result['data']['images'][0];
+
+        $saved = $this->getTableLocator()->get('Contents')->get((int)$content->id);
+        $this->assertSame("# 元の本文\n\n![図1](" . $image['url'] . ')', $saved->body);
+
+        @unlink(ROOT . DS . 'webroot' . DS . 'uploads' . DS . $image['file_name']);
+    }
+
+    /**
+     * kind=html のコンテンツに images[] は指定できない
+     */
+    public function testImagesRejectedForHtmlContent(): void
+    {
+        $course = $this->createCourse();
+        $admin = $this->createUser('uadmin11', 'admin');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+        $content = $this->createContent((int)$course->id, ['kind' => 'html', 'body' => '<p>x</p>']);
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('images can only be used with kind=markdown.');
+
+        $this->tool->__invoke(
+            $this->makeContext((int)$admin->id, 'admin'),
+            (int)$content->id,
+            null,
+            null,
+            null,
+            null,
+            [
+                ['file_name' => 'diagram.png', 'data' => self::PNG_BASE64],
+            ],
+        );
+    }
+
+    /**
+     * 既存 markdown を kind=html へ変更しつつ images[] は指定できない
+     */
+    public function testImagesRejectedWhenKindChangesToHtml(): void
+    {
+        $course = $this->createCourse();
+        $admin = $this->createUser('uadmin12', 'admin');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+        $content = $this->createContent((int)$course->id);
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('images can only be used with kind=markdown.');
+
+        $this->tool->__invoke(
+            $this->makeContext((int)$admin->id, 'admin'),
+            (int)$content->id,
+            null,
+            'html',
+            '<p>x</p>',
+            null,
+            [
+                ['file_name' => 'diagram.png', 'data' => self::PNG_BASE64],
+            ],
         );
     }
 }

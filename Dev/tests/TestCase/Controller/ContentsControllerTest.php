@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
@@ -25,6 +26,13 @@ class ContentsControllerTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        // 画像の拡張子許可リスト。ib_config の全読込は content_kind 等の
+        // 他設定も有効化して既存テストに影響するため、必要な設定だけ補う。
+        if (Configure::read('upload_image_extensions') === null) {
+            Configure::write('upload_image_extensions', ['.png', '.gif', '.jpg', '.jpeg']);
+        }
+
         $this->cleanTables();
     }
 
@@ -51,6 +59,9 @@ class ContentsControllerTest extends TestCase
         ) {
             $this->getTableLocator()->get($table)->deleteAll('1 = 1');
         }
+
+        // ib_content_images は Table クラスを持たないため raw SQL で消す
+        $this->getTableLocator()->get('Contents')->getConnection()->execute('DELETE FROM ib_content_images');
     }
 
     /**
@@ -75,11 +86,11 @@ class ContentsControllerTest extends TestCase
     }
 
     /**
-     * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
+     * 指定ロールでログイン状態を再現（セッション直接注入方式）
      */
-    private function loginAsUser(): EntityInterface
+    private function loginAs(string $role = 'user', string $username = 'testuser'): EntityInterface
     {
-        $user = $this->createUser();
+        $user = $this->createUser($username, $role);
 
         $this->session([
             'Auth' => [
@@ -96,6 +107,14 @@ class ContentsControllerTest extends TestCase
         $this->enableSecurityToken();
 
         return $user;
+    }
+
+    /**
+     * フロント側一般ユーザ ログイン状態を再現（セッション直接注入方式）
+     */
+    private function loginAsUser(): EntityInterface
+    {
+        return $this->loginAs('user');
     }
 
     /**
@@ -137,6 +156,7 @@ class ContentsControllerTest extends TestCase
         string $kind = 'html',
         int $status = 1,
         ?string $url = null,
+        ?string $body = null,
     ): EntityInterface {
         $contentsTable = $this->getTableLocator()->get('Contents');
         $data = [
@@ -149,11 +169,63 @@ class ContentsControllerTest extends TestCase
         if ($url !== null) {
             $data['url'] = $url;
         }
+        if ($body !== null) {
+            $data['body'] = $body;
+        }
         $entity = $contentsTable->newEntity($data);
         $result = $contentsTable->save($entity);
         $this->assertNotFalse($result, 'コンテンツの保存に失敗');
 
         return $result;
+    }
+
+    /**
+     * グループ経由でユーザをコースに受講登録
+     */
+    private function enrollUserViaGroup(int $userId, int $courseId): void
+    {
+        $groupsTable = $this->getTableLocator()->get('Groups');
+        $group = $groupsTable->save($groupsTable->newEntity(['title' => 'テストグループ']));
+        $this->assertNotFalse($group, 'グループの保存に失敗');
+
+        $usersGroupsTable = $this->getTableLocator()->get('UsersGroups');
+        $this->assertNotFalse(
+            $usersGroupsTable->save(
+                $usersGroupsTable->newEntity(['user_id' => $userId, 'group_id' => $group->id]),
+            ),
+            'グループ割当に失敗',
+        );
+
+        $groupsCoursesTable = $this->getTableLocator()->get('GroupsCourses');
+        $this->assertNotFalse(
+            $groupsCoursesTable->save(
+                $groupsCoursesTable->newEntity(['group_id' => $group->id, 'course_id' => $courseId]),
+            ),
+            'コース割当に失敗',
+        );
+    }
+
+    /**
+     * ROOT/files に 1x1 PNG を配置し、コールバック実行後に削除する
+     *
+     * @param string $fileName ファイル名
+     * @param callable $callback 検証本体
+     */
+    private function withImageFile(string $fileName, callable $callback): void
+    {
+        $testFile = ROOT . DS . 'files' . DS . $fileName;
+        $pngData = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRUEFTkSuQmCC',
+        );
+        file_put_contents($testFile, $pngData);
+
+        try {
+            $callback();
+        } finally {
+            if (file_exists($testFile)) {
+                unlink($testFile);
+            }
+        }
     }
 
     // =========================================================================
@@ -445,5 +517,130 @@ class ContentsControllerTest extends TestCase
                 unlink($testFile);
             }
         }
+    }
+
+    // =========================================================================
+    // fileImage アクセス制御のテスト（ib_content_images）
+    // =========================================================================
+
+    /**
+     * 受講中コースの公開コンテンツが参照する画像は配信されること
+     */
+    public function testFileImageReferencedByEnrolledPublishedContent(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $this->createContent(
+            (int)$course->id,
+            (int)$user->id,
+            'markdown',
+            1,
+            null,
+            '![a](/contents/file-image/ref_enrolled.png)',
+        );
+
+        $this->withImageFile('ref_enrolled.png', function (): void {
+            $this->get('/contents/file-image/ref_enrolled.png');
+            $this->assertResponseOk();
+        });
+    }
+
+    /**
+     * 未受講コースのコンテンツが参照する画像は 404 になること
+     */
+    public function testFileImageReferencedByUnenrolledCourseIsDenied(): void
+    {
+        $owner = $this->createUser('owner');
+        $course = $this->createCourse((int)$owner->id);
+        $this->createContent(
+            (int)$course->id,
+            (int)$owner->id,
+            'markdown',
+            1,
+            null,
+            '![a](/contents/file-image/ref_unenrolled.png)',
+        );
+
+        // ログインユーザはコース未受講
+        $this->loginAsUser();
+
+        $this->withImageFile('ref_unenrolled.png', function (): void {
+            $this->get('/contents/file-image/ref_unenrolled.png');
+            $this->assertResponseCode(404);
+        });
+    }
+
+    /**
+     * 非公開コンテンツが参照する画像は一般ユーザには 404 になること
+     */
+    public function testFileImageReferencedByUnpublishedContentIsDeniedForLearner(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $this->createContent(
+            (int)$course->id,
+            (int)$user->id,
+            'markdown',
+            0,
+            null,
+            '![a](/contents/file-image/ref_unpublished.png)',
+        );
+
+        $this->withImageFile('ref_unpublished.png', function (): void {
+            $this->get('/contents/file-image/ref_unpublished.png');
+            $this->assertResponseCode(404);
+        });
+    }
+
+    /**
+     * 未受講コースの非公開コンテンツが参照する画像でもスタッフには配信されること
+     */
+    public function testFileImageReferencedByUnpublishedContentIsServedForStaff(): void
+    {
+        $owner = $this->createUser('owner2');
+        $course = $this->createCourse((int)$owner->id);
+        $this->createContent(
+            (int)$course->id,
+            (int)$owner->id,
+            'markdown',
+            0,
+            null,
+            '![a](/contents/file-image/ref_staff.png)',
+        );
+
+        // スタッフ（editor）は未受講コースでも参照画像を取得できる
+        $this->loginAs('editor', 'editoruser');
+
+        $this->withImageFile('ref_staff.png', function (): void {
+            $this->get('/contents/file-image/ref_staff.png');
+            $this->assertResponseOk();
+        });
+    }
+
+    /**
+     * グループ経由で受講しているコースの画像は配信されること
+     */
+    public function testFileImageReferencedByGroupEnrolledCourse(): void
+    {
+        $owner = $this->createUser('owner3');
+        $course = $this->createCourse((int)$owner->id);
+        $this->createContent(
+            (int)$course->id,
+            (int)$owner->id,
+            'markdown',
+            1,
+            null,
+            '![a](/contents/file-image/ref_group.png)',
+        );
+
+        $user = $this->loginAs('user', 'groupuser');
+        $this->enrollUserViaGroup((int)$user->id, (int)$course->id);
+
+        $this->withImageFile('ref_group.png', function (): void {
+            $this->get('/contents/file-image/ref_group.png');
+            $this->assertResponseOk();
+        });
     }
 }

@@ -14,6 +14,9 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Service\AccessControlService;
+use App\Service\ImageStorageService;
+use App\Service\ImageUploadException;
 use Cake\Http\Response;
 
 /**
@@ -281,5 +284,67 @@ class ContentsController extends BaseController
         }
 
         $this->fail(500, 'Failed to delete content');
+    }
+
+    /**
+     * 画像をアップロードする
+     *
+     * POST /api/v1/contents/images
+     *
+     * 検証・保存は ImageStorageService に委譲する（管理画面と同一の条件）。
+     * course_id を指定した場合はコースアクセス権を検証する。
+     *
+     * @return \Cake\Http\Response
+     */
+    public function uploadImage(): Response
+    {
+        $this->requireStaff();
+
+        $file = $this->request->getUploadedFile('file')
+            ?? $this->request->getUploadedFile('image');
+
+        $courseId = $this->input()['course_id'] ?? $this->request->getData('course_id');
+        if ($courseId !== null && $courseId !== '') {
+            $access = new AccessControlService($this->fetchTable('Users')->getConnection());
+            if (!$access->canAccessCourse($this->currentUserId(), (int)$courseId, $this->currentRole())) {
+                $this->fail(403, 'You do not have access to this course');
+            }
+        }
+
+        try {
+            if ($file === null) {
+                throw new ImageUploadException(ImageUploadException::REASON_NO_FILE);
+            }
+
+            $storage = $this->imageStorage();
+            $stored = $storage->storeFromUploadedFile($file);
+        } catch (ImageUploadException $e) {
+            [$status, $message] = match ($e->getReason()) {
+                ImageUploadException::REASON_NO_FILE => [400, 'image file is required'],
+                ImageUploadException::REASON_TOO_LARGE => [413, 'Image is too large'],
+                ImageUploadException::REASON_EXTENSION,
+                ImageUploadException::REASON_NOT_IMAGE => [415, 'Unsupported image type'],
+                default => [500, 'Failed to store image'],
+            };
+
+            $this->fail($status, $message);
+        }
+
+        return $this->ok([
+            'file_name' => $stored['file_name'],
+            'url' => $storage->url($stored['file_name']),
+            'size' => $stored['size'],
+            'mime' => $stored['mime'],
+        ], 201);
+    }
+
+    /**
+     * 画像ストレージサービスを取得する
+     *
+     * @return \App\Service\ImageStorageService
+     */
+    protected function imageStorage(): ImageStorageService
+    {
+        return ImageStorageService::create();
     }
 }

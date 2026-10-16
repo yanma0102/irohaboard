@@ -12,11 +12,12 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
+use App\Service\ImageStorageService;
+use App\Service\ImageUploadException;
 use App\Utility\MarkdownRenderer;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
-use Cake\Routing\Router;
 use Throwable;
 
 /**
@@ -339,7 +340,10 @@ class ContentsController extends AppController
     }
 
     /**
-     * リッチテキストエディタ(Summernote) から送信された画像を保存
+     * リッチテキストエディタ(Summernote / EasyMDE) から送信された画像を保存
+     *
+     * 応答は従来どおり JSON 配列（成功: [url] / 失敗: [false]）。
+     * 検証・保存・URL 生成は ImageStorageService に委譲する。
      *
      * @return \Cake\Http\Response
      */
@@ -347,55 +351,40 @@ class ContentsController extends AppController
     {
         $this->autoRender = false;
 
-        if ($this->request->is('ajax')) {
-            $file = $this->request->getUploadedFile('file');
-            if ($file && $file->getError() === UPLOAD_ERR_OK) {
-                $file_path = ROOT . DS . 'webroot' . DS . 'uploads';
-                if (!is_dir($file_path)) {
-                    mkdir($file_path, 0755, true);
-                }
-
-                $original_name = $file->getClientFilename();
-                $ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
-
-                if (!in_array('.' . $ext, (array)Configure::read('upload_image_extensions'), true)) {
-                    $response = [false];
-                } elseif ($file->getSize() > Configure::read('upload_image_maxsize')) {
-                    $response = [false];
-                } else {
-                    $str = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
-                    $new_name = date('YmdHis') . $str . '.' . $ext;
-
-                    $dest = $file_path . DS . $new_name;
-
-                    // moveTo() は戻り値 void・失敗時例外のため、戻り値判定は不可。
-                    // 例外捕捉と保存後のファイル存在確認で成否を判定する。
-                    try {
-                        $file->moveTo($dest);
-                        $result = is_file($dest);
-                    } catch (Throwable $e) {
-                        $result = false;
-                    }
-
-                    // Router::url() で組み立てる。ホスト・ポート・ベースパスは
-                    // Router::fullBaseUrl() とルート定義から解決されるため、
-                    // サブディレクトリ配置（例: https://example.com/irohaboard）でも
-                    // ベースパスが欠落しない。
-                    $file_url = Router::url(['controller' => 'Contents', 'action' => 'fileImage', $new_name], true);
-                    $response = $result ? [$file_url] : [false];
-                }
-            } else {
-                $response = [false];
-            }
-
-            $json = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-            return $this->response
-                ->withType('json')
-                ->withStringBody($json);
+        if (!$this->request->is('ajax')) {
+            return $this->response;
         }
 
-        return $this->response;
+        if (Configure::read('use_upload_image') !== true) {
+            $response = [false];
+        } else {
+            $file = $this->request->getUploadedFile('file')
+                ?? $this->request->getUploadedFile('image');
+
+            try {
+                if ($file === null) {
+                    throw new ImageUploadException(ImageUploadException::REASON_NO_FILE);
+                }
+
+                $storage = ImageStorageService::create();
+                $stored = $storage->storeFromUploadedFile($file);
+                $response = [$storage->url($stored['file_name'])];
+            } catch (ImageUploadException $e) {
+                // 形式・サイズなどの理由はログに残し、クライアントには従来どおり false を返す
+                $this->log('image upload rejected: ' . $e->getReason() . ' (' . $e->getMessage() . ')', 'debug');
+                $response = [false];
+            }
+        }
+
+        $json = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($json === false) {
+            // 応答形式（[url] / [false]）を崩さないためのフェイルセーフ
+            $json = '[false]';
+        }
+
+        return $this->response
+            ->withType('json')
+            ->withStringBody($json);
     }
 
     /**

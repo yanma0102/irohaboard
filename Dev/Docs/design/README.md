@@ -19,6 +19,8 @@
 | 11 | `11-config-bootstrap.md` | 設定・起動設計（config/app.php・Application.php・Custom ディレクトリ再実装） |
 | 12 | `12-implementation-test-plan.md` | 実装計画・テスト設計（フェーズ別手順・テストケース・トレーサビリティ） |
 | 13 | `13-markdown-mcp.md` | Markdown 対応 & MCP サーバ統合設計（コンテンツ Markdown 化・Contents API Write・MCP サーバ） |
+| 14 | `14-config-gui-admin.md` | 設定項目のGUI編集機能（Config GUI Admin） |
+| 15 | `15-mcp-extension-markdown-image.md` | MCP ツール網羅拡張 & Markdown 画像添付設計（users/groups/courses CRUD の MCP 化・画像アップロード基盤・EasyMDE 貼付け堅牢化） |
 
 ## 共通設計方針
 

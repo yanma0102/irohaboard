@@ -319,7 +319,7 @@ class McpControllerTest extends TestCase
     }
 
     /**
-     * tools/list → 読み取り系ツール7個 + 書き込み系ツール2個が返る
+     * tools/list → 登録済みの全ツールが返る
      */
     public function testToolsListContainsAllTools(): void
     {
@@ -340,17 +340,31 @@ class McpControllerTest extends TestCase
         $body = json_decode((string)$this->_response->getBody(), true);
         $names = array_column($body['result']['tools'], 'name');
 
-        foreach (
-            [
+        $expected = [
             'list_courses', 'get_course', 'list_contents', 'get_content',
             'get_content_html', 'list_records', 'get_user_profile',
+            'list_users', 'get_user', 'list_groups', 'get_group',
+            'list_group_users', 'list_group_courses', 'list_user_courses',
+            'get_record', 'list_test_questions', 'get_test_question',
+            'list_enquete_questions',
             'create_content', 'update_content',
-            ] as $expected
-        ) {
-            $this->assertContains($expected, $names, "{$expected} が登録されている");
+            'create_test_question', 'update_test_question',
+            'upload_image',
+            'delete_content', 'reorder_contents', 'copy_content',
+            'delete_test_question', 'create_record',
+            'create_course', 'update_course', 'delete_course',
+            'create_user', 'update_user', 'change_user_password', 'delete_user',
+            'assign_user_course', 'unassign_user_course',
+            'create_group', 'update_group', 'delete_group',
+            'assign_group_user', 'unassign_group_user',
+            'assign_group_course', 'unassign_group_course',
+        ];
+
+        foreach ($expected as $name) {
+            $this->assertContains($name, $names, "{$name} が登録されている");
         }
 
-        $this->assertCount(9, $names, 'ツールは 9 個（読み取り7 + 書き込み2）');
+        $this->assertCount(count($expected), $names, '登録ツール数が期待どおり');
     }
 
     // ----------------------------------------------------------------

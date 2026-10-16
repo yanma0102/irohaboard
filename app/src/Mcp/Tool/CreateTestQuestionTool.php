@@ -38,10 +38,10 @@ class CreateTestQuestionTool
      * question_type=text のとき options/correct は不要。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $contentId コンテンツ（テスト）ID
+     * @param int $content_id コンテンツ（テスト）ID
      * @param string $title 問題タイトル
      * @param string $body 本文（必須）
-     * @param string $questionType 問題種別（single / text）
+     * @param string $question_type 問題種別（single / text）
      * @param array<int|string, string> $options 選択肢配列（single のとき必須）
      * @param array<int|string, int> $correct 正解番号配列（1始まり, single のとき必須）
      * @param int $score 配点（0〜100, -1 可）
@@ -144,7 +144,10 @@ class CreateTestQuestionTool
 
         if (!$questionsTable->save($entity)) {
             throw new ToolCallException(
-                json_encode(['error' => 'Validation failed.', 'details' => $entity->getErrors()], JSON_UNESCAPED_UNICODE),
+                json_encode(
+                    ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
+                    JSON_UNESCAPED_UNICODE,
+                ) ?: 'Validation failed.',
             );
         }
 

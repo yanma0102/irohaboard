@@ -34,7 +34,7 @@ class GetCourseTool
      * コース詳細を返す。スタッフは全件、一般ユーザは受講可能なコースのみ。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $courseId コースID
+     * @param int $course_id コースID
      * @return array<string, mixed>
      */
     public function __invoke(RequestContext $context, int $course_id): array

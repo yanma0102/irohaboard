@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\AccessControlService;
+use App\Service\ContentImageService;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
@@ -275,6 +277,12 @@ class ContentsController extends AppController
         }
 
         $safe_file_name = basename($file_name);
+
+        // 画像を参照しているコンテンツのコース権限で配信可否を判定する
+        if (!$this->isImageViewable($safe_file_name)) {
+            throw new NotFoundException(__('Invalid access'));
+        }
+
         $file_path = ROOT . DS . 'files' . DS . $safe_file_name;
 
         if (is_dir($file_path)) {
@@ -292,5 +300,44 @@ class ContentsController extends AppController
         $this->response = $this->response->withFile($file_path, ['download' => false, 'name' => $safe_file_name]);
 
         return $this->response;
+    }
+
+    /**
+     * 画像を配信してよいかを判定する
+     *
+     * ib_content_images を引き、その画像を参照しているコンテンツのコースに
+     * アクセスできる場合のみ許可する。参照が未登録の画像（保存前のプレビューや
+     * 遡及展開前）は従来どおり配信する。
+     *
+     * @param string $fileName ファイル名
+     * @return bool 配信可の場合 true
+     */
+    private function isImageViewable(string $fileName): bool
+    {
+        $connection = $this->fetchTable('Contents')->getConnection();
+        $access = new AccessControlService($connection);
+        $userId = (int)$this->readAuthUser('id');
+        $role = (string)$this->readAuthUser('role');
+
+        $references = (new ContentImageService($connection))->findReferences($fileName);
+
+        if ($references === []) {
+            return true;
+        }
+
+        $isStaff = $access->isStaff($role);
+
+        foreach ($references as $reference) {
+            // 非公開コンテンツの画像は、スタッフ以外には配信しない
+            if (!$isStaff && $reference['status'] !== 1) {
+                continue;
+            }
+
+            if ($access->canAccessCourse($userId, $reference['course_id'], $role)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

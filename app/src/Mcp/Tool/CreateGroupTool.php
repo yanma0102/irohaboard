@@ -1,0 +1,98 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * iroha Board Project
+ *
+ * @author        Kotaro Miura
+ * @copyright     2015-2026 iroha Soft, Inc. (https://irohasoft.jp)
+ */
+
+namespace App\Mcp\Tool;
+
+use App\Service\AccessControlService;
+use Cake\ORM\TableRegistry;
+use Mcp\Capability\Attribute\McpTool;
+use Mcp\Exception\ToolCallException;
+use Mcp\Server\RequestContext;
+
+/**
+ * create_group ツール: グループ作成（管理者・マネージャのみ）
+ */
+class CreateGroupTool
+{
+    use HasOAuthContextTrait;
+
+    /**
+     * @param \App\Service\AccessControlService $accessControl 権限チェックサービス
+     */
+    public function __construct(
+        private AccessControlService $accessControl,
+    ) {
+    }
+
+    /**
+     * グループを新規作成する。
+     *
+     * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
+     * @param string $title グループ名
+     * @param string|null $comment コメント
+     * @param int|null $status 状態
+     * @param string|null $logo ロゴ
+     * @param string|null $copyright コピーライト
+     * @param string|null $module モジュール
+     * @return array<string, mixed>
+     */
+    #[McpTool(
+        name: 'create_group',
+        description: 'Create a group (admin or manager only).',
+    )]
+    public function __invoke(
+        RequestContext $context,
+        string $title,
+        ?string $comment = null,
+        ?int $status = null,
+        ?string $logo = null,
+        ?string $copyright = null,
+        ?string $module = null,
+    ): array {
+        $role = $this->getRole($context);
+
+        if (!$this->accessControl->isManager($role)) {
+            throw new ToolCallException('Only administrators or managers can create groups.');
+        }
+
+        $fields = ['title' => $title];
+        $optional = [
+            'comment' => $comment,
+            'status' => $status,
+            'logo' => $logo,
+            'copyright' => $copyright,
+            'module' => $module,
+        ];
+        foreach ($optional as $key => $value) {
+            if ($value !== null) {
+                $fields[$key] = $value;
+            }
+        }
+
+        $groupsTable = TableRegistry::getTableLocator()->get('Groups');
+        $entity = $groupsTable->newEntity($fields);
+
+        if (!$groupsTable->save($entity)) {
+            throw new ToolCallException(json_encode(
+                ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
+                JSON_UNESCAPED_UNICODE,
+            ) ?: 'Validation failed.');
+        }
+
+        return [
+            'data' => [
+                'id' => (int)$entity->id,
+                'title' => $entity->title,
+                'comment' => $entity->comment,
+                'status' => $entity->status,
+            ],
+        ];
+    }
+}

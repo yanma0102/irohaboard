@@ -10,7 +10,11 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Service\ContentImageService;
+use ArrayObject;
 use Cake\Core\Configure;
+use Cake\Datasource\EntityInterface;
+use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\Validation\Validator;
 
@@ -52,6 +56,40 @@ class ContentsTable extends AppTable
         $this->belongsTo('Users', [
             'foreignKey' => 'user_id',
         ]);
+    }
+
+    /**
+     * 保存後に本文の画像参照（ib_content_images）を同期する
+     *
+     * 管理画面・REST API・MCP のどの経路でも同じ結果になるようモデル層で行う。
+     *
+     * @param \Cake\Event\EventInterface<\App\Model\Table\ContentsTable> $event イベント
+     * @param \Cake\Datasource\EntityInterface $entity 保存されたコンテンツ
+     * @param \ArrayObject<int, mixed> $options 保存オプション
+     * @return void
+     */
+    public function afterSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    {
+        $body = $entity->get('body');
+
+        (new ContentImageService($this->getConnection()))->syncForContent(
+            (int)$entity->get('id'),
+            (int)$entity->get('course_id'),
+            $body === null ? null : (string)$body,
+        );
+    }
+
+    /**
+     * 削除後に本文の画像参照（ib_content_images）を削除する
+     *
+     * @param \Cake\Event\EventInterface<\App\Model\Table\ContentsTable> $event イベント
+     * @param \Cake\Datasource\EntityInterface $entity 削除されたコンテンツ
+     * @param \ArrayObject<int, mixed> $options 削除オプション
+     * @return void
+     */
+    public function afterDelete(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    {
+        (new ContentImageService($this->getConnection()))->deleteForContent((int)$entity->get('id'));
     }
 
     /**

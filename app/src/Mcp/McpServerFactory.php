@@ -10,17 +10,50 @@ declare(strict_types=1);
 
 namespace App\Mcp;
 
+use App\Mcp\Tool\AssignGroupCourseTool;
+use App\Mcp\Tool\AssignGroupUserTool;
+use App\Mcp\Tool\AssignUserCourseTool;
+use App\Mcp\Tool\ChangeUserPasswordTool;
+use App\Mcp\Tool\CopyContentTool;
 use App\Mcp\Tool\CreateContentTool;
+use App\Mcp\Tool\CreateCourseTool;
+use App\Mcp\Tool\CreateGroupTool;
+use App\Mcp\Tool\CreateRecordTool;
 use App\Mcp\Tool\CreateTestQuestionTool;
+use App\Mcp\Tool\CreateUserTool;
+use App\Mcp\Tool\DeleteContentTool;
+use App\Mcp\Tool\DeleteCourseTool;
+use App\Mcp\Tool\DeleteGroupTool;
+use App\Mcp\Tool\DeleteTestQuestionTool;
+use App\Mcp\Tool\DeleteUserTool;
 use App\Mcp\Tool\GetContentHtmlTool;
 use App\Mcp\Tool\GetContentTool;
 use App\Mcp\Tool\GetCourseTool;
+use App\Mcp\Tool\GetGroupTool;
+use App\Mcp\Tool\GetRecordTool;
+use App\Mcp\Tool\GetTestQuestionTool;
 use App\Mcp\Tool\GetUserProfileTool;
+use App\Mcp\Tool\GetUserTool;
 use App\Mcp\Tool\ListContentsTool;
 use App\Mcp\Tool\ListCoursesTool;
+use App\Mcp\Tool\ListEnqueteQuestionsTool;
+use App\Mcp\Tool\ListGroupCoursesTool;
+use App\Mcp\Tool\ListGroupsTool;
+use App\Mcp\Tool\ListGroupUsersTool;
 use App\Mcp\Tool\ListRecordsTool;
+use App\Mcp\Tool\ListTestQuestionsTool;
+use App\Mcp\Tool\ListUserCoursesTool;
+use App\Mcp\Tool\ListUsersTool;
+use App\Mcp\Tool\ReorderContentsTool;
+use App\Mcp\Tool\UnassignGroupCourseTool;
+use App\Mcp\Tool\UnassignGroupUserTool;
+use App\Mcp\Tool\UnassignUserCourseTool;
 use App\Mcp\Tool\UpdateContentTool;
+use App\Mcp\Tool\UpdateCourseTool;
+use App\Mcp\Tool\UpdateGroupTool;
 use App\Mcp\Tool\UpdateTestQuestionTool;
+use App\Mcp\Tool\UpdateUserTool;
+use App\Mcp\Tool\UploadImageTool;
 use App\Service\AccessControlService;
 use Mcp\Server;
 use Mcp\Server\Session\FileSessionStore;
@@ -111,6 +144,71 @@ class McpServerFactory
                 description: 'Get a user profile. Defaults to the authenticated user; '
                     . 'staff can query any user by user_id.',
             )
+            // --- 参照ツール（Phase 7） ---
+            ->addTool(
+                [new ListUsersTool($accessControl), '__invoke'],
+                name: 'list_users',
+                description: 'List users with pagination. Staff can filter by username/name/role; '
+                    . 'non-staff users only see their own record. Password is never returned.',
+            )
+            ->addTool(
+                [new GetUserTool($accessControl), '__invoke'],
+                name: 'get_user',
+                description: 'Get a user profile by user_id. Staff can query any user; '
+                    . 'non-staff users can only query themselves. Password is never returned.',
+            )
+            ->addTool(
+                [new ListGroupsTool($accessControl), '__invoke'],
+                name: 'list_groups',
+                description: 'List groups with pagination. Staff see all groups; '
+                    . 'non-staff users only see the groups they belong to.',
+            )
+            ->addTool(
+                [new GetGroupTool($accessControl), '__invoke'],
+                name: 'get_group',
+                description: 'Get group details. Non-staff users can only view groups they belong to.',
+            )
+            ->addTool(
+                [new ListGroupUsersTool($accessControl), '__invoke'],
+                name: 'list_group_users',
+                description: 'List users of a group with pagination. '
+                    . 'Non-staff users can only list groups they belong to.',
+            )
+            ->addTool(
+                [new ListGroupCoursesTool($accessControl), '__invoke'],
+                name: 'list_group_courses',
+                description: 'List courses assigned to a group with pagination. '
+                    . 'Non-staff users can only list groups they belong to.',
+            )
+            ->addTool(
+                [new ListUserCoursesTool($accessControl), '__invoke'],
+                name: 'list_user_courses',
+                description: 'List courses assigned to a user with pagination. '
+                    . 'Non-staff users can only list their own courses.',
+            )
+            ->addTool(
+                [new GetRecordTool($accessControl), '__invoke'],
+                name: 'get_record',
+                description: 'Get a learning record by record_id. '
+                    . 'Non-staff users can only view their own records.',
+            )
+            ->addTool(
+                [new ListTestQuestionsTool($accessControl), '__invoke'],
+                name: 'list_test_questions',
+                description: 'List test questions of a content (staff only, course membership required). '
+                    . 'Includes options and correct answers.',
+            )
+            ->addTool(
+                [new GetTestQuestionTool($accessControl), '__invoke'],
+                name: 'get_test_question',
+                description: 'Get a test question by question_id (staff only, course membership required). '
+                    . 'Includes options and correct answers.',
+            )
+            ->addTool(
+                [new ListEnqueteQuestionsTool($accessControl), '__invoke'],
+                name: 'list_enquete_questions',
+                description: 'List enquete questions of a content (staff only, course membership required).',
+            )
             // --- Write ツール（Phase 3） ---
             ->addTool(
                 [new CreateContentTool($accessControl), '__invoke'],
@@ -135,6 +233,133 @@ class McpServerFactory
                 name: 'update_test_question',
                 description: 'Update fields of an existing test question (staff only, course membership required). '
                     . 'Only provided fields are changed. options/correct are arrays.',
+            )
+            // --- 画像ツール（Phase 4） ---
+            ->addTool(
+                [new UploadImageTool($accessControl), '__invoke'],
+                name: 'upload_image',
+                description: 'Upload an image and return its public URL. Staff only. '
+                    . 'Use the returned url in Markdown: ![alt](url). '
+                    . 'Allowed: png, gif, jpg, jpeg; max upload_image_maxsize.',
+            )
+            // --- コンテンツ・履歴の管理ツール（Phase 5） ---
+            ->addTool(
+                [new DeleteContentTool($accessControl), '__invoke'],
+                name: 'delete_content',
+                description: 'Delete a content (staff only, course membership required). '
+                    . 'Related test questions are also deleted.',
+            )
+            ->addTool(
+                [new ReorderContentsTool($accessControl), '__invoke'],
+                name: 'reorder_contents',
+                description: 'Reorder contents in a course (staff only, course membership required). '
+                    . 'content_ids must list every content of the course in the desired order.',
+            )
+            ->addTool(
+                [new CopyContentTool($accessControl), '__invoke'],
+                name: 'copy_content',
+                description: 'Copy a content and its test questions (staff only, course membership required). '
+                    . 'The copy is created as a draft (status=0) with "の複製" appended to the title.',
+            )
+            ->addTool(
+                [new DeleteTestQuestionTool($accessControl), '__invoke'],
+                name: 'delete_test_question',
+                description: 'Delete a test question (staff only, course membership required).',
+            )
+            ->addTool(
+                [new CreateRecordTool($accessControl), '__invoke'],
+                name: 'create_record',
+                description: 'Record learning progress for the authenticated user (non-test content only). '
+                    . 'Access to the course is required; unpublished content can only be recorded by admins.',
+            )
+            // --- コース・ユーザ・グループの管理ツール（Phase 6） ---
+            ->addTool(
+                [new CreateCourseTool($accessControl), '__invoke'],
+                name: 'create_course',
+                description: 'Create a course (admin or manager only). '
+                    . 'sort_no is auto-assigned when omitted.',
+            )
+            ->addTool(
+                [new UpdateCourseTool($accessControl), '__invoke'],
+                name: 'update_course',
+                description: 'Update fields of an existing course (admin or manager only). '
+                    . 'Only the provided fields are changed.',
+            )
+            ->addTool(
+                [new DeleteCourseTool($accessControl), '__invoke'],
+                name: 'delete_course',
+                description: 'Delete a course and its contents (admin or manager only).',
+            )
+            ->addTool(
+                [new CreateUserTool($accessControl), '__invoke'],
+                name: 'create_user',
+                description: 'Create a user (admin or manager only). '
+                    . 'role defaults to the schema default; password is hashed by the model.',
+            )
+            ->addTool(
+                [new UpdateUserTool($accessControl), '__invoke'],
+                name: 'update_user',
+                description: 'Update fields of an existing user (admin or manager only). '
+                    . 'Administrator protection rules are enforced (no self role change, '
+                    . 'no self deactivation, no deactivation of the last active administrator).',
+            )
+            ->addTool(
+                [new ChangeUserPasswordTool($accessControl), '__invoke'],
+                name: 'change_user_password',
+                description: 'Change a user password and revoke all of that user\'s tokens '
+                    . '(admin or manager only). Administrators can only be modified by administrators.',
+            )
+            ->addTool(
+                [new DeleteUserTool($accessControl), '__invoke'],
+                name: 'delete_user',
+                description: 'Delete a user (admin or manager only). You cannot delete your own account.',
+            )
+            ->addTool(
+                [new AssignUserCourseTool($accessControl), '__invoke'],
+                name: 'assign_user_course',
+                description: 'Assign a course to a user (admin or manager only). Idempotent.',
+            )
+            ->addTool(
+                [new UnassignUserCourseTool($accessControl), '__invoke'],
+                name: 'unassign_user_course',
+                description: 'Remove a course assignment from a user (admin or manager only).',
+            )
+            // --- グループ管理ツール（Phase 6） ---
+            ->addTool(
+                [new CreateGroupTool($accessControl), '__invoke'],
+                name: 'create_group',
+                description: 'Create a group (admin or manager only).',
+            )
+            ->addTool(
+                [new UpdateGroupTool($accessControl), '__invoke'],
+                name: 'update_group',
+                description: 'Update fields of an existing group (admin or manager only). '
+                    . 'Only the provided fields are changed.',
+            )
+            ->addTool(
+                [new DeleteGroupTool($accessControl), '__invoke'],
+                name: 'delete_group',
+                description: 'Delete a group and its user/course assignments (admin or manager only).',
+            )
+            ->addTool(
+                [new AssignGroupUserTool($accessControl), '__invoke'],
+                name: 'assign_group_user',
+                description: 'Assign a user to a group (admin or manager only). Idempotent.',
+            )
+            ->addTool(
+                [new UnassignGroupUserTool($accessControl), '__invoke'],
+                name: 'unassign_group_user',
+                description: 'Remove a user from a group (admin or manager only).',
+            )
+            ->addTool(
+                [new AssignGroupCourseTool($accessControl), '__invoke'],
+                name: 'assign_group_course',
+                description: 'Assign a course to a group (admin or manager only). Idempotent.',
+            )
+            ->addTool(
+                [new UnassignGroupCourseTool($accessControl), '__invoke'],
+                name: 'unassign_group_course',
+                description: 'Remove a course assignment from a group (admin or manager only).',
             )
             ->build();
     }

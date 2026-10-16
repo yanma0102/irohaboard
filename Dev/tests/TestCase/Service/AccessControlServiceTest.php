@@ -139,6 +139,31 @@ class AccessControlServiceTest extends TestCase
     }
 
     // ----------------------------------------------------------------
+    // isManager
+    // ----------------------------------------------------------------
+
+    /**
+     * admin / manager はマネージャ扱い
+     */
+    public function testIsManagerRoles(): void
+    {
+        foreach (['admin', 'manager'] as $role) {
+            $this->assertTrue($this->accessControl->isManager($role), "{$role} はマネージャ");
+        }
+    }
+
+    /**
+     * スタッフでも editor / teacher はマネージャではない
+     */
+    public function testIsManagerStaffWithoutManagerRole(): void
+    {
+        $this->assertFalse($this->accessControl->isManager('editor'));
+        $this->assertFalse($this->accessControl->isManager('teacher'));
+        $this->assertFalse($this->accessControl->isManager('user'));
+        $this->assertFalse($this->accessControl->isManager(''));
+    }
+
+    // ----------------------------------------------------------------
     // accessibleCourseIds
     // ----------------------------------------------------------------
 

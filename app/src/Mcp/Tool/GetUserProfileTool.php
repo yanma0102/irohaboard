@@ -35,7 +35,7 @@ class GetUserProfileTool
      * 他のユーザを参照する場合はスタッフのみ。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int|null $userId 参照先ユーザID（省略時は本人）
+     * @param int|null $user_id 参照先ユーザID（省略時は本人）
      * @return array<string, mixed>
      */
     public function __invoke(RequestContext $context, ?int $user_id = null): array

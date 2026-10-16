@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Service\ContentImageService;
 use Cake\ORM\Query;
 use Cake\Validation\Validator;
 
@@ -146,6 +147,9 @@ class CoursesTable extends AppTable
             'DELETE FROM ib_contents WHERE course_id = :course_id',
             ['course_id' => $courseId],
         );
+
+        // 画像参照の削除
+        (new ContentImageService($connection))->deleteForCourse($courseId);
 
         // コースの削除
         $connection->execute(

@@ -24,13 +24,14 @@ class MigrationVerificationTest extends TestCase
     }
 
     /**
-     * 全 16 テーブルが存在することを確認（B-3）
+     * 全 17 テーブルが存在することを確認（B-3）
      */
     public function testAllTablesExist(): void
     {
         $expectedTables = [
             'ib_cake_sessions',
             'ib_config_overrides',
+            'ib_content_images',
             'ib_contents',
             'ib_contents_questions',
             'ib_courses',
@@ -111,6 +112,16 @@ class MigrationVerificationTest extends TestCase
             'kind', 'body', 'timelimit', 'pass_rate', 'question_count',
             'wrong_mode', 'status', 'opened', 'created', 'modified',
             'deleted', 'sort_no', 'comment',
+        ]);
+    }
+
+    /**
+     * ib_content_images テーブルのカラム構造を確認
+     */
+    public function testContentImagesTableColumns(): void
+    {
+        $this->assertTableHasColumns('ib_content_images', [
+            'id', 'content_id', 'course_id', 'file_name', 'created',
         ]);
     }
 

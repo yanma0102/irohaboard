@@ -35,7 +35,7 @@ class GetTestQuestionTool
      * テスト問題の詳細を返す（正解・解説を含む）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $questionId テスト問題ID
+     * @param int $question_id テスト問題ID
      * @return array<string, mixed>
      */
     #[McpTool(

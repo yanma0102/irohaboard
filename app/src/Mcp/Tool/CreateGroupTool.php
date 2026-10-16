@@ -83,7 +83,7 @@ class CreateGroupTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         return [

@@ -38,10 +38,10 @@ class UpdateTestQuestionTool
      * options/correct は配列で渡す。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $questionId 問題ID
+     * @param int $question_id 問題ID
      * @param string|null $title タイトル（省略時は変更なし）
      * @param string|null $body 本文（省略時は変更なし）
-     * @param string|null $questionType 問題種別（single / text）
+     * @param string|null $question_type 問題種別（single / text）
      * @param array|null $options 選択肢配列（省略時は変更なし）
      * @param array|null $correct 正解番号配列（省略時は変更なし）
      * @param int|null $score 配点
@@ -165,7 +165,10 @@ class UpdateTestQuestionTool
 
         if (!$questionsTable->save($entity)) {
             throw new ToolCallException(
-                json_encode(['error' => 'Validation failed.', 'details' => $entity->getErrors()], JSON_UNESCAPED_UNICODE),
+                json_encode(
+                    ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
+                    JSON_UNESCAPED_UNICODE,
+                ) ?: 'Validation failed.',
             );
         }
 

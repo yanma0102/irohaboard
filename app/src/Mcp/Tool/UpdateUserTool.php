@@ -40,14 +40,14 @@ class UpdateUserTool
      * - 自分自身の無効化・最後の有効な管理者の無効化は不可（無効化時はトークン失効）
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $userId ユーザID
+     * @param int $user_id ユーザID
      * @param string|null $role ロール
      * @param string|null $name 氏名
      * @param string|null $email メールアドレス
      * @param string|null $comment コメント
      * @param string|null $started 受講開始日
      * @param string|null $ended 受講終了日
-     * @param int|null $isActive 有効フラグ（1=有効, 0=無効）
+     * @param int|null $is_active 有効フラグ（1=有効, 0=無効）
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -151,7 +151,7 @@ class UpdateUserTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         // 無効化時はトークンを全失効する

@@ -36,7 +36,7 @@ class DeleteGroupTool
      * Api\GroupsController::delete() と同じ GroupsTable::deleteGroup() を使う。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $groupId グループID
+     * @param int $group_id グループID
      * @return array<string, mixed>
      */
     #[McpTool(

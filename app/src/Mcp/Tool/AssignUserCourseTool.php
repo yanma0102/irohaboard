@@ -35,8 +35,8 @@ class AssignUserCourseTool
      * ユーザにコースを割り当てる（既に割当済みの場合は何もしない）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $userId ユーザID
-     * @param int $courseId コースID
+     * @param int $user_id ユーザID
+     * @param int $course_id コースID
      * @return array<string, mixed>
      */
     #[McpTool(

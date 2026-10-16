@@ -35,12 +35,12 @@ class UpdateCourseTool
      * コースを部分更新する（指定フィールドのみ変更）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $courseId コースID
+     * @param int $course_id コースID
      * @param string|null $title タイトル
      * @param string|null $introduction 紹介文
      * @param string|null $opened 公開日
      * @param string|null $comment コメント
-     * @param int|null $sortNo 並び順
+     * @param int|null $sort_no 並び順
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -99,7 +99,7 @@ class UpdateCourseTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         return [

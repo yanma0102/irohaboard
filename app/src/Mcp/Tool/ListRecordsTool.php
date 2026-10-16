@@ -35,8 +35,8 @@ class ListRecordsTool
      * 一般ユーザは自分の履歴のみ（API と同一）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int|null $courseId コースID フィルタ（スタッフのみ有効）
-     * @param int|null $userId ユーザID フィルタ（スタッフのみ有効）
+     * @param int|null $course_id コースID フィルタ（スタッフのみ有効）
+     * @param int|null $user_id ユーザID フィルタ（スタッフのみ有効）
      * @param int $page ページ番号（1 以上）
      * @param int $limit 取得件数（1〜200）
      * @return array<string, mixed>

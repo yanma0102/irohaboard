@@ -39,7 +39,7 @@ class UpdateContentTool
      * 指定されたフィールドのみ更新される。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $contentId コンテンツID
+     * @param int $content_id コンテンツID
      * @param string|null $title タイトル（省略時は変更なし）
      * @param string|null $kind コンテンツ種別（省略時は変更なし）
      * @param string|null $body 本文（省略時は変更なし）
@@ -140,7 +140,7 @@ class UpdateContentTool
                 json_encode([
                     'error' => 'Validation failed.',
                     'details' => ['body' => ['allowEmpty' => 'This field cannot be empty']],
-                ], JSON_UNESCAPED_UNICODE),
+                ], JSON_UNESCAPED_UNICODE) ?: 'Validation failed.',
             );
         }
 
@@ -148,7 +148,10 @@ class UpdateContentTool
 
         if (!$contentsTable->save($entity)) {
             throw new ToolCallException(
-                json_encode(['error' => 'Validation failed.', 'details' => $entity->getErrors()], JSON_UNESCAPED_UNICODE),
+                json_encode(
+                    ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
+                    JSON_UNESCAPED_UNICODE,
+                ) ?: 'Validation failed.',
             );
         }
 

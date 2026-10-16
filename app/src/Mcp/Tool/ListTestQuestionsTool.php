@@ -37,7 +37,7 @@ class ListTestQuestionsTool
      * 管理画面 Admin/ContentsQuestionsController::index() と同じ並び。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $contentId コンテンツID
+     * @param int $content_id コンテンツID
      * @param int $page ページ番号（1 以上）
      * @param int $limit 取得件数（1〜200）
      * @return array<string, mixed>

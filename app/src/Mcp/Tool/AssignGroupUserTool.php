@@ -35,8 +35,8 @@ class AssignGroupUserTool
      * グループにユーザを割り当てる（既に所属している場合は何もしない）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $groupId グループID
-     * @param int $userId ユーザID
+     * @param int $group_id グループID
+     * @param int $user_id ユーザID
      * @return array<string, mixed>
      */
     #[McpTool(

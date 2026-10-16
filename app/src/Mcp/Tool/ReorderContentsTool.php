@@ -36,8 +36,8 @@ class ReorderContentsTool
      * 管理画面 Admin/ContentsController::order() と同じ ContentsTable::setOrder() を使う。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $courseId コースID
-     * @param array<int, mixed> $contentIds 並び順に並べたコンテンツID
+     * @param int $course_id コースID
+     * @param array<int, mixed> $content_ids 並び順に並べたコンテンツID
      * @return array<string, mixed>
      */
     #[McpTool(

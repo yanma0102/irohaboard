@@ -38,7 +38,7 @@ class GetContentTool
      * HTML 表示用途は get_content_html を参照。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $contentId コンテンツID
+     * @param int $content_id コンテンツID
      * @return array<string, mixed>
      */
     public function __invoke(RequestContext $context, int $content_id): array

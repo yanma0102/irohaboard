@@ -39,7 +39,7 @@ class CreateContentTool
      * kind=markdown の場合、body は Markdown 原文。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $courseId コースID
+     * @param int $course_id コースID
      * @param string $title タイトル
      * @param string $kind コンテンツ種別（content_kind 設定キー）
      * @param string $body 本文（kind=markdown/html は必須）
@@ -104,7 +104,10 @@ class CreateContentTool
 
         if (!$contentsTable->save($entity)) {
             throw new ToolCallException(
-                json_encode(['error' => 'Validation failed.', 'details' => $entity->getErrors()], JSON_UNESCAPED_UNICODE),
+                json_encode(
+                    ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
+                    JSON_UNESCAPED_UNICODE,
+                ) ?: 'Validation failed.',
             );
         }
 

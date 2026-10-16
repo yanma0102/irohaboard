@@ -1,0 +1,3613 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^PHPDoc tag @extends contains generic type Cake\\Http\\BaseApplication\<App\\Application\> but class Cake\\Http\\BaseApplication is not generic\.$#'
+			identifier: generics.notGeneric
+			count: 1
+			path: src/Application.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\ConfigsController\:\:beforeFilter\(\) has parameter \$event with generic interface Cake\\Event\\EventInterface but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Controller/Admin/ConfigsController.php
+
+		-
+			message: '#^Parameter \#1 \$string of method Cake\\Http\\Response\:\:withStringBody\(\) expects string\|null, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/ConfigsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$correct\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$explain\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$options\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getContentRecord\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getNextSortNo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:setOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^PHPDoc tag @return with type string is incompatible with native type Cake\\Http\\Response\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Parameter \#1 \$path of function pathinfo expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between int and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Controller/Admin/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$content_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getNextSortNo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:setOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/ContentsQuestionsController.php
+
+		-
+			message: '#^PHPDoc tag @return with type string is incompatible with native type Cake\\Http\\Response\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Controller/Admin/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/CoursesController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:setOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/CoursesController.php
+
+		-
+			message: '#^PHPDoc tag @return with type string is incompatible with native type Cake\\Http\\Response\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Controller/Admin/CoursesController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$content_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/EnquetesQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/EnquetesQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getNextSortNo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/EnquetesQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:setOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/EnquetesQuestionsController.php
+
+		-
+			message: '#^PHPDoc tag @return with type string is incompatible with native type Cake\\Http\\Response\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Controller/Admin/EnquetesQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/InfosController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$answer\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$contents_question\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$created\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$is_correct\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$is_passed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$pass_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$record\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$study_sec\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$understanding\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getUserIdByGroupID\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\RecordsController\:\:_csvFputcsv\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\RecordsController\:\:_exportCsv\(\) has parameter \$conditions with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\RecordsController\:\:_exportCsvDetail\(\) has parameter \$conditions with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fputcsv expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function rewind expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function stream_get_contents expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/RecordsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getSettings\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/SettingsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:setSettings\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/SettingsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$courses\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$groups\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$last_logined\.$#'
+			identifier: property.notFound
+			count: 4
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$password\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:authenticateRememberCookie\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:deleteUserRecords\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getUserIdByGroupID\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:issueRememberToken\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeByCookie\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:toggleActive\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:_csvFputcsv\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:_exportCsv\(\) has parameter \$conditions with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:clear\(\) should return Cake\\Http\\Response but returns Cake\\Http\\Response\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:delete\(\) should return Cake\\Http\\Response but returns Cake\\Http\\Response\|null\.$#'
+			identifier: return.type
+			count: 2
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:logout\(\) should return Cake\\Http\\Response but returns Cake\\Http\\Response\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:syncLdapUser\(\) has parameter \$identity with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:syncLdapUser\(\) should return App\\Model\\Entity\\User\|false but returns Cake\\Datasource\\EntityInterface\.$#'
+			identifier: return.type
+			count: 2
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Admin\\UsersController\:\:toggleActive\(\) should return Cake\\Http\\Response but returns Cake\\Http\\Response\|null\.$#'
+			identifier: return.type
+			count: 4
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Parameter \#1 \$list of static method App\\Utility\\Utils\:\:getIdByTitle\(\) expects array, Cake\\ORM\\Query\\SelectQuery\<Cake\\Datasource\\EntityInterface\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fputcsv expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function rewind expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function stream_get_contents expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Parameter \#2 \$title of static method App\\Utility\\Utils\:\:getIdByTitle\(\) expects array, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Variable \$user in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: src/Controller/Admin/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\ApiException\:\:__construct\(\) has parameter \$errors with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Controller/Api/ApiException.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\ApiException\:\:getErrorPayload\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/ApiException.php
+
+		-
+			message: '#^Property App\\Controller\\Api\\ApiException\:\:\$errorPayload type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/ApiException.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$password\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:issueApiToken\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeApiToken\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Parameter \#2 \$timestamp of function date expects int\|null, int\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:authenticateApiToken\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\BaseController\:\:beforeFilter\(\) has parameter \$event with generic interface Cake\\Event\\EventInterface but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\BaseController\:\:input\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\BaseController\:\:okList\(\) has parameter \$meta with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\BaseController\:\:okList\(\) has parameter \$rows with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\BaseController\:\:paginatedList\(\) has parameter \$findOptions with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\BaseController\:\:paginatedList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\BaseController\:\:respond\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^PHPDoc tag @return with type void is incompatible with native type Cake\\Http\\Response\|null\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Parameter \#1 \$string of method Cake\\Http\\Response\:\:withStringBody\(\) expects string\|null, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Property App\\Controller\\Api\\BaseController\:\:\$apiUser type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/Api/BaseController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/Api/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Api/ContentsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getNextSortNo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/ContentsController.php
+
+		-
+			message: '#^Cannot unset offset ''user_id'' on non\-empty\-array\{course_id\?\: mixed, title\?\: mixed, kind\?\: mixed, body\?\: mixed, url\?\: mixed, file_name\?\: mixed, status\?\: mixed, sort_no\?\: mixed, \.\.\.\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: src/Controller/Api/ContentsController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Controller/Api/ContentsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:deleteCourse\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/CoursesController.php
+
+		-
+			message: '#^Cannot access property \$max_sort_no on Cake\\Datasource\\EntityInterface\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: src/Controller/Api/CoursesController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Controller/Api/CoursesController.php
+
+		-
+			message: '#^PHPDoc tag @return with type Cake\\Http\\Response is incompatible with native type never\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Controller/Api/ErrorsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:deleteGroup\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/GroupsController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: src/Controller/Api/GroupsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Api/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/Api/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllApiForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/UsersController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Controller/Api/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/AppController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getSettings\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/AppController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: src/Controller/AppController.php
+
+		-
+			message: '#^Method App\\Controller\\AppController\:\:beforeFilter\(\) has parameter \$event with generic interface Cake\\Event\\EventInterface but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Controller/AppController.php
+
+		-
+			message: '#^Parameter \#1 \$path of method Cake\\Http\\Cookie\\Cookie\:\:withPath\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/AppController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Controller\\Controller\:\:\$Authentication\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/Component/RoleComponent.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/ContentsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getContentRecord\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/ContentsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:hasRight\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: src/Controller/ContentsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$correct\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$pass_rate\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:hasRight\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Method App\\Controller\\ContentsQuestionsController\:\:isMultiCorrect\(\) has parameter \$answers with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Method App\\Controller\\ContentsQuestionsController\:\:isMultiCorrect\(\) has parameter \$corrects with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between array and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Controller/ContentsQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/EnquetesQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/EnquetesQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/EnquetesQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/EnquetesQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/EnquetesQuestionsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/EnquetesQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:hasRight\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/EnquetesQuestionsController.php
+
+		-
+			message: '#^PHPDoc tag @return with type void is incompatible with native type Cake\\Http\\Response\|null\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Controller/ErrorController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getInfoOption\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/InfosController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:hasRight\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/InfosController.php
+
+		-
+			message: '#^Access to an undefined property App\\Controller\\InstallController\:\:\$Authentication\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/InstallController.php
+
+		-
+			message: '#^Cannot call method execute\(\) on Cake\\Database\\Connection\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Controller/InstallController.php
+
+		-
+			message: '#^Method App\\Controller\\InstallController\:\:beforeFilter\(\) has parameter \$event with generic interface Cake\\Event\\EventInterface but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Controller/InstallController.php
+
+		-
+			message: '#^Parameter \#2 \$string of function explode expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/InstallController.php
+
+		-
+			message: '#^Property App\\Controller\\InstallController\:\:\$db \(Cake\\Database\\Connection\|null\) does not accept Cake\\Datasource\\ConnectionInterface\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Controller/InstallController.php
+
+		-
+			message: '#^Parameter \#1 \$logsTable of class App\\Mcp\\McpRateLimitMiddleware constructor expects App\\Model\\Table\\LogsTable, Cake\\ORM\\Table given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/McpController.php
+
+		-
+			message: '#^Parameter \#1 \$userTokensTable of class App\\Mcp\\IrohaTokenValidator constructor expects App\\Model\\Table\\UserTokensTable, Cake\\ORM\\Table given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/McpController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/RecordsController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:hasRight\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/RecordsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Controller\\UpdateController\:\:\$Authentication\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UpdateController.php
+
+		-
+			message: '#^Cannot call method execute\(\) on Cake\\Database\\Connection\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Controller/UpdateController.php
+
+		-
+			message: '#^Method App\\Controller\\UpdateController\:\:beforeFilter\(\) has parameter \$event with generic interface Cake\\Event\\EventInterface but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Controller/UpdateController.php
+
+		-
+			message: '#^Parameter \#2 \$string of function explode expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/UpdateController.php
+
+		-
+			message: '#^Property App\\Controller\\UpdateController\:\:\$db \(Cake\\Database\\Connection\|null\) does not accept Cake\\Datasource\\ConnectionInterface\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Controller/UpdateController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$courses\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$groups\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$last_logined\.$#'
+			identifier: property.notFound
+			count: 4
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$password\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:authenticateRememberCookie\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:issueRememberToken\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeByCookie\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\UsersController\:\:_exportCsv\(\) has parameter \$conditions with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\UsersController\:\:index\(\) should return Cake\\Http\\Response but returns Cake\\Http\\Response\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\UsersController\:\:logout\(\) should return Cake\\Http\\Response but returns Cake\\Http\\Response\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\UsersController\:\:syncLdapUser\(\) has parameter \$identity with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Method App\\Controller\\UsersController\:\:syncLdapUser\(\) should return App\\Model\\Entity\\User\|false but returns Cake\\Datasource\\EntityInterface\.$#'
+			identifier: return.type
+			count: 2
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fputcsv expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Controller/UsersController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$setting_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Controller/UsersCoursesController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getCourseRecord\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/UsersCoursesController.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getInfos\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/UsersCoursesController.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/ChangeUserPasswordTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllApiForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/ChangeUserPasswordTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/ChangeUserPasswordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$correct\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$explain\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$options\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getNextSortNo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/CopyContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$sort_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateContentTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getNextSortNo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$introduction\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$opened\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$sort_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Cannot access property \$max_sort_no on Cake\\Datasource\\EntityInterface\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: src/Mcp/Tool/CreateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$content_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$is_complete\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$study_sec\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$understanding\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$content_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$explain\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$sort_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getNextSortNo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/CreateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/DeleteContentTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:deleteCourse\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/DeleteCourseTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:deleteGroup\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/DeleteGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$content_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/DeleteTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/DeleteTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/DeleteTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/GetContentHtmlTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentHtmlTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/GetContentHtmlTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentHtmlTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentHtmlTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$created\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$modified\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$sort_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetRecordTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$content_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/GetTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/ListEnqueteQuestionsTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/ListTestQuestionsTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:setOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/ReorderContentsTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/UpdateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Mcp/Tool/UpdateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$sort_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateContentTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$introduction\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$opened\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$sort_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateCourseTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateGroupTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$content_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$correct\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$explain\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$kind\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$options\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$question_type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$sort_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Method App\\Mcp\\Tool\\UpdateTestQuestionTool\:\:__invoke\(\) has parameter \$correct with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Method App\\Mcp\\Tool\\UpdateTestQuestionTool\:\:__invoke\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Mcp/Tool/UpdateTestQuestionTool.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Mcp/Tool/UpdateUserTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllApiForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateUserTool.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:revokeAllForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Mcp/Tool/UpdateUserTool.php
+
+		-
+			message: '#^Method App\\Middleware\\ApiErrorMiddleware\:\:buildJsonResponse\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Middleware/ApiErrorMiddleware.php
+
+		-
+			message: '#^Parameter \#1 \$string of method Cake\\Http\\Response\:\:withStringBody\(\) expects string\|null, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Middleware/ApiErrorMiddleware.php
+
+		-
+			message: '#^Parameter \#1 \$string of method Cake\\Http\\Response\:\:withStringBody\(\) expects string\|null, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Middleware/ApiRateLimitMiddleware.php
+
+		-
+			message: '#^Access to an undefined property App\\Model\\Entity\\User\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Entity/User.php
+
+		-
+			message: '#^Access to an undefined property App\\Model\\Entity\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Model/Entity/User.php
+
+		-
+			message: '#^Method App\\Model\\Table\\AppTable\:\:alphaNumericMB\(\) has parameter \$check with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/AppTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$config_key\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$config_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ConfigOverridesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ConfigOverridesTable\:\:deleteByCategory\(\) has parameter \$keys with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ConfigOverridesTable\:\:getOverrides\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\ConfigOverridesTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\ConfigOverridesTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ConfigOverridesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsQuestionsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsQuestionsTable\:\:findOrdered\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsQuestionsTable\:\:findOrdered\(\) has parameter \$query with generic class Cake\\ORM\\Query\\SelectQuery but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsQuestionsTable\:\:findOrdered\(\) return type with generic class Cake\\ORM\\Query\\SelectQuery does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsQuestionsTable\:\:setOrder\(\) has parameter \$idList with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\ContentsQuestionsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\ContentsQuestionsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\ContentsQuestionsTable\:\:\$Contents contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/ContentsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\ContentsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsTable\:\:findOrdered\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsTable\:\:findOrdered\(\) has parameter \$query with generic class Cake\\ORM\\Query\\SelectQuery but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsTable\:\:findOrdered\(\) return type with generic class Cake\\ORM\\Query\\SelectQuery does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsTable\:\:getContentRecord\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\ContentsTable\:\:setOrder\(\) has parameter \$idList with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\ContentsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\ContentsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\ContentsTable\:\:\$Courses contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\ContentsTable\:\:\$Users contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/ContentsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\CoursesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\CoursesTable\:\:findOrdered\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\CoursesTable\:\:findOrdered\(\) has parameter \$query with generic class Cake\\ORM\\Query\\SelectQuery but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\CoursesTable\:\:findOrdered\(\) return type with generic class Cake\\ORM\\Query\\SelectQuery does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\CoursesTable\:\:setOrder\(\) has parameter \$idList with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\CoursesTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\CoursesTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\CoursesTable\:\:\$Contents contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/CoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsCoursesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\GroupsCoursesTable\:\:deleteMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\GroupsCoursesTable\:\:deleteManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\GroupsCoursesTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\GroupsCoursesTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\GroupsCoursesTable\:\:\$Courses contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\GroupsCoursesTable\:\:\$Groups contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/GroupsCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\GroupsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\GroupsTable\:\:findOrdered\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\GroupsTable\:\:findOrdered\(\) has parameter \$query with generic class Cake\\ORM\\Query\\SelectQuery but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\GroupsTable\:\:findOrdered\(\) return type with generic class Cake\\ORM\\Query\\SelectQuery does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\GroupsTable\:\:getUserIdByGroupID\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\GroupsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\GroupsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\GroupsTable\:\:\$Courses contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/GroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosGroupsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\InfosGroupsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\InfosGroupsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/InfosGroupsTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\InfosTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\InfosTable\:\:getInfoIdList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\InfosTable\:\:getInfoOption\(\) return type with generic class Cake\\ORM\\Query\\SelectQuery does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\InfosTable\:\:getInfos\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\InfosTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\InfosTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\InfosTable\:\:\$Groups contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/InfosTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\LogsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\LogsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\LogsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\LogsTable\:\:\$Users contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/LogsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsQuestionsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\RecordsQuestionsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\RecordsQuestionsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\RecordsQuestionsTable\:\:\$ContentsQuestions contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\RecordsQuestionsTable\:\:\$Records contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/RecordsQuestionsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\RecordsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\RecordsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\RecordsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\RecordsTable\:\:\$Contents contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\RecordsTable\:\:\$Courses contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\RecordsTable\:\:\$RecordsQuestions contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\RecordsTable\:\:\$Users contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/RecordsTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$setting_key\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$setting_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\SettingsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\SettingsTable\:\:getSettings\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\SettingsTable\:\:setSettings\(\) has parameter \$settings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\SettingsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\SettingsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/SettingsTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$last_used\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$revoked\.$#'
+			identifier: property.notFound
+			count: 4
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$token_hash\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UserTokensTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UserTokensTable\:\:authenticateApiToken\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UserTokensTable\:\:authenticateRememberCookie\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UserTokensTable\:\:parseCookie\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UserTokensTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UserTokensTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Parameter \#2 \$timestamp of function date expects int\|null, int\|false given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Model/Table/UserTokensTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersCoursesTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersCoursesTable\:\:getCourseRecord\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UsersCoursesTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UsersCoursesTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\UsersCoursesTable\:\:\$Courses contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\UsersCoursesTable\:\:\$Users contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/UsersCoursesTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersGroupsTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UsersGroupsTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UsersGroupsTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\UsersGroupsTable\:\:\$Groups contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\UsersGroupsTable\:\:\$Users contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/UsersGroupsTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Model\\Entity\\User\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Call to an undefined method Cake\\Datasource\\RepositoryInterface\:\:revokeAllApiForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Call to an undefined method Cake\\Datasource\\RepositoryInterface\:\:revokeAllForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method newEntities\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method newEntities\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method newEntity\(\) parameter \#1 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method newEntity\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method patchEntities\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method patchEntities\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method patchEntity\(\) parameter \#2 \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Class App\\Model\\Table\\UsersTable has PHPDoc tag @method for method patchEntity\(\) parameter \#3 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:beforeSave\(\) has parameter \$event with generic interface Cake\\Event\\EventInterface but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:beforeSave\(\) has parameter \$options with generic class ArrayObject but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:findAuth\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:findAuth\(\) has parameter \$query with generic class Cake\\ORM\\Query\\SelectQuery but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:findAuth\(\) return type with generic class Cake\\ORM\\Query\\SelectQuery does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:findOrdered\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:findOrdered\(\) has parameter \$query with generic class Cake\\ORM\\Query\\SelectQuery but does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Method App\\Model\\Table\\UsersTable\:\:findOrdered\(\) return type with generic class Cake\\ORM\\Query\\SelectQuery does not specify its types\: TSubject$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UsersTable\:\:saveMany\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^PHPDoc tag @method for method App\\Model\\Table\\UsersTable\:\:saveManyOrFail\(\) return type contains generic interface Cake\\Datasource\\ResultSetInterface but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\UsersTable\:\:\$Courses contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^PHPDoc tag @property for property App\\Model\\Table\\UsersTable\:\:\$Groups contains unresolvable type\.$#'
+			identifier: propertyTag.unresolvableType
+			count: 1
+			path: src/Model/Table/UsersTable.php
+
+		-
+			message: '#^Call to an undefined method Cake\\Datasource\\ConnectionInterface\:\:execute\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Service/AccessControlService.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:deleteByCategory\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:deleteOverride\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:getOverrides\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:saveOverride\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:categories\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:normalize\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:normalize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:saveCategory\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:schema\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:schema\(\) should return array but returns array\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:validate\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\AppConfigService\:\:validate\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Property App\\Service\\AppConfigService\:\:\$categoriesCache type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Property App\\Service\\AppConfigService\:\:\$schemaCache type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/AppConfigService.php
+
+		-
+			message: '#^Method App\\Service\\LdapAuthService\:\:testConnection\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/LdapAuthService.php
+
+		-
+			message: '#^Method App\\Service\\LdapAuthService\:\:testConnection\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/LdapAuthService.php
+
+		-
+			message: '#^Parameter \#2 \$result of function ldap_get_entries expects LDAP\\Result, array\|LDAP\\Result given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Service/LdapAuthService.php
+
+		-
+			message: '#^Method App\\Utility\\Utils\:\:getCsvData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Method App\\Utility\\Utils\:\:getIdByTitle\(\) has parameter \$list with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Method App\\Utility\\Utils\:\:getIdByTitle\(\) has parameter \$title with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Method App\\Utility\\Utils\:\:getIdByTitle\(\) should return string but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Method App\\Utility\\Utils\:\:getKeyByValue\(\) has parameter \$value with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Method App\\Utility\\Utils\:\:getKeyByValue\(\) should return string but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Offset ''uri'' might not exist on array\{timed_out\: bool, blocked\: bool, eof\: bool, unread_bytes\: int, stream_type\: string, wrapper_type\: string, wrapper_data\: mixed, mode\: string, \.\.\.\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Parameter \#1 \$string of function mb_convert_encoding expects array\|string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Utility/Utils.php
+
+		-
+			message: '#^Call to an undefined method App\\View\\Helper\\AppFormHelper\:\:_getType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:control\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:create\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:inputDate\(\) has parameter \$additional_options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:inputExp\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:inputRadio\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:inputRadio\(\) should return string but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:searchDate\(\) has parameter \$additional_options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppFormHelper\:\:searchField\(\) has parameter \$additional_options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppFormHelper.php
+
+		-
+			message: '#^Method App\\View\\Helper\\AppHtmlHelper\:\:addCrumb\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppHtmlHelper.php
+
+		-
+			message: '#^Property App\\View\\Helper\\AppHtmlHelper\:\:\$_crumbs type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/View/Helper/AppHtmlHelper.php
+
+		-
+			message: '#^Class App\\View\\Helper\\AppViewHelper extends generic class Cake\\View\\Helper but does not specify its types\: TView$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/View/Helper/AppViewHelper.php
+
+		-
+			message: '#^Class App\\View\\Helper\\MarkdownHelper extends generic class Cake\\View\\Helper but does not specify its types\: TView$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/View/Helper/MarkdownHelper.php

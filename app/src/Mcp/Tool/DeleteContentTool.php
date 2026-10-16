@@ -36,7 +36,7 @@ class DeleteContentTool
      * Api\ContentsController::delete() と同じ物理削除。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $contentId コンテンツID
+     * @param int $content_id コンテンツID
      * @return array<string, mixed>
      */
     #[McpTool(

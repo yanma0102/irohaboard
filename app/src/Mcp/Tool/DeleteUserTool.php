@@ -35,7 +35,7 @@ class DeleteUserTool
      * ユーザを削除する（自分自身は削除不可）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $userId ユーザID
+     * @param int $user_id ユーザID
      * @return array<string, mixed>
      */
     #[McpTool(

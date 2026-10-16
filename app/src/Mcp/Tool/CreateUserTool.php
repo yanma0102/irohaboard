@@ -45,7 +45,7 @@ class CreateUserTool
      * @param string|null $comment コメント
      * @param string|null $started 受講開始日
      * @param string|null $ended 受講終了日
-     * @param int|null $isActive 有効フラグ（1=有効, 0=無効）
+     * @param int|null $is_active 有効フラグ（1=有効, 0=無効）
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -103,7 +103,7 @@ class CreateUserTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         return ['data' => $this->userPayload($entity)];

@@ -35,7 +35,7 @@ class ListGroupUsersTool
      * グループに所属するユーザ一覧を返す（Api\GroupsController::users() と同一）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $groupId グループID
+     * @param int $group_id グループID
      * @param int $page ページ番号（1 以上）
      * @param int $limit 取得件数（1〜200）
      * @return array<string, mixed>

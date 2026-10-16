@@ -36,7 +36,7 @@ class DeleteCourseTool
      * Api\CoursesController::delete() と同じ CoursesTable::deleteCourse() を使う。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $courseId コースID
+     * @param int $course_id コースID
      * @return array<string, mixed>
      */
     #[McpTool(

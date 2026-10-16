@@ -35,7 +35,7 @@ class GetRecordTool
      * 学習記録の詳細を返す。一般ユーザは自分の記録のみ参照できる。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $recordId 学習記録ID
+     * @param int $record_id 学習記録ID
      * @return array<string, mixed>
      */
     #[McpTool(

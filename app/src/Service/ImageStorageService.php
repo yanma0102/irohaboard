@@ -12,7 +12,7 @@ namespace App\Service;
 
 use Cake\Core\Configure;
 use Cake\Routing\Router;
-use Laminas\Diactoros\UploadedFile;
+use Psr\Http\Message\UploadedFileInterface;
 use Throwable;
 
 /**
@@ -44,11 +44,11 @@ class ImageStorageService
     /**
      * アップロードファイルを検証して保存する
      *
-     * @param \Laminas\Diactoros\UploadedFile $file アップロードファイル
+     * @param \Psr\Http\Message\UploadedFileInterface $file アップロードファイル
      * @return array{file_name: string, size: int, mime: string} 保存結果
      * @throws \App\Service\ImageUploadException 検証失敗・保存失敗
      */
-    public function storeFromUploadedFile(UploadedFile $file): array
+    public function storeFromUploadedFile(UploadedFileInterface $file): array
     {
         if ($file->getError() !== UPLOAD_ERR_OK) {
             throw new ImageUploadException(

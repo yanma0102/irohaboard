@@ -36,10 +36,10 @@ class CreateRecordTool
      * Web の RecordsController::add() と同じく is_passed は -1（未採点）で保存する。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $contentId コンテンツID
-     * @param int $studySec 学習時間（秒）
+     * @param int $content_id コンテンツID
+     * @param int $study_sec 学習時間（秒）
      * @param int $understanding 理解度（0〜5）
-     * @param int $isComplete 完了フラグ（0/1）
+     * @param int $is_complete 完了フラグ（0/1）
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -99,7 +99,7 @@ class CreateRecordTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $record->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         return [

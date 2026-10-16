@@ -35,7 +35,7 @@ class UpdateGroupTool
      * グループを部分更新する（指定フィールドのみ変更）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $groupId グループID
+     * @param int $group_id グループID
      * @param string|null $title グループ名
      * @param string|null $comment コメント
      * @param int|null $status 状態
@@ -99,7 +99,7 @@ class UpdateGroupTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         return [

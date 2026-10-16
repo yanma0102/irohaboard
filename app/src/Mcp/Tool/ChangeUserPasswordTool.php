@@ -35,7 +35,7 @@ class ChangeUserPasswordTool
      * 対象ユーザのパスワードを変更し、当該ユーザのトークンを全失効させる。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $userId ユーザID
+     * @param int $user_id ユーザID
      * @param string $password 新しいパスワード
      * @return array<string, mixed>
      */
@@ -75,7 +75,7 @@ class ChangeUserPasswordTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         $userTokensTable = TableRegistry::getTableLocator()->get('UserTokens');

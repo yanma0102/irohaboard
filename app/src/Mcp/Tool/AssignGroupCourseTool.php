@@ -35,8 +35,8 @@ class AssignGroupCourseTool
      * グループにコースを割り当てる（既に割当済みの場合は何もしない）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $groupId グループID
-     * @param int $courseId コースID
+     * @param int $group_id グループID
+     * @param int $course_id コースID
      * @return array<string, mixed>
      */
     #[McpTool(

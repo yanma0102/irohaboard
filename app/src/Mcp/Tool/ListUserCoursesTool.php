@@ -35,7 +35,7 @@ class ListUserCoursesTool
      * ユーザに割り当てられたコース一覧を返す（Api\UsersController::courses() と同一）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $userId ユーザID
+     * @param int $user_id ユーザID
      * @param int $page ページ番号（1 以上）
      * @param int $limit 取得件数（1〜200）
      * @return array<string, mixed>

@@ -35,8 +35,8 @@ class UnassignUserCourseTool
      * ユーザのコース割当を解除する（未割当の場合は deleted=false）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $userId ユーザID
-     * @param int $courseId コースID
+     * @param int $user_id ユーザID
+     * @param int $course_id コースID
      * @return array<string, mixed>
      */
     #[McpTool(

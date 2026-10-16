@@ -39,7 +39,7 @@ class CreateCourseTool
      * @param string|null $introduction 紹介文
      * @param string|null $opened 公開日
      * @param string|null $comment コメント
-     * @param int|null $sortNo 並び順
+     * @param int|null $sort_no 並び順
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -90,7 +90,7 @@ class CreateCourseTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $entity->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         return [

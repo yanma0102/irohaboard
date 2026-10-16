@@ -38,8 +38,8 @@ class CopyContentTool
      * （Admin/ContentsController::copy() と同一）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $contentId 複製元のコンテンツID
-     * @param int|null $targetCourseId 複製先のコースID（省略時は複製元と同じ）
+     * @param int $content_id 複製元のコンテンツID
+     * @param int|null $target_course_id 複製先のコースID（省略時は複製元と同じ）
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -94,7 +94,7 @@ class CopyContentTool
             throw new ToolCallException(json_encode(
                 ['error' => 'Validation failed.', 'details' => $newContent->getErrors()],
                 JSON_UNESCAPED_UNICODE,
-            ));
+            ) ?: 'Validation failed.');
         }
 
         $newContentId = (int)$newContent->id;

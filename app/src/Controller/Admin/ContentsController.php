@@ -377,6 +377,10 @@ class ContentsController extends AppController
         }
 
         $json = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($json === false) {
+            // 応答形式（[url] / [false]）を崩さないためのフェイルセーフ
+            $json = '[false]';
+        }
 
         return $this->response
             ->withType('json')

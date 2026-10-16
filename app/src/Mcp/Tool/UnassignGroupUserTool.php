@@ -35,8 +35,8 @@ class UnassignGroupUserTool
      * グループのユーザ割当を解除する（未所属の場合は deleted=false）。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $groupId グループID
-     * @param int $userId ユーザID
+     * @param int $group_id グループID
+     * @param int $user_id ユーザID
      * @return array<string, mixed>
      */
     #[McpTool(

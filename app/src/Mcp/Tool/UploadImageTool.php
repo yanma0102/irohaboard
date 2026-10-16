@@ -35,8 +35,8 @@ class UploadImageTool
      * base64 画像を保存し、Markdown に埋め込める URL を返す。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $courseId コースID（アクセス権の検証に使用）
-     * @param string $fileName 元ファイル名（拡張子の判定に使用）
+     * @param int $course_id コースID（アクセス権の検証に使用）
+     * @param string $file_name 元ファイル名（拡張子の判定に使用）
      * @param string $data base64 文字列または data URL
      * @param string|null $alt 代替テキスト（省略可）
      * @return array<string, mixed>

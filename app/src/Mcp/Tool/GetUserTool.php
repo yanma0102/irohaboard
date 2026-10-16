@@ -36,7 +36,7 @@ class GetUserTool
      * ユーザ詳細を返す。スタッフは誰でも、一般ユーザは自分のみ参照できる。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $userId ユーザID
+     * @param int $user_id ユーザID
      * @return array<string, mixed>
      */
     #[McpTool(

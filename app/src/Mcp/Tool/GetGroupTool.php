@@ -35,7 +35,7 @@ class GetGroupTool
      * グループ詳細を返す。一般ユーザは所属していないグループを参照できない。
      *
      * @param \Mcp\Server\RequestContext $context リクエストコンテキスト（自動注入）
-     * @param int $groupId グループID
+     * @param int $group_id グループID
      * @return array<string, mixed>
      */
     #[McpTool(

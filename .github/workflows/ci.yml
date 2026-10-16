@@ -60,3 +60,7 @@ jobs:
       - name: Code style (phpcs)
         run: composer cs-check
         continue-on-error: true
+
+      # 既存の指摘は phpstan-baseline.neon に固定済み。新規の指摘のみで失敗する。
+      - name: Static analysis (phpstan)
+        run: composer stan

@@ -12,7 +12,7 @@ They require `curl` and `jq` to be installed on the machine where they are execu
 | Docker app running on `http://localhost:8082` | Target application |
 | `curl` | HTTP requests |
 | `jq` | JSON parsing |
-| Python 3.10+ / Playwright (Chromium) | GUI 操作テスト（`gui-image-upload.py`） |
+| Python 3.10+ / Playwright (Chromium) | GUI 操作テスト（`gui-image-upload.py` / `gui-test-resume.py`） |
 
 ## Environment Variables
 
@@ -99,6 +99,39 @@ BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
 | `API_USER` / `API_PASS` | `admin` / `adminpass` | 管理者ログイン |
 | `COURSE_ID` | `1` | 検証に使うコース ID |
 
+## scripts/gui-test-resume.py
+
+試験のセッション切れ対策（回答の `localStorage` 退避・復元）を実ブラウザで検証する
+GUI 操作テスト（`Dev/Docs/design/16-test-answer-resume.md` §4.2）。PHPUnit では検出できない
+JS / `localStorage` の挙動を検証する。18 チェック。
+
+1. REST API で受講登録（テスト前に未登録だった場合のみ、終了時に解除）
+2. ログイン → テスト画面表示 → 全設問に回答
+3. 回答が出題内容とともに `localStorage` へ退避されること
+4. `context.clear_cookies()` でセッション切れを模擬 → ログイン画面へ遷移すること
+5. 再ログイン後にテスト画面を開くと、同じ出題内容で回答が復元されること
+6. 採点結果画面へ遷移し、元と同じ出題内容が採点されること
+7. 採点後に退避データが削除されること／JS コンソールエラーが無いこと
+
+- 前提: Python 3.10+ / Playwright（`pip install playwright && playwright install chromium`）
+- 採点により学習履歴（`ib_records`）が 1 件作成される（作成された `record_id` を出力する）
+- `USER_ID` のユーザが `COURSE_ID` のコースを受講している必要がある（未登録なら自動登録）
+
+```bash
+python3 Dev/scripts/gui-test-resume.py
+
+BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
+  USER_ID=1 COURSE_ID=1 TEST_CONTENT_ID=7 python3 Dev/scripts/gui-test-resume.py
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BASE_URL` | `http://localhost:8082` | Application base URL |
+| `API_USER` / `API_PASS` | `admin` / `adminpass` | 受験するユーザのログイン |
+| `USER_ID` | `1` | 受験するユーザ ID（`localStorage` のキーにも使用） |
+| `COURSE_ID` | `1` | 受講登録を確認・作成するコース ID |
+| `TEST_CONTENT_ID` | `7` | 受験するテストコンテンツ ID（複数設問があること） |
+
 ## Exit Codes
 
 | Code | Meaning |
@@ -110,5 +143,6 @@ BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
 
 - curl 系スクリプト（`smoke-api.sh` / `smoke-mcp.sh`）はデータを変更しない。
   `gui-image-upload.py` は画像ファイルを `webroot/uploads` へアップロードする（コンテンツは保存しない）。
+  `gui-test-resume.py` は受講登録（未登録時のみ・終了時に解除）と学習履歴 1 件の作成を行う。
 - The MCP smoke requires the `/mcp` endpoint to be active (Phase 2+ build).
 - Each script prints `PASS` / `FAIL` per check and a summary at the end.

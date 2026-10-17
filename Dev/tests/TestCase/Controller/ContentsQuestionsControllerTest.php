@@ -160,13 +160,14 @@ class ContentsQuestionsControllerTest extends TestCase
         int $contentId,
         string $questionType = 'choice',
         int $sortNo = 1,
+        string $title = 'テスト問題',
     ): EntityInterface {
         $contentsQuestionsTable = $this->getTableLocator()->get('ContentsQuestions');
         $entity = $contentsQuestionsTable->newEntity([
             'content_id' => $contentId,
             'question_type' => $questionType,
-            'title' => 'テスト問題',
-            'body' => 'テスト問題の本文',
+            'title' => $title,
+            'body' => $title . 'の本文',
             'options' => '選択肢A,選択肢B,選択肢C',
             'correct' => '1',
             'score' => 10,
@@ -264,5 +265,136 @@ class ContentsQuestionsControllerTest extends TestCase
 
         $this->get("/contents-questions/record/{$content->id}/99999");
         $this->assertResponseCode(404);
+    }
+
+    // =========================================================================
+    // 出題リストの復元（セッション切れ対策）
+    // =========================================================================
+
+    /**
+     * セッションに出題リストが無い（セッション切れ相当）状態でも、
+     * リクエストで指定した出題リストと同じ問題が同じ順で出題されること
+     */
+    public function testIndexRestoresRequestedQuestionSet(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 2);
+        $question1 = $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+        $question3 = $this->createQuestion((int)$content->id, 'choice', 3, '問題3');
+
+        $this->get("/contents-questions/index/{$content->id}?question_id_list={$question3->id},{$question1->id}");
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('問題3');
+        $this->assertResponseContains('問題1');
+        $this->assertResponseNotContains('問題2');
+
+        // 出題順（サーバが解決した出題リスト）が指定どおりであること
+        $this->assertResponseRegExp(
+            '/name="question_id_list"[^>]*value="' . $question3->id . ',' . $question1->id . '"/',
+        );
+    }
+
+    /**
+     * セッションの出題リストは従来どおり使用されること
+     */
+    public function testIndexUsesSessionQuestionIdList(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 2);
+        $question1 = $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $question2 = $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+        $this->createQuestion((int)$content->id, 'choice', 3, '問題3');
+
+        $this->session([
+            'Iroha' => [
+                'RondomQuestions' => [
+                    (int)$content->id => [
+                        'id_list' => [(int)$question1->id, (int)$question2->id],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->get("/contents-questions/index/{$content->id}");
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('問題1');
+        $this->assertResponseContains('問題2');
+        $this->assertResponseNotContains('問題3');
+    }
+
+    /**
+     * 不正な出題リスト（問題数の不一致・他コンテンツの問題・重複）は無視されること
+     */
+    public function testIndexIgnoresInvalidRequestedQuestionSet(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 2);
+        $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $question2 = $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+        $question3 = $this->createQuestion((int)$content->id, 'choice', 3, '問題3');
+
+        // 他コンテンツの問題
+        $otherContent = $this->createTestContent((int)$course->id, (int)$user->id, 1, 0);
+        $otherQuestion = $this->createQuestion((int)$otherContent->id, 'choice', 1, '他コンテンツの問題');
+
+        // 出題数（2問）と一致しない
+        $this->get("/contents-questions/index/{$content->id}?question_id_list={$question3->id}");
+        $this->assertResponseOk();
+        $this->assertResponseNotRegExp(
+            '/name="question_id_list"[^>]*value="' . $question3->id . '"/',
+        );
+
+        // 他コンテンツの問題を含む
+        $this->get("/contents-questions/index/{$content->id}?question_id_list={$otherQuestion->id},{$question2->id}");
+        $this->assertResponseOk();
+        $this->assertResponseNotContains('他コンテンツの問題');
+
+        // 重複を含む
+        $this->get("/contents-questions/index/{$content->id}?question_id_list={$question2->id},{$question2->id}");
+        $this->assertResponseOk();
+        $this->assertResponseNotContains('他コンテンツの問題');
+    }
+
+    /**
+     * セッションに出題リストが無くても、送信された出題リストで採点されること
+     *
+     * セッション切れでログイン画面へ遷移した後、ブラウザへ退避した回答を
+     * 送信し直した場合の経路（出題の再抽選で誤採点にならないこと）を検証する。
+     */
+    public function testPostGradesUsingSubmittedQuestionIdList(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 1);
+        $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $question2 = $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+
+        $this->post("/contents-questions/index/{$content->id}", [
+            'question_id_list' => (string)$question2->id,
+            'answer_' . $question2->id => '1',
+            'ContentsQuestion' => ['study_sec' => 120],
+        ]);
+
+        $this->assertRedirect();
+
+        $records = $this->getTableLocator()->get('Records')->find()->all();
+        $this->assertCount(1, $records);
+        $this->assertSame(10, (int)$records->first()->score);
+        $this->assertSame(10, (int)$records->first()->full_score);
+
+        $recordsQuestions = $this->getTableLocator()->get('RecordsQuestions')->find()->all();
+        $this->assertCount(1, $recordsQuestions);
+        $this->assertSame((int)$question2->id, (int)$recordsQuestions->first()->question_id);
+        $this->assertSame(1, (int)$recordsQuestions->first()->is_correct);
     }
 }

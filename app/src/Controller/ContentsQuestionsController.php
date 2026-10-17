@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Core\Configure;
+use Cake\Datasource\ResultSetInterface;
 use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\Table;
 
 /**
  * ContentsQuestions Controller
@@ -64,6 +66,7 @@ class ContentsQuestionsController extends AppController
 
         // 問題情報を取得
         $record = null;
+        $question_id_list = [];
 
         if ($record_id !== null) {
             // テスト結果表示モード
@@ -74,54 +77,41 @@ class ContentsQuestionsController extends AppController
             }
 
             // テスト結果に紐づく問題ID一覧（出題順）を作成
-            $question_id_list = [0];
             $recordQuestions = $this->fetchTable('RecordsQuestions')
                 ->find()
                 ->where(['record_id' => $record_id])
                 ->all();
 
             foreach ($recordQuestions as $rq) {
-                $question_id_list[] = $rq->question_id;
+                $question_id_list[] = (int)$rq->question_id;
             }
 
-            $contentsQuestions = $contentsQuestionsTable->find()
-                ->where([
-                    'content_id' => $content_id,
-                    $contentsQuestionsTable->aliasField('id') . ' IN' => $question_id_list,
-                ])
-                ->orderBy($contentsQuestionsTable->find()->expr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
-                ->all();
-        } elseif ($this->readSession('Iroha.RondomQuestions.' . $content_id . '.id_list') !== '') {
-            // セッションにランダム出題情報がある場合
-            $question_id_list = $this->readSession('Iroha.RondomQuestions.' . $content_id . '.id_list');
-
-            $contentsQuestions = $contentsQuestionsTable->find()
-                ->where([
-                    'content_id' => $content_id,
-                    $contentsQuestionsTable->aliasField('id') . ' IN' => $question_id_list,
-                ])
-                ->orderBy($contentsQuestionsTable->find()->expr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
-                ->all();
-        } elseif ($content->question_count > 0) {
-            // ランダム出題の場合
-            $contentsQuestions = $contentsQuestionsTable->find()
-                ->where(['content_id' => $content_id])
-                ->limit((int)$content->question_count)
-                ->orderBy($contentsQuestionsTable->find()->expr()->add('RAND()'))
-                ->all();
-
-            $question_id_list = [];
-            foreach ($contentsQuestions as $cq) {
-                $question_id_list[] = $cq->id;
-            }
-
-            $this->writeSession('Iroha.RondomQuestions.' . $content_id . '.id_list', $question_id_list);
+            $contentsQuestions = $this->findQuestionsByIdList(
+                $contentsQuestionsTable,
+                $content_id,
+                $question_id_list,
+            );
         } else {
-            // 通常の出題
-            $contentsQuestions = $contentsQuestionsTable->find()
-                ->where(['content_id' => $content_id])
-                ->orderBy([$contentsQuestionsTable->aliasField('sort_no') => 'ASC'])
-                ->all();
+            // 出題する問題ID一覧を決定（セッション切れ時の復元用にリクエスト指定を優先）
+            $question_id_list = $this->resolveQuestionIdList($content_id, (int)$content->question_count);
+
+            if ($question_id_list !== []) {
+                $contentsQuestions = $this->findQuestionsByIdList(
+                    $contentsQuestionsTable,
+                    $content_id,
+                    $question_id_list,
+                );
+            } else {
+                // 通常の出題（全問を sort_no 順で出題）
+                $contentsQuestions = $contentsQuestionsTable->find()
+                    ->where(['content_id' => $content_id])
+                    ->orderBy([$contentsQuestionsTable->aliasField('sort_no') => 'ASC'])
+                    ->all();
+
+                foreach ($contentsQuestions as $cq) {
+                    $question_id_list[] = (int)$cq->id;
+                }
+            }
         }
 
         // 採点処理
@@ -205,6 +195,7 @@ class ContentsQuestionsController extends AppController
         $is_admin_record = $this->isAdminPage() && $this->isRecordPage();
 
         $this->set(compact('content', 'contentsQuestions', 'record', 'is_record', 'is_admin_record'));
+        $this->set('question_id_list', $question_id_list);
     }
 
     /**
@@ -221,6 +212,158 @@ class ContentsQuestionsController extends AppController
 
         $this->index($content_id, $record_id);
         $this->viewBuilder()->setTemplate('index');
+    }
+
+    /**
+     * 出題する問題ID一覧（出題順）を決定する
+     *
+     * セッションが切れた場合でも試験を復元できるよう、リクエストで指定された
+     * 出題リストを最優先で受け付ける。指定が無い場合はセッション →
+     * ランダム抽選の順に決定する。
+     *
+     * @param int $content_id コンテンツID
+     * @param int $question_count 出題数（0 の場合は全問出題）
+     * @return array<int> 出題する問題ID一覧（空の場合は全問出題）
+     */
+    private function resolveQuestionIdList(int $content_id, int $question_count): array
+    {
+        // 1. リクエストで指定された出題リスト（セッション切れ後の復元用）
+        $requested = $this->getRequestedQuestionIdList($content_id, $question_count);
+
+        if ($requested !== []) {
+            $this->writeSession('Iroha.RondomQuestions.' . $content_id . '.id_list', $requested);
+
+            return $requested;
+        }
+
+        // 2. セッションに保持している出題リスト
+        $sessionList = $this->readSession('Iroha.RondomQuestions.' . $content_id . '.id_list');
+
+        if (is_array($sessionList) && $sessionList !== []) {
+            return array_map('intval', $sessionList);
+        }
+
+        // 3. ランダム出題
+        if ($question_count > 0) {
+            $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
+
+            $contentsQuestions = $contentsQuestionsTable->find()
+                ->where(['content_id' => $content_id])
+                ->limit($question_count)
+                ->orderBy($contentsQuestionsTable->find()->expr()->add('RAND()'))
+                ->all();
+
+            $question_id_list = [];
+
+            foreach ($contentsQuestions as $cq) {
+                $question_id_list[] = (int)$cq->id;
+            }
+
+            if ($question_id_list !== []) {
+                $this->writeSession('Iroha.RondomQuestions.' . $content_id . '.id_list', $question_id_list);
+            }
+
+            return $question_id_list;
+        }
+
+        // 4. 全問出題（問題ID一覧は呼び出し元で全問から作成する）
+        return [];
+    }
+
+    /**
+     * リクエストで指定された出題リストを取得する
+     *
+     * セッション切れでログイン画面へ遷移した後に、ブラウザへ退避した回答を
+     * 同じ出題内容で復元するために使用する。改ざん防止のため、対象コンテンツの
+     * 問題であること・出題数と一致することを検証する。
+     *
+     * @param int $content_id コンテンツID
+     * @param int $question_count 出題数（0 の場合は全問出題）
+     * @return array<int> 妥当な出題リスト（不正な場合は空配列）
+     */
+    private function getRequestedQuestionIdList(int $content_id, int $question_count): array
+    {
+        // 全問出題の場合は出題内容が固定のため、リクエスト指定は受け付けない
+        if ($question_count <= 0) {
+            return [];
+        }
+
+        $raw = $this->request->getData('question_id_list') ?? $this->request->getQuery('question_id_list');
+
+        if (!is_string($raw) && !is_int($raw)) {
+            return [];
+        }
+
+        $question_id_list = [];
+
+        foreach (explode(',', (string)$raw) as $value) {
+            $value = trim($value);
+
+            if ($value === '' || !ctype_digit($value)) {
+                return [];
+            }
+
+            $question_id = (int)$value;
+
+            if ($question_id <= 0 || in_array($question_id, $question_id_list, true)) {
+                return [];
+            }
+
+            $question_id_list[] = $question_id;
+        }
+
+        $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
+        $total = $contentsQuestionsTable->find()->where(['content_id' => $content_id])->count();
+
+        // 出題数と一致しない出題リストは受け付けない（問題数の改ざん防止）
+        if (count($question_id_list) !== min($question_count, $total)) {
+            return [];
+        }
+
+        // 対象コンテンツの問題であることを確認
+        $found = $contentsQuestionsTable->find()
+            ->where([
+                'content_id' => $content_id,
+                $contentsQuestionsTable->aliasField('id') . ' IN' => $question_id_list,
+            ])
+            ->count();
+
+        if ($found !== count($question_id_list)) {
+            return [];
+        }
+
+        return $question_id_list;
+    }
+
+    /**
+     * 指定された問題ID一覧の問題を出題順に取得する
+     *
+     * @param \Cake\ORM\Table $contentsQuestionsTable 問題テーブル
+     * @param int $content_id コンテンツID
+     * @param array<int> $question_id_list 問題ID一覧（出題順）
+     * @return \Cake\Datasource\ResultSetInterface<int, \Cake\Datasource\EntityInterface>
+     */
+    private function findQuestionsByIdList(
+        Table $contentsQuestionsTable,
+        int $content_id,
+        array $question_id_list,
+    ): ResultSetInterface {
+        $question_id_list = array_map('intval', $question_id_list);
+
+        // IN 句に空配列を渡すと例外になるため、該当無しの条件を返す
+        if ($question_id_list === []) {
+            return $contentsQuestionsTable->find()
+                ->where(['content_id' => $content_id, $contentsQuestionsTable->aliasField('id') . ' <' => 0])
+                ->all();
+        }
+
+        return $contentsQuestionsTable->find()
+            ->where([
+                'content_id' => $content_id,
+                $contentsQuestionsTable->aliasField('id') . ' IN' => $question_id_list,
+            ])
+            ->orderBy($contentsQuestionsTable->find()->expr()->add('FIELD(' . $contentsQuestionsTable->aliasField('id') . ',' . implode(',', $question_id_list) . ')'))
+            ->all();
     }
 
     /**

@@ -43,11 +43,15 @@ $getExplain = function ($explain) {
 <script>
 	var TIMELIMIT_SEC	= parseInt('<?= $content->timelimit ?>') * 60;	// 制限時間（単位：秒）
 	var IS_RECORD		= '<?= $is_record ?>';										// テスト結果表示フラグ
+	var CONTENT_ID		= '<?= (int)$content->id ?>';								// コンテンツID
+	var USER_ID			= '<?= (int)$this->AppView->readAuthUser('id') ?>';			// ログインユーザID
+	var IS_ADMIN_RECORD	= '<?= $is_admin_record ?>';									// 管理者による履歴表示フラグ
 	var MSG_TIMELIMIT	= '<?= __('制限時間を過ぎましたので自動採点を行います。') ?>';
 	var MSG_REST_TIME	= '<?= __('残り時間') ?>';
 	var MSG_TIME		= '<?= __('経過') ?>';
+	var MSG_RESTORED	= '<?= __('前回の回答を復元しました') ?>';
 </script>
-<?= $this->Html->script('contents_questions.js?20220401');?>
+<?= $this->Html->script('contents_questions.js?20261017');?>
 <?php $this->end(); ?>
 <div class="contents-questions-index">
 	<div class="breadcrumb">
@@ -257,6 +261,12 @@ $getExplain = function ($explain) {
 			// テスト実施の場合のみ、採点ボタンを表示
 			if (!$is_record)
 			{
+				// セッション切れ時の復元用に出題リスト（出題順）を送信する
+				if ($question_id_list !== [])
+				{
+					echo $this->Form->hidden('question_id_list', ['value' => implode(',', $question_id_list)]);
+				}
+				
 				echo $this->Form->hidden('ContentsQuestion.study_sec');
 				echo '<input type="button" value="'.__('採点').'" class="btn btn-primary btn-lg btn-score" onclick="$(\'#confirmModal\').modal()">';
 				echo '&nbsp;';

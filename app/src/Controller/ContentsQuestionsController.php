@@ -24,6 +24,16 @@ use Cake\ORM\Table;
 class ContentsQuestionsController extends AppController
 {
     /**
+     * 出題リストを退避する Cookie 名の接頭辞（末尾にコンテンツIDを付与）
+     *
+     * ブラウザ側（contents_questions.js の TEST_STATE_COOKIE_PREFIX）と揃える。
+     */
+    private const TEST_STATE_COOKIE_PREFIX = 'IrohaTestState_';
+
+    /** Cookie へ退避できる出題リストの最大長（1 Cookie 約4KB に対する安全余裕） */
+    private const TEST_STATE_COOKIE_MAX_LENGTH = 3500;
+
+    /**
      * 初期化
      *
      * @return void
@@ -186,6 +196,7 @@ class ContentsQuestionsController extends AppController
                 }
 
                 $this->deleteSession('Iroha.RondomQuestions.' . $content_id . '.id_list');
+                $this->deleteTestStateCookie($content_id);
 
                 $this->redirect(['action' => 'record', $content_id, $newRecordId]);
             }
@@ -288,28 +299,20 @@ class ContentsQuestionsController extends AppController
             return [];
         }
 
-        $raw = $this->request->getData('question_id_list') ?? $this->request->getQuery('question_id_list');
+        // 1. リクエストで指定された出題リスト（採点時の隠し項目、URL 指定）
+        $question_id_list = $this->parseQuestionIdList(
+            $this->request->getData('question_id_list') ?? $this->request->getQuery('question_id_list'),
+        );
 
-        if (!is_string($raw) && !is_int($raw)) {
-            return [];
+        // 2. ブラウザへ退避した出題リスト（Cookie）
+        //    セッションが切れた後でも、テスト画面を開いた最初のリクエストで
+        //    同じ出題内容を返せるようにする（復元のための再読込を不要にする）。
+        if ($question_id_list === []) {
+            $question_id_list = $this->parseQuestionIdList($this->getTestStateCookieIdList($content_id));
         }
 
-        $question_id_list = [];
-
-        foreach (explode(',', (string)$raw) as $value) {
-            $value = trim($value);
-
-            if ($value === '' || !ctype_digit($value)) {
-                return [];
-            }
-
-            $question_id = (int)$value;
-
-            if ($question_id <= 0 || in_array($question_id, $question_id_list, true)) {
-                return [];
-            }
-
-            $question_id_list[] = $question_id;
+        if ($question_id_list === []) {
+            return [];
         }
 
         $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
@@ -333,6 +336,89 @@ class ContentsQuestionsController extends AppController
         }
 
         return $question_id_list;
+    }
+
+    /**
+     * カンマ区切りの出題リスト文字列を検証して整数配列にする
+     *
+     * @param mixed $raw 出題リスト文字列（不正な型は空配列）
+     * @return array<int> 妥当な出題リスト（不正な場合は空配列）
+     */
+    private function parseQuestionIdList(mixed $raw): array
+    {
+        if (!is_string($raw) && !is_int($raw)) {
+            return [];
+        }
+
+        $question_id_list = [];
+
+        foreach (explode(',', (string)$raw) as $value) {
+            $value = trim($value);
+
+            if ($value === '' || !ctype_digit($value)) {
+                return [];
+            }
+
+            $question_id = (int)$value;
+
+            if ($question_id <= 0 || in_array($question_id, $question_id_list, true)) {
+                return [];
+            }
+
+            $question_id_list[] = $question_id;
+        }
+
+        return $question_id_list;
+    }
+
+    /**
+     * Cookie に退避された出題リスト文字列を取得する
+     *
+     * 形式は `<ユーザID>-<問題ID>-<問題ID>-...`。他ユーザの出題内容を復元しない
+     * よう、ログイン中のユーザID と一致する場合のみ返す。
+     *
+     * @param int $content_id コンテンツID
+     * @return string|null 出題リスト文字列（退避されていない場合は null）
+     */
+    private function getTestStateCookieIdList(int $content_id): ?string
+    {
+        $cookie = (string)$this->readCookie($this->getTestStateCookieName($content_id));
+
+        // 長すぎる値（Cookie 上限超過・改ざん）は受け付けない
+        if ($cookie === '' || strlen($cookie) > self::TEST_STATE_COOKIE_MAX_LENGTH) {
+            return null;
+        }
+
+        $parts = explode('-', $cookie);
+        $user_id = array_shift($parts);
+
+        if ($user_id === null || !ctype_digit($user_id) || (int)$user_id !== (int)$this->readAuthUser('id')) {
+            return null;
+        }
+
+        return $parts === [] ? null : implode(',', $parts);
+    }
+
+    /**
+     * 出題リストを退避する Cookie 名を取得する
+     *
+     * @param int $content_id コンテンツID
+     * @return string Cookie 名
+     */
+    private function getTestStateCookieName(int $content_id): string
+    {
+        return self::TEST_STATE_COOKIE_PREFIX . $content_id;
+    }
+
+    /**
+     * 出題リストを退避した Cookie を削除する（採点完了時）
+     *
+     * @param int $content_id コンテンツID
+     * @return void
+     */
+    private function deleteTestStateCookie(int $content_id): void
+    {
+        $this->deleteCookie($this->getTestStateCookieName($content_id));
     }
 
     /**

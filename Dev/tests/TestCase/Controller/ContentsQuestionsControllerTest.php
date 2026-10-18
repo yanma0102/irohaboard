@@ -365,6 +365,98 @@ class ContentsQuestionsControllerTest extends TestCase
     }
 
     /**
+     * Cookie に退避した出題リストでも、最初のリクエストで同じ出題内容が表示されること
+     *
+     * セッション切れ後に再ログインしてテスト画面を開く経路。以前は退避した出題で
+     * 開き直す再読込（2 回目のリクエスト）を要したが、Cookie から復元できるため
+     * 1 回のリクエストで完結する。
+     */
+    public function testIndexRestoresQuestionSetFromCookie(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 2);
+        $question1 = $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+        $question3 = $this->createQuestion((int)$content->id, 'choice', 3, '問題3');
+
+        $this->cookie(
+            'IrohaTestState_' . $content->id,
+            $user->id . '-' . $question3->id . '-' . $question1->id,
+        );
+
+        $this->get("/contents-questions/index/{$content->id}");
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('問題3');
+        $this->assertResponseContains('問題1');
+        $this->assertResponseNotContains('問題2');
+        $this->assertResponseRegExp(
+            '/name="question_id_list"[^>]*value="' . $question3->id . ',' . $question1->id . '"/',
+        );
+    }
+
+    /**
+     * 他ユーザの Cookie（ユーザID 不一致）に退避された出題リストは採用されないこと
+     */
+    public function testIndexIgnoresOtherUserCookie(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 2);
+        $question1 = $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $question2 = $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+        $question3 = $this->createQuestion((int)$content->id, 'choice', 3, '問題3');
+
+        // セッションの出題リストを基準に、Cookie が採用されたかを判定する
+        $this->session([
+            'Iroha' => [
+                'RondomQuestions' => [
+                    (int)$content->id => [
+                        'id_list' => [(int)$question1->id, (int)$question2->id],
+                    ],
+                ],
+            ],
+        ]);
+        $this->cookie(
+            'IrohaTestState_' . $content->id,
+            ((int)$user->id + 1) . '-' . $question3->id . '-' . $question1->id,
+        );
+
+        $this->get("/contents-questions/index/{$content->id}");
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('問題1');
+        $this->assertResponseContains('問題2');
+        $this->assertResponseNotContains('問題3');
+    }
+
+    /**
+     * 採点完了時に、Cookie に退避した出題リストが削除されること
+     */
+    public function testPostDeletesTestStateCookie(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 1);
+        $question = $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+
+        $this->cookie('IrohaTestState_' . $content->id, $user->id . '-' . $question->id);
+
+        $this->post("/contents-questions/index/{$content->id}", [
+            'question_id_list' => (string)$question->id,
+            'answer_' . $question->id => '1',
+            'ContentsQuestion' => ['study_sec' => 60],
+        ]);
+
+        $this->assertRedirect();
+        $this->assertCookieNotSet('IrohaTestState_' . $content->id);
+    }
+
+    /**
      * セッションに出題リストが無くても、送信された出題リストで採点されること
      *
      * セッション切れでログイン画面へ遷移した後、ブラウザへ退避した回答を

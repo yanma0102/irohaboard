@@ -101,17 +101,18 @@ BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
 
 ## scripts/gui-test-resume.py
 
-試験のセッション切れ対策（回答の `localStorage` 退避・復元）を実ブラウザで検証する
-GUI 操作テスト（`Dev/Docs/design/16-test-answer-resume.md` §4.2）。PHPUnit では検出できない
-JS / `localStorage` の挙動を検証する。18 チェック。
+試験のセッション切れ対策（回答の `localStorage` 退避・復元、出題リストの Cookie 退避）を
+実ブラウザで検証する GUI 操作テスト（`Dev/Docs/design/16-test-answer-resume.md` §4.2）。
+PHPUnit では検出できない JS / `localStorage` / Cookie の挙動を検証する。21 チェック。
 
 1. REST API で受講登録（テスト前に未登録だった場合のみ、終了時に解除）
 2. ログイン → テスト画面表示 → 全設問に回答
-3. 回答が出題内容とともに `localStorage` へ退避されること
+3. 回答が出題内容とともに `localStorage` へ、出題リストが Cookie へ退避されること
 4. `context.clear_cookies()` でセッション切れを模擬 → ログイン画面へ遷移すること
 5. 再ログイン後にテスト画面を開くと、同じ出題内容で回答が復元されること
+   （復元は再読込なしの 1 リクエストで完了すること）
 6. 採点結果画面へ遷移し、元と同じ出題内容が採点されること
-7. 採点後に退避データが削除されること／JS コンソールエラーが無いこと
+7. 採点後に退避データ（`localStorage`・Cookie）が削除されること／JS コンソールエラーが無いこと
 
 - 前提: Python 3.10+ / Playwright（`pip install playwright && playwright install chromium`）
 - 採点により学習履歴（`ib_records`）が 1 件作成される（作成された `record_id` を出力する）

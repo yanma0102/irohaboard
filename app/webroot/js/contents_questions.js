@@ -2,6 +2,8 @@ var _studySec		= 0;														// 学習時間
 var _timerID		= null;														// 制限時間タイマーID
 var _lblStudySec	= null;														// 制限時間表示ラベル
 var TEST_STATE_TTL_SEC	= 7 * 24 * 60 * 60;										// 退避した回答を復元できる期間（秒）
+var TEST_STATE_COOKIE_PREFIX	= 'IrohaTestState_';							// 出題リストを退避する Cookie 名の接頭辞（サーバ側と揃える）
+var TEST_STATE_COOKIE_MAX_LENGTH	= 3500;										// Cookie へ退避できる出題リストの最大長
 
 $(document).ready(function()
 {
@@ -94,8 +96,9 @@ function sendData()
 // 受験中データの退避・復元
 //
 // セッションが切れると採点結果が失われ、ログイン画面へ飛ばされてしまう。
-// その対策として、出題内容と回答を localStorage へ退避し、テスト画面を
-// 開き直したときに復元する。
+// その対策として、回答を localStorage へ、出題内容（問題ID・出題順）を
+// localStorage と Cookie へ退避し、テスト画面を開いた最初のリクエストで
+// サーバが同じ出題内容を返せるようにする。
 // ---------------------------------------------------------------------------
 
 // 受験中データの保存キー（ユーザ・コンテンツ単位）
@@ -105,6 +108,60 @@ function getTestStateKey()
 	var contentId	= (typeof CONTENT_ID !== 'undefined') ? CONTENT_ID : '0';
 
 	return 'iroha.test.' + userId + '.' + contentId;
+}
+
+// 出題リストを退避する Cookie 名（コンテンツ単位）
+function getTestStateCookieName()
+{
+	var contentId	= (typeof CONTENT_ID !== 'undefined') ? CONTENT_ID : '0';
+
+	return TEST_STATE_COOKIE_PREFIX + contentId;
+}
+
+// 出題リストを Cookie へ退避する
+//
+// セッションが切れるとサーバ側の出題リストも失われるため、以前は退避した出題で
+// 開き直す再読込が必要だった。Cookie へも退避しておくと、テスト画面を開いた
+// 最初のリクエストでサーバが同じ出題内容を返せるため、再読込（セッション切れと
+// 重なりやすい 2 回目のリクエスト）を不要にできる。
+//
+// 形式は `<ユーザID>-<問題ID>-<問題ID>-...`。カンマは Cookie 値に使えない
+// 文字（RFC 6265 の cookie-octet 外）のため、区切りにはハイフンを使用する。
+function saveTestStateCookie(state)
+{
+	try
+	{
+		var userId	= (typeof USER_ID !== 'undefined') ? USER_ID : '0';
+		var value	= userId + '-' + state.question_id_list.join('-');
+
+		// 1 Cookie あたりの上限を超える場合は退避しない（一致する回答のみ復元する）
+		if(value.length > TEST_STATE_COOKIE_MAX_LENGTH)
+		{
+			return;
+		}
+
+		var secure = (window.location.protocol === 'https:') ? '; secure' : '';
+
+		document.cookie = getTestStateCookieName() + '=' + value
+			+ '; path=/; max-age=' + TEST_STATE_TTL_SEC + '; samesite=lax' + secure;
+	}
+	catch(e)
+	{
+		// Cookie を利用できない環境では保存しない
+	}
+}
+
+// 出題リストを退避した Cookie を削除する
+function clearTestStateCookie()
+{
+	try
+	{
+		document.cookie = getTestStateCookieName() + '=; path=/; max-age=0; samesite=lax';
+	}
+	catch(e)
+	{
+		// 何もしない
+	}
 }
 
 // 表示中の出題リスト（問題ID・出題順）を取得する
@@ -178,21 +235,24 @@ function saveTestState()
 		return;
 	}
 
+	var state = {
+		question_id_list	: getRenderedQuestionIdList(),
+		answers				: collectAnswers(),
+		study_sec			: parseInt($('#contents-question-study-sec').val() || _studySec, 10) || 0,
+		saved_at			: Math.floor(Date.now() / 1000)
+	};
+
 	try
 	{
-		var state = {
-			question_id_list	: getRenderedQuestionIdList(),
-			answers				: collectAnswers(),
-			study_sec			: parseInt($('#contents-question-study-sec').val() || _studySec, 10) || 0,
-			saved_at			: Math.floor(Date.now() / 1000)
-		};
-
 		localStorage.setItem(getTestStateKey(), JSON.stringify(state));
 	}
 	catch(e)
 	{
 		// localStorage を利用できない環境（プライベートモード等）では保存しない
 	}
+
+	// localStorage が使えない環境でも出題内容だけは復元できるようにする
+	saveTestStateCookie(state);
 }
 
 // 受験中データを読み込む（未保存・期限切れ・破損時は null）
@@ -239,11 +299,20 @@ function clearTestState()
 	{
 		// 何もしない
 	}
+
+	clearTestStateCookie();
 }
 
 // 退避した回答をフォームへ復元する
+//
+// 出題内容が変わっている場合は、表示中の設問と一致する回答だけを復元する
+// （一致しない設問の回答は、送信時にその設問が無いため採点対象にならない）。
+//
+// @return int 復元した回答の件数
 function restoreAnswers(state)
 {
+	var restored = 0;
+
 	$.each(state.answers || {}, function(name, value)
 	{
 		var $inputs = $('form').find('input[name="' + name + '"]');
@@ -261,10 +330,18 @@ function restoreAnswers(state)
 			{
 				$(this).prop('checked', selected.indexOf($(this).val()) !== -1);
 			});
+
+			restored++;
 		}
 		else
 		{
-			$inputs.filter('[value="' + value + '"]').prop('checked', true);
+			var $matched = $inputs.filter('[value="' + value + '"]');
+
+			if($matched.length > 0)
+			{
+				$matched.prop('checked', true);
+				restored++;
+			}
 		}
 	});
 
@@ -273,12 +350,27 @@ function restoreAnswers(state)
 		_studySec = parseInt(state.study_sec, 10) || 0;
 		$("#contents-question-study-sec").val(_studySec);
 	}
+
+	return restored;
 }
 
 // 回答を復元したことを通知する
-function showAnswersRestoredNotice()
+//
+// @param bool complete 退避した回答がすべて復元できたか
+function showAnswersRestoredNotice(complete)
 {
-	var message = (typeof MSG_RESTORED !== 'undefined') ? MSG_RESTORED : '前回の回答を復元しました';
+	var message;
+
+	if(complete)
+	{
+		message = (typeof MSG_RESTORED !== 'undefined') ? MSG_RESTORED : '前回の回答を復元しました';
+	}
+	else
+	{
+		message = (typeof MSG_RESTORED_PARTIAL !== 'undefined')
+			? MSG_RESTORED_PARTIAL
+			: '前回の回答を復元しました（出題内容が変更されたため、一部の回答は復元されていません）';
+	}
 
 	$('.contents-questions-index').first().prepend(
 		$('<div class="alert alert-info test-state-restored"></div>').text(message)
@@ -292,31 +384,19 @@ function initTestState()
 
 	if(state)
 	{
-		var rendered = getRenderedQuestionIdList();
+		// 復元のための再読込は行わない。再読込はセッション切れと重なると
+		// ログイン画面へ飛ばされる原因になるため、出題内容は Cookie へ退避し、
+		// 最初のリクエストから同じ出題が返るようにしている。
+		var restored	= restoreAnswers(state);
+		var savedCount	= 0;
 
-		if(rendered.join(',') === state.question_id_list.join(','))
-		{
-			// 出題内容が一致する場合は回答を復元する
-			restoreAnswers(state);
-			showAnswersRestoredNotice();
-		}
-		else if(window.location.search.indexOf('question_id_list=') === -1)
-		{
-			// セッション切れで出題が抽選し直された場合は、退避した出題内容で開き直す。
-			// 再読込後の URL には出題リストが付くため、繰り返しにはならない。
-			var href = window.location.href.split('#')[0];
-			var separator = (href.indexOf('?') === -1) ? '?' : '&';
+		$.each(state.answers || {}, function(){ savedCount++; });
 
-			window.location.replace(
-				href + separator + 'question_id_list=' + encodeURIComponent(state.question_id_list.join(','))
-			);
-
-			return;
-		}
-		else
+		if(savedCount > 0)
 		{
-			// 退避した出題内容を再現できない（設問が編集・削除された等）ため破棄する
-			clearTestState();
+			// 退避した回答がすべて復元できた場合のみ「すべて復元」として通知する
+			// （全問出題のコンテンツでは出題順のみが変わり、回答はすべて復元される）
+			showAnswersRestoredNotice(restored >= savedCount);
 		}
 	}
 

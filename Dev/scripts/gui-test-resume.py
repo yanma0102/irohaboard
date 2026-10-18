@@ -4,16 +4,19 @@
 
 仕様: Dev/Docs/design/16-test-answer-resume.md
 対象: 起動済みの iroha Board（Docker）に対する実ブラウザ操作。
-      PHPUnit（HTTP クライアント）では検出できない JS/localStorage の
+      PHPUnit（HTTP クライアント）では検出できない JS/localStorage/Cookie の
       挙動を検証する。
 
 検証すること:
   1. 回答が localStorage に出題内容とともに退避される
-  2. セッション（Cookie）が失われても回答は失われない
-  3. 再ログイン後にテスト画面を開くと、同じ出題内容で回答が復元される
-  4. 復元した回答で採点でき、元と同じ出題内容が採点される
-  5. 採点後に退避データが削除される
-  6. JS コンソールエラーが無い
+  2. 出題リストが Cookie にも退避される（サーバが初回リクエストで復元するため）
+  3. セッション（Cookie）が失われても回答は失われない
+  4. 再ログイン後にテスト画面を開くと、同じ出題内容で回答が復元される
+  5. 復元は再読込なしの 1 リクエストで完了する（セッション切れと重なる
+     2 回目のリクエストを発生させない）
+  6. 復元した回答で採点でき、元と同じ出題内容が採点される
+  7. 採点後に退避データ（localStorage・Cookie）が削除される
+  8. JS コンソールエラーが無い
 
 必要環境:
   - Python 3.10+ / Playwright（`pip install playwright && playwright install chromium`）
@@ -49,12 +52,19 @@ USER_ID = os.environ.get("USER_ID", "1")
 COURSE_ID = os.environ.get("COURSE_ID", "1")
 TEST_CONTENT_ID = os.environ.get("TEST_CONTENT_ID", "7")
 
+STATE_COOKIE = f"IrohaTestState_{TEST_CONTENT_ID}"
+
 results: list[tuple[str, bool, str]] = []
 
 
 def check(name: str, ok: bool, detail: str = "") -> None:
     results.append((name, ok, detail))
     print(("PASS" if ok else "FAIL"), "-", name, ("(" + detail + ")" if detail else ""))
+
+
+def read_cookie(page, name: str) -> str:
+    cookies = {c["name"]: c["value"] for c in page.context.cookies()}
+    return cookies.get(name, "")
 
 
 def main() -> int:
@@ -68,6 +78,13 @@ def main() -> int:
 
         console_errors: list[str] = []
         page.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
+
+        # テスト画面（index）へのリクエスト数。復元時の再読込の有無を判定する
+        index_requests: list[str] = []
+        page.on(
+            "request",
+            lambda r: index_requests.append(r.url) if "/contents-questions/index/" in r.url else None,
+        )
 
         api = context.request
         token = ""
@@ -129,7 +146,7 @@ def main() -> int:
                 types[name] = group.first.get_attribute("type") or ""
             check("6. 全設問に回答", len(names) > 0 and len(selected) == len(names), f"{len(selected)}/{len(names)}")
 
-            # 6. localStorage への退避
+            # 6. localStorage / Cookie への退避
             #    アプリはラジオを単一値、チェックボックスを配列で退避する
             expected_answers = {
                 name: (values if types[name] == "checkbox" else (values[0] if values else None))
@@ -149,29 +166,42 @@ def main() -> int:
                 str(saved.get("question_id_list")) if saved else "",
             )
 
+            cookie_value = read_cookie(page, STATE_COOKIE)
+            check(
+                "9. 出題リストが Cookie に退避される",
+                cookie_value == f"{USER_ID}-{qids_before.replace(',', '-')}",
+                cookie_value[:160],
+            )
+
             # 7. セッション切れを模擬（Cookie を破棄）
             context.clear_cookies()
             page.goto(test_url, wait_until="domcontentloaded")
-            check("9. セッション切れでログイン画面へ", "users/login" in page.url, page.url)
+            check("10. セッション切れでログイン画面へ", "users/login" in page.url, page.url)
 
             # 8. 再ログイン
             page.fill('input[name="username"]', ADMIN_USER)
             page.fill('input[name="password"]', ADMIN_PASS)
             page.click('button[type="submit"], input[type="submit"]')
             page.wait_for_load_state("domcontentloaded")
-            check("10. 再ログイン", "users/login" not in page.url, page.url)
+            check("11. 再ログイン", "users/login" not in page.url, page.url)
 
-            # 9. テスト画面を開き直す → 回答が復元される
+            # 9. テスト画面を開き直す → 回答が復元される（再読込なしの 1 リクエスト）
+            index_requests.clear()
             page.goto(test_url, wait_until="domcontentloaded")
             try:
                 page.wait_for_selector(".test-state-restored", timeout=15000)
                 restored_notice = True
             except Exception:
                 restored_notice = False
-            check("11. 回答復元の通知が表示される", restored_notice)
+            check("12. 回答復元の通知が表示される", restored_notice)
+            check(
+                "13. 復元が1リクエストで完了する（再読込しない）",
+                len(index_requests) == 1 and "question_id_list" not in page.url,
+                f"requests={len(index_requests)} url={page.url}",
+            )
 
             titles_after = [t.strip() for t in page.locator(".question h2").all_text_contents()]
-            check("12. 復元後の出題内容が元と同じ", titles_after == titles_before, str(titles_after))
+            check("14. 復元後の出題内容が元と同じ", titles_after == titles_before, str(titles_after))
 
             restored = {
                 name: sorted(
@@ -181,29 +211,34 @@ def main() -> int:
                 )
                 for name in selected
             }
-            check("13. 回答が復元される", restored == selected, str(restored))
+            check("15. 回答が復元される", restored == selected, str(restored))
 
             # 10. 採点
             page.click("input.btn-score")
             page.wait_for_selector("#confirmModal", state="visible")
             page.click("#confirmModal button.btn-score")
             page.wait_for_load_state("domcontentloaded")
-            check("14. 採点結果画面へ遷移", "/contents-questions/record/" in page.url, page.url)
+            check("16. 採点結果画面へ遷移", "/contents-questions/record/" in page.url, page.url)
             if "/contents-questions/record/" in page.url:
                 record_id = page.url.rstrip("/").split("/")[-1]
 
             titles_result = [t.strip() for t in page.locator(".question h2").all_text_contents()]
-            check("15. 採点された出題内容が元と同じ", titles_result == titles_before, str(titles_result))
+            check("17. 採点された出題内容が元と同じ", titles_result == titles_before, str(titles_result))
             score = page.locator(".result-table tr").nth(1).locator("td").nth(1).text_content().strip()
-            check("16. 得点が表示される", "/" in score, score)
+            check("18. 得点が表示される", "/" in score, score)
             print(f"    得点: {score} / record_id: {record_id or '(不明)'}")
 
             # 11. 採点後に退避データが削除される
             left = page.evaluate("(key) => localStorage.getItem(key)", state_key)
-            check("17. 採点後に退避データが削除される", left is None, str(left)[:60])
+            check("19. 採点後に退避データが削除される", left is None, str(left)[:60])
+            check(
+                "20. 採点後に Cookie が削除される",
+                read_cookie(page, STATE_COOKIE) == "",
+                read_cookie(page, STATE_COOKIE),
+            )
 
             # 12. コンソールエラーが無いこと
-            check("18. JS コンソールエラーなし", len(console_errors) == 0, "; ".join(console_errors[:3]))
+            check("21. JS コンソールエラーなし", len(console_errors) == 0, "; ".join(console_errors[:3]))
         finally:
             # 後始末: このテストで登録した受講登録のみ解除する
             if token and assigned_here:

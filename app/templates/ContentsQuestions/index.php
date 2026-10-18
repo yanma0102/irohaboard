@@ -50,8 +50,9 @@ $getExplain = function ($explain) {
 	var MSG_REST_TIME	= '<?= __('残り時間') ?>';
 	var MSG_TIME		= '<?= __('経過') ?>';
 	var MSG_RESTORED	= '<?= __('前回の回答を復元しました') ?>';
+	var MSG_RESTORED_PARTIAL	= '<?= __('前回の回答を復元しました（出題内容が変更されたため、一部の回答は復元されていません）') ?>';
 </script>
-<?= $this->Html->script('contents_questions.js?20261017');?>
+<?= $this->Html->script('contents_questions.js?20261018');?>
 <?php $this->end(); ?>
 <div class="contents-questions-index">
 	<div class="breadcrumb">

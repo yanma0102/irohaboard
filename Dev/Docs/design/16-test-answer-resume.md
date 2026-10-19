@@ -96,7 +96,7 @@
 |---|---|---|
 | 1 | リクエストの `question_id_list` が妥当 | その出題順を採用し、セッションにも保存（採点時の隠し項目） |
 | 2 | Cookie の出題リストが妥当 | その出題順を採用し、セッションにも保存 |
-| 3 | セッションに `id_list` がある | 従来どおり採用 |
+| 3 | セッションに `id_list` があり、現在の出題設定と一致 | その出題順を採用。一致しない（出題数が変更された等）場合は破棄して再抽選 |
 | 4 | `question_count > 0` | ランダム抽選し、セッションへ保存（従来どおり） |
 | 5 | その他 | 全問を `sort_no` 順で出題（従来どおり） |
 
@@ -113,6 +113,11 @@ localStorage に受験中データがある
 **再読込は行わない。** 出題内容は Cookie により最初のリクエストから揃うため、
 セッション切れと重なる 2 回目のリクエスト（1.2-e）が発生しない。
 Cookie が無い・受け付けられない場合でも、回答は一致分だけ復元され、**破棄しない**。
+
+セッションに保持した出題リストは、採用のたびに「現在の出題数（`question_count`）と
+一致するか」「対象コンテンツの問題か」を検証する。出題数は管理画面で変更できるため、
+変更前の出題リストをそのまま使うと**設定した出題数より多く出題される**（全問出題の
+状態で受験したセッションが残っていると、出題数を減らしても全問出題される）。
 
 ### 2.3 採点（POST）
 
@@ -140,13 +145,17 @@ Cookie が無い・受け付けられない場合でも、回答は一致分だ�
 結果表示モード（`$record_id` 指定）は `ib_records_questions` の出題順を使用（従来どおり）。
 
 Cookie の読み取り・検証は `getTestStateCookieIdList()`、失効は `deleteTestStateCookie()` が担当する。
+セッションの出題リストも `isValidQuestionIdList()` で毎回検証し、出題数の変更等で
+一致しない場合は破棄して抽選し直す。
 
 ### 3.2 出題リストの検証（改ざん対策）
 
-`getRequestedQuestionIdList()` で、リクエスト指定・Cookie のどちらも次をすべて満たす場合のみ受け付ける。
+`getRequestedQuestionIdList()`（リクエスト指定・Cookie）と `resolveQuestionIdList()`
+（セッション）で、出題リストは次をすべて満たす場合のみ受け付ける。
 
 - カンマ区切りの半角数字のみ・正の整数・重複なし
-- 要素数が `min(question_count, コンテンツの問題数)` と一致（**問題数の改ざん防止**）
+- 要素数が `min(question_count, コンテンツの問題数)` と一致（**問題数の改ざん防止**。
+  出題数が未指定（全問出題）の場合はコンテンツの問題数と一致）
 - すべて `content_id` に属する問題であること（Cookie はさらにユーザID の一致）
 
 残余リスク: 同一コンテンツ内で出題される問題の**組み合わせ・順序**はクライアントが
@@ -162,8 +171,9 @@ Cookie の読み取り・検証は `getTestStateCookieIdList()`、失効は `del
 | `app/templates/ContentsQuestions/index.php` | 隠し項目 `question_id_list` と JS 変数（`CONTENT_ID` / `USER_ID` / `IS_ADMIN_RECORD` / `MSG_RESTORED` / `MSG_RESTORED_PARTIAL`）を追加、`contents_questions.js` のバージョンを更新 |
 | `app/webroot/js/contents_questions.js` | 退避（`localStorage` + Cookie）・復元（再読込なし）・破棄処理を追加 |
 | `app/phpstan-baseline.neon` | 既存パターン（`EntityInterface::$id`）の発生回数 3 → 4 |
-| `Dev/tests/TestCase/Controller/ContentsQuestionsControllerTest.php` | 出題リスト復元（リクエスト・Cookie）・改ざん・リクエスト指定採点・Cookie 失効のテストを追加 |
-| `Dev/scripts/gui-test-resume.py` | 実ブラウザ GUI 操作テストを追加 |
+| `Dev/tests/TestCase/Controller/ContentsQuestionsControllerTest.php` | 出題リスト復元（リクエスト・Cookie）・改ざん・リクエスト指定採点・Cookie 失効・セッションの出題リスト再検証のテストを追加 |
+| `Dev/scripts/gui-test-resume.py` | 実ブラウザ GUI 操作テスト（回答の退避・復元）を追加 |
+| `Dev/scripts/gui-test-question-count.py` | 実ブラウザ GUI 操作テスト（出題数の変更反映）を追加 |
 
 スキーマ変更・マイグレーションは無し。
 
@@ -177,6 +187,8 @@ Cookie の読み取り・検証は `getTestStateCookieIdList()`、失効は `del
 | `testIndexRestoresQuestionSetFromCookie` | Cookie に退避した出題リストで、最初のリクエストから同じ出題内容・順序で表示される |
 | `testIndexIgnoresOtherUserCookie` | 他ユーザの Cookie（ユーザID 不一致）は採用されない |
 | `testIndexUsesSessionQuestionIdList` | セッションの出題リストは従来どおり使用される（回帰） |
+| `testIndexRedrawsWhenSessionListDiffersFromQuestionCount` | 出題数の変更後、セッションに残った変更前の出題リストを使わず再抽選される（**本不具合の回帰**） |
+| `testIndexServesAllQuestionsWhenQuestionCountIsUnsetWithStaleSessionList` | 出題数を未指定（全問）に変更した場合も、古い出題リストを使わない |
 | `testIndexIgnoresInvalidRequestedQuestionSet` | 問題数不一致・他コンテンツの問題・重複は無視される |
 | `testPostGradesUsingSubmittedQuestionIdList` | セッションに出題リストが無くても、送信された出題リストで採点される |
 | `testPostDeletesTestStateCookie` | 採点完了時に Cookie が失効する |
@@ -196,17 +208,28 @@ JS / `localStorage` / Cookie の挙動を実ブラウザで検証する。
 7. 採点結果画面へ遷移し、**元と同じ出題内容が採点される**こと
 8. 採点後に退避データ（`localStorage`・Cookie）が削除されること／JS コンソールエラーが無いこと
 
-### 4.3 検証結果（2026-10-18）
+`Dev/scripts/gui-test-question-count.py`（11 チェック・管理画面と受講者画面を実ブラウザで操作）。
+PHPUnit では再現しにくい「管理画面での出題数変更 × 受験中のセッション」の組み合わせを検証する。
+
+1. 管理画面で出題数を全問（問題数以上）に設定すると全問が出題される
+2. 出題数を全問より小さい値に変更すると、**同じセッションで開き直しても**変更後の
+   出題数だけ出題される（**本不具合の回帰**）
+3. 新しいセッションでも変更後の出題数だけ出題される
+4. 出題数を元の値に戻せること／JS コンソールエラーが無いこと
+
+### 4.3 検証結果（2026-10-19）
 
 | 検証 | 結果 |
 |---|---|
-| PHPUnit 全体 | 967 tests / 4778 assertions OK |
-| `ContentsQuestionsControllerTest` | 13 tests / 108 assertions OK |
-| GUI 操作テスト | 21/21 PASS（コンテンツ 7・得点 10/20・復元は 1 リクエスト） |
+| PHPUnit 全体 | 969 tests / 4796 assertions OK |
+| `ContentsQuestionsControllerTest` | 15 tests / 126 assertions OK |
+| GUI 操作テスト（回答の退避・復元） | 21/21 PASS（コンテンツ 7・得点 10/20・復元は 1 リクエスト） |
+| GUI 操作テスト（出題数の変更反映） | 11/11 PASS（コンテンツ 62・全問 60 → 5 問） |
+| 修正前コードでの回帰確認 | 同じセッションで 60 問出題され FAIL（修正後に PASS） |
 | GUI 追加確認（コンテンツ 62・60 問） | セッションのみ喪失＋Cookie 保持で 60/60 復元・1 リクエスト・出題順も一致 |
 | GUI 追加確認（Cookie も喪失・部分復元） | 再抽選された出題に対し一致分のみ復元（0〜1/10）・通知あり・回答は破棄されない |
-| `composer stan`（phpstan level 8） | No errors |
-| `composer cs-check`（変更ファイル） | 0 errors（既存の 120 文字超過 warning 1 件のみ） |
+| `vendor/bin/phpstan analyse`（level 8） | No errors |
+| `vendor/bin/phpcs`（変更ファイル） | 0 errors（既存の 120 文字超過 warning 1 件のみ） |
 
 ## 5. リスクと対策
 
@@ -217,6 +240,7 @@ JS / `localStorage` / Cookie の挙動を実ブラウザで検証する。
 | Cookie の容量超過（設問が多いテスト） | 3500 文字を超える値は保存せず、一致する設問のみ復元する（回答は破棄しない） |
 | `localStorage` / Cookie 不可（プライベートモード等） | 例外を握りつぶし、従来どおりの挙動（復元なし）にフォールバック。片方のみ使える場合は使える方だけで復元する |
 | 出題が再抽選された場合の回答 | 表示中の設問と一致する回答のみ復元し、回答を破棄しない。採点は表示中の出題（隠し項目）で行う |
+| 出題数（`question_count`）の変更後に古い出題リストが使われる | セッション・Cookie の出題リストを採用するたびに現在の出題数と照合し、一致しない場合は破棄して再抽選する |
 | 経過時間を復元すると制限時間超過で即時採点 | 従来の自動採点条件と同一。クライアント側タイマーは元々強制力が無い |
 
 ## 6. 既知の制限

@@ -248,10 +248,19 @@ class ContentsQuestionsController extends AppController
         }
 
         // 2. セッションに保持している出題リスト
+        //    出題数は管理画面で変更できるため、現在の出題設定と一致する場合のみ使う。
+        //    （変更前の出題リストをそのまま使うと、設定した出題数より多く出題される）
         $sessionList = $this->readSession('Iroha.RondomQuestions.' . $content_id . '.id_list');
 
         if (is_array($sessionList) && $sessionList !== []) {
-            return array_map('intval', $sessionList);
+            $sessionList = array_values(array_map('intval', $sessionList));
+
+            if ($this->isValidQuestionIdList($content_id, $question_count, $sessionList)) {
+                return $sessionList;
+            }
+
+            // 出題数の変更等で使えない出題リストは破棄し、抽選し直す
+            $this->deleteSession('Iroha.RondomQuestions.' . $content_id . '.id_list');
         }
 
         // 3. ランダム出題
@@ -315,12 +324,40 @@ class ContentsQuestionsController extends AppController
             return [];
         }
 
+        if (!$this->isValidQuestionIdList($content_id, $question_count, $question_id_list)) {
+            return [];
+        }
+
+        return $question_id_list;
+    }
+
+    /**
+     * 出題リストが現在の出題設定に対して妥当かを検証する
+     *
+     * 出題数（question_count）は管理画面で変更できるため、セッションに保持した
+     * 過去の出題リストをそのまま使うと、変更後の出題数と食い違う。件数と
+     * 対象コンテンツの問題であることを、採用のたびに検証する。
+     *
+     * @param int $content_id コンテンツID
+     * @param int $question_count 出題数（0 の場合は全問出題）
+     * @param array<int> $question_id_list 出題リスト
+     * @return bool 妥当な場合 true
+     */
+    private function isValidQuestionIdList(int $content_id, int $question_count, array $question_id_list): bool
+    {
+        if ($question_id_list === []) {
+            return false;
+        }
+
         $contentsQuestionsTable = $this->fetchTable('ContentsQuestions');
         $total = $contentsQuestionsTable->find()->where(['content_id' => $content_id])->count();
 
+        // 出題数が未指定（0）の場合は全問出題のため、問題数と一致することを求める
+        $expected = $question_count > 0 ? min($question_count, $total) : $total;
+
         // 出題数と一致しない出題リストは受け付けない（問題数の改ざん防止）
-        if (count($question_id_list) !== min($question_count, $total)) {
-            return [];
+        if (count($question_id_list) !== $expected) {
+            return false;
         }
 
         // 対象コンテンツの問題であることを確認
@@ -331,11 +368,7 @@ class ContentsQuestionsController extends AppController
             ])
             ->count();
 
-        if ($found !== count($question_id_list)) {
-            return [];
-        }
-
-        return $question_id_list;
+        return $found === count($question_id_list);
     }
 
     /**

@@ -12,7 +12,7 @@ They require `curl` and `jq` to be installed on the machine where they are execu
 | Docker app running on `http://localhost:8082` | Target application |
 | `curl` | HTTP requests |
 | `jq` | JSON parsing |
-| Python 3.10+ / Playwright (Chromium) | GUI 操作テスト（`gui-image-upload.py` / `gui-test-resume.py`） |
+| Python 3.10+ / Playwright (Chromium) | GUI 操作テスト（`gui-image-upload.py` / `gui-test-resume.py` / `gui-test-question-count.py`） |
 
 ## Environment Variables
 
@@ -123,6 +123,31 @@ python3 Dev/scripts/gui-test-resume.py
 
 BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
   USER_ID=1 COURSE_ID=1 TEST_CONTENT_ID=7 python3 Dev/scripts/gui-test-resume.py
+```
+
+## scripts/gui-test-question-count.py
+
+管理画面でテストの出題数（`question_count`）を変更したとき、受験中のセッションに
+残った変更前の出題リストが使われず、変更後の出題数だけ出題されることを実ブラウザで
+検証する GUI 操作テスト（`Dev/Docs/design/16-test-answer-resume.md` §4.2）。11 チェック。
+
+1. REST API で受講登録（テスト前に未登録だった場合のみ、終了時に解除）
+2. 管理画面で出題数を全問（問題数以上）に設定 → 全問が出題されること
+3. 出題数を全問より小さい値に変更 → **同じセッションで開き直しても**変更後の出題数だけ
+   出題されること（本不具合の回帰）
+4. 新しいセッションでも変更後の出題数だけ出題されること
+5. 出題数を元の値に戻すこと／JS コンソールエラーが無いこと
+
+- 前提: Python 3.10+ / Playwright（`pip install playwright && playwright install chromium`）
+- 対象コンテンツの問題数が `QUESTION_COUNT_FEW`（既定 5）より多いこと（既定はコンテンツ 62・60 問）
+- 出題数はテスト前の値に戻す（途中で失敗した場合も `finally` で戻す）
+- `course_id` は対象コンテンツのコース（既定はコンテンツ 62 のコース 4）
+
+```bash
+python3 Dev/scripts/gui-test-question-count.py
+
+BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
+  USER_ID=1 COURSE_ID=4 TEST_CONTENT_ID=62 python3 Dev/scripts/gui-test-question-count.py
 ```
 
 | Variable | Default | Description |

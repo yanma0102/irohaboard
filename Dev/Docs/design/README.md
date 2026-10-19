@@ -21,7 +21,7 @@
 | 13 | `13-markdown-mcp.md` | Markdown 対応 & MCP サーバ統合設計（コンテンツ Markdown 化・Contents API Write・MCP サーバ） |
 | 14 | `14-config-gui-admin.md` | 設定項目のGUI編集機能（Config GUI Admin） |
 | 15 | `15-mcp-extension-markdown-image.md` | MCP ツール網羅拡張 & Markdown 画像添付設計（users/groups/courses CRUD の MCP 化・画像アップロード基盤・EasyMDE 貼付け堅牢化） |
-| 16 | `16-test-answer-resume.md` | 試験のセッション切れ対策（回答の localStorage 退避・復元、出題リストの Cookie 退避による 1 リクエスト復元・出題リストのセッション非依存化） |
+| 16 | `16-test-answer-resume.md` | 試験のセッション切れ対策（回答の localStorage 退避・復元、出題リストの Cookie 退避による 1 リクエスト復元・出題数の変更反映・出題リストのセッション非依存化） |
 
 ## 共通設計方針
 

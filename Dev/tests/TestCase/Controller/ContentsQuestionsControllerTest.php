@@ -434,6 +434,73 @@ class ContentsQuestionsControllerTest extends TestCase
     }
 
     /**
+     * 出題数を変更した場合、セッションに残った変更前の出題リストを使わず再抽選すること
+     *
+     * 出題数を問題数より小さく設定しても、セッションに残った全問の出題リストが
+     * そのまま使われ、総数出題されていた不具合の回帰テスト。
+     */
+    public function testIndexRedrawsWhenSessionListDiffersFromQuestionCount(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 2);
+        $question1 = $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $question2 = $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+        $question3 = $this->createQuestion((int)$content->id, 'choice', 3, '問題3');
+
+        // 出題数=2 に対して 3 問（出題数を変更する前の出題リスト）が残っている状態
+        $this->session([
+            'Iroha' => [
+                'RondomQuestions' => [
+                    (int)$content->id => [
+                        'id_list' => [(int)$question1->id, (int)$question2->id, (int)$question3->id],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->get("/contents-questions/index/{$content->id}");
+
+        $this->assertResponseOk();
+        // 出題数（2 問）に合わせて再抽選され、3 問は出題されない
+        $this->assertResponseRegExp('/name="question_id_list"[^>]*value="\d+,\d+"/');
+    }
+
+    /**
+     * 出題数が未指定（全問出題）に変更された場合も、セッションの古い出題リストを使わないこと
+     */
+    public function testIndexServesAllQuestionsWhenQuestionCountIsUnsetWithStaleSessionList(): void
+    {
+        $user = $this->loginAsUser();
+        $course = $this->createCourse((int)$user->id);
+        $this->enrollUser((int)$user->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id, (int)$user->id, 1, 0);
+        $question1 = $this->createQuestion((int)$content->id, 'choice', 1, '問題1');
+        $question2 = $this->createQuestion((int)$content->id, 'choice', 2, '問題2');
+        $question3 = $this->createQuestion((int)$content->id, 'choice', 3, '問題3');
+
+        // 以前の出題（1 問のみ）がセッションに残っている状態
+        $this->session([
+            'Iroha' => [
+                'RondomQuestions' => [
+                    (int)$content->id => [
+                        'id_list' => [(int)$question1->id],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->get("/contents-questions/index/{$content->id}");
+
+        $this->assertResponseOk();
+        $this->assertResponseRegExp(
+            '/name="question_id_list"[^>]*value="'
+            . $question1->id . ',' . $question2->id . ',' . $question3->id . '"/',
+        );
+    }
+
+    /**
      * 採点完了時に、Cookie に退避した出題リストが削除されること
      */
     public function testPostDeletesTestStateCookie(): void

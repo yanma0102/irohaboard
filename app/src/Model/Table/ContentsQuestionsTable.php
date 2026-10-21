@@ -10,7 +10,9 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use ArrayObject;
 use Cake\Datasource\EntityInterface;
+use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
@@ -52,6 +54,21 @@ class ContentsQuestionsTable extends AppTable
     }
 
     /**
+     * 保存前にカテゴリの空文字を未分類（NULL）へ正規化する
+     *
+     * @param \Cake\Event\EventInterface<\App\Model\Table\ContentsQuestionsTable> $event イベント
+     * @param \Cake\Datasource\EntityInterface $entity 保存する問題
+     * @param \ArrayObject<int, mixed> $options 保存オプション
+     * @return void
+     */
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    {
+        if ($entity->isDirty('category') && $entity->get('category') === '') {
+            $entity->set('category', null);
+        }
+    }
+
+    /**
      * Default validation rules.
      */
     public function validationDefault(Validator $validator): Validator
@@ -66,6 +83,11 @@ class ContentsQuestionsTable extends AppTable
             ->maxLength('question_type', 20)
             ->requirePresence('question_type', 'create')
             ->notEmptyString('question_type');
+
+        $validator
+            ->scalar('category')
+            ->maxLength('category', 100)
+            ->allowEmptyString('category');
 
         $validator
             ->requirePresence('body', 'create')

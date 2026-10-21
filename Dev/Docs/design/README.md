@@ -22,6 +22,7 @@
 | 14 | `14-config-gui-admin.md` | 設定項目のGUI編集機能（Config GUI Admin） |
 | 15 | `15-mcp-extension-markdown-image.md` | MCP ツール網羅拡張 & Markdown 画像添付設計（users/groups/courses CRUD の MCP 化・画像アップロード基盤・EasyMDE 貼付け堅牢化） |
 | 16 | `16-test-answer-resume.md` | 試験のセッション切れ対策（回答の localStorage 退避・復元、出題リストの Cookie 退避による 1 リクエスト復元・出題数の変更反映・出題リストのセッション非依存化） |
+| 17 | `17-custom-test.md` | カスタム受験（ユーザ設定による反復テスト。出題範囲・出題数・制限時間・出題順・表示の変更、練習は履歴に記録しない、コンテンツ単位の許可と上限、問題カテゴリ） |
 
 ## 共通設計方針
 

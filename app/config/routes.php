@@ -116,6 +116,24 @@ return function (RouteBuilder $routes): void {
         ]);
 
         // ContentsQuestions (front)
+        // カスタム受験（練習）。index / record より先に定義する。
+        $builder->connect('/contents-questions/practice/{content_id}', [
+            'controller' => 'ContentsQuestions',
+            'action' => 'practice',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/contents-questions/practice-run/{content_id}', [
+            'controller' => 'ContentsQuestions',
+            'action' => 'practiceRun',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/contents-questions/practice-grade/{content_id}', [
+            'controller' => 'ContentsQuestions',
+            'action' => 'practiceGrade',
+        ], ['pass' => ['content_id']]);
+        $builder->connect('/contents-questions/practice-result/{content_id}', [
+            'controller' => 'ContentsQuestions',
+            'action' => 'practiceResult',
+        ], ['pass' => ['content_id']]);
+
         $builder->connect('/contents-questions/index/{content_id}/{record_id}', [
             'controller' => 'ContentsQuestions',
             'action' => 'index',

@@ -110,6 +110,7 @@ class MigrationVerificationTest extends TestCase
         $this->assertTableHasColumns('ib_contents', [
             'id', 'course_id', 'user_id', 'title', 'url', 'file_name',
             'kind', 'body', 'timelimit', 'pass_rate', 'question_count',
+            'allow_custom_test', 'practice_timelimit_max',
             'wrong_mode', 'status', 'opened', 'created', 'modified',
             'deleted', 'sort_no', 'comment',
         ]);
@@ -131,7 +132,7 @@ class MigrationVerificationTest extends TestCase
     public function testContentsQuestionsTableColumns(): void
     {
         $this->assertTableHasColumns('ib_contents_questions', [
-            'id', 'content_id', 'question_type', 'title', 'body', 'image',
+            'id', 'content_id', 'question_type', 'title', 'category', 'body', 'image',
             'options', 'correct', 'score', 'explain', 'comment',
             'created', 'modified', 'sort_no',
         ]);

@@ -541,11 +541,11 @@ class ContentsQuestionsResultViewTest extends TestCase
             'index に demo_mode ガードが存在すること',
         );
 
-        // 保存処理より前にガードがあること
+        // 採点・保存処理より前にガードがあること
         $guardPos = strpos($methodSource, "Configure::read('demo_mode')");
-        $detailsPos = strpos($methodSource, '$details = []');
+        $gradePos = strpos($methodSource, '$graded = $this->gradeQuestions(');
         $this->assertNotFalse($guardPos, 'demo_mode ガードが見つからない');
-        $this->assertNotFalse($detailsPos, '保存処理 ($details = []) が見つからない');
-        $this->assertLessThan($detailsPos, $guardPos, 'demo_mode ガードは保存処理より前に位置すること');
+        $this->assertNotFalse($gradePos, '採点処理 ($graded = $this->gradeQuestions()) が見つからない');
+        $this->assertLessThan($gradePos, $guardPos, 'demo_mode ガードは採点処理より前に位置すること');
     }
 }

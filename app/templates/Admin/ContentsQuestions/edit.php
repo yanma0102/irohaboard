@@ -154,8 +154,24 @@
 				$this->Form->unlockField('option_list');
 				$this->Form->unlockField('correct');
 				$this->Form->unlockField('id');
+				// Summernote がフォーム内に挿入する画像アップロード用の
+				// file input（name="files"）を検証対象から除外する。
+				$this->Form->unlockField('files');
 				echo $this->Form->control('id');
 				echo $this->Form->control('title',	['label' => __('タイトル')]);
+				echo $this->Form->control('category', [
+					'type' => 'text',
+					'label' => __('カテゴリ（章）'),
+					'list' => 'category-list',
+					'placeholder' => __('例：第1章'),
+				]);
+			?>
+			<datalist id="category-list">
+				<?php foreach(($categories ?? []) as $category){ ?>
+				<option value="<?= h($category); ?>"></option>
+				<?php }?>
+			</datalist>
+			<?php
 				echo $this->Form->control('body',		['label' => __('問題文')]);
 			?>
 			<div class="form-group required">

@@ -1,27 +1,9 @@
 <?php
-/**
- * 解説（explain）の表示タグを組み立てるクロージャ。
- *
- * テンプレート内で global 関数を宣言すると、このテンプレートが同一 PHP
- * プロセス内で複数回レンダリングされた場合（テストで連続リクエストする等）に
- * "Cannot redeclare function ..." で fatal になる。また条件付き宣言は
- * 実行時評価されるため、宣言位置より前の呼び出しで undefined function になる。
- * どちらも避けるため、ローカル変数にクロージャとして保持する。
- */
-$getExplain = function ($explain) {
-	$tag = '';
-
-	// 解説（explain）が未入力の設問では NULL が渡るため、文字列に正規化する
-	$explain = (string)$explain;
-	$check = str_replace(['<p>', '</p>', '<br>'], '', $explain);
-
-	// pタグ、brタグのみの場合、解説を表示しない
-	if ($check != '') {
-		$tag = sprintf('<div class="correct-text bg-danger">%s : %s</div>', __('解説'), $explain);
-	}
-
-	return $tag;
-};
+$is_practice = !empty($is_practice);
+$current_timelimit = isset($timelimit) ? (int)$timelimit : (int)$content->timelimit;
+$current_wrong_mode = $is_practice && isset($practice_settings['wrong_mode'])
+	? (int)$practice_settings['wrong_mode']
+	: (int)$content->wrong_mode;
 ?>
 <?php $this->start('css-embedded'); ?>
 <style type='text/css'>
@@ -41,18 +23,20 @@ $getExplain = function ($explain) {
 
 <?php $this->start('script-embedded'); ?>
 <script>
-	var TIMELIMIT_SEC	= parseInt('<?= $content->timelimit ?>') * 60;	// 制限時間（単位：秒）
+	var TIMELIMIT_SEC	= parseInt('<?= $current_timelimit ?>') * 60;	// 制限時間（単位：秒）
 	var IS_RECORD		= '<?= $is_record ?>';										// テスト結果表示フラグ
 	var CONTENT_ID		= '<?= (int)$content->id ?>';								// コンテンツID
 	var USER_ID			= '<?= (int)$this->AppView->readAuthUser('id') ?>';			// ログインユーザID
 	var IS_ADMIN_RECORD	= '<?= $is_admin_record ?>';									// 管理者による履歴表示フラグ
+	var IS_PRACTICE		= '<?= $is_practice ? '1' : '0' ?>';							// 練習モードフラグ
+	var TEST_MODE		= '<?= $is_practice ? 'practice' : 'official' ?>';			// 受験中データの退避モード
 	var MSG_TIMELIMIT	= '<?= __('制限時間を過ぎましたので自動採点を行います。') ?>';
 	var MSG_REST_TIME	= '<?= __('残り時間') ?>';
 	var MSG_TIME		= '<?= __('経過') ?>';
 	var MSG_RESTORED	= '<?= __('前回の回答を復元しました') ?>';
 	var MSG_RESTORED_PARTIAL	= '<?= __('前回の回答を復元しました（出題内容が変更されたため、一部の回答は復元されていません）') ?>';
 </script>
-<?= $this->Html->script('contents_questions.js?20261018');?>
+<?= $this->Html->script('contents_questions.js?20261021');?>
 <?php $this->end(); ?>
 <div class="contents-questions-index">
 	<div class="breadcrumb">
@@ -72,11 +56,28 @@ $getExplain = function ($explain) {
 		);
 	}
 	
-	$this->Html->addCrumb($content->course->title, $course_url);
-	$this->Html->addCrumb(h($content->title)); // addCrumb 内でエスケープされない為、別途エスケープ
+	if($is_practice)
+	{
+		$this->Html->addCrumb($content->course->title, $course_url);
+		$this->Html->addCrumb(h($content->title), ['controller' => 'ContentsQuestions', 'action' => 'index', $content->id]);
+		$this->Html->addCrumb(__('練習'));
+		$back_url = ['controller' => 'ContentsQuestions', 'action' => 'practice', $content->id];
+	}
+	else
+	{
+		$this->Html->addCrumb($content->course->title, $course_url);
+		$this->Html->addCrumb(h($content->title)); // addCrumb 内でエスケープされない為、別途エスケープ
+		$back_url = $course_url;
+	}
 	echo $this->Html->getCrumbs(' / ');
 	?>
 	</div>
+	<?php if($is_practice){ ?>
+	<div class="alert alert-warning">
+		<strong><?= __('練習（記録されません）'); ?></strong>
+		<?= __('この結果は成績・学習回数・理解度・コース完了に反映されません。'); ?>
+	</div>
+	<?php }?>
 	<div id="lblStudySec" class="btn btn-info"></div>
 	<!-- テスト結果ヘッダ表示 -->
 	<?php if($is_record){ ?>
@@ -116,143 +117,18 @@ $getExplain = function ($explain) {
 			}
 		}
 		
-		echo $this->Form->create(null);
+		echo $this->Form->create(null, $is_practice
+			? ['url' => ['action' => 'practiceGrade', $content->id]]
+			: []);
 	?>
 		<?php foreach ($contentsQuestions as $contentsQuestion): ?>
-			<?php
-			$question		= $contentsQuestion;	// 問題情報
-			$title			= $question['title'];						// 問題のタイトル
-			$body			= $question['body'];						// 問題文
-			$question_id	= $question['id'];							// 問題ID
-			
-			//------------------------------//
-			//	選択肢用の出力タグの生成	//
-			//------------------------------//
-			$option_tag		= '';										// 選択肢用の出力タグ
-			$option_index	= 1;										// 選択肢番号
-			// 選択肢（options）と正解（correct）は未入力の設問では NULL になり得るため、
-			// explode() に渡す前に文字列へ正規化する
-			$option_list	= explode('|', (string)$question['options']);	// 選択肢リスト
-			$correct_list	= explode(',', (string)$question['correct']);	// 正解リスト
-			$answer_list	= [];										// 選択した解答リスト
-			
-			// 解答済みの場合、解答リストを作成
-			if(isset($question_records[$question_id]))
-				$answer_list = explode(',', $question_records[$question_id]['answer']);
-			
-			foreach($option_list as $option)
-			{
-				$is_checked = '';
-				
-				// テスト結果履歴モードの場合、ラジオボタンを無効化
-				$is_disabled = $is_record ? 'disabled' : '';
-				
-				// 複数選択(順不同)問題の場合
-				if(count($correct_list) > 1)
-				{
-				$is_checked = (in_array($option_index, $answer_list)) ? ' checked' : '';
-				
-					// 選択肢チェックボックス
-					$option_id = sprintf('answer_%s_%d', $question_id, $option_index);
-					$option_tag .= sprintf('<label for="%s"><input type="checkbox" id="%s" value="%s" name="answer_%s[]" %s %s> %s</label><br>',
-						$option_id, $option_id, $option_index, $question_id, $is_checked, $is_disabled, h($option));
-				}
-				else
-				{
-					// 解答リストがある場合
-					if(count($answer_list) > 0)
-						$is_checked = ($answer_list[0] == $option_index) ? 'checked' : '';
-					
-					// 選択肢ラジオボタン
-					$option_id = sprintf('answer_%s_%d', $question_id, $option_index);
-					$option_tag .= sprintf('<label for="%s"><input type="radio" id="%s" value="%s" name="answer_%s" %s %s> %s</label><br>',
-							$option_id, $option_id, $option_index, $question_id, $is_checked, $is_disabled, h($option));
-				}
-				
-				$option_index++;
-			}
-			
-			//------------------------------//
-			//	正解、解説情報を出力		//
-			//------------------------------//
-			$explain_tag	= ''; // 解説用タグ
-			$correct_tag	= ''; // 正解用タグ
-			$result_tag		= ''; // 正誤用タグ
-			$is_correct		= false; // 正誤
-			
-			// テスト結果表示モードの場合
-			if($is_record)
-			{
-				// 正誤判定
-				if(isset($question_records[$question_id]['is_correct']))
-					$is_correct = ($question_records[$question_id]['is_correct'] == '1');
-				
-				// 不正解時の表示モード
-				$wrong_mode	= $content->wrong_mode;
-				
-				// 正解番号から正解ラベルへ変換
-				// 記述式等で correct が空文字の場合、explode で [''] になるため
-				// 数値として有効な正解番号のみを対象にする
-				$correct_label = ''; // 正解ラベル
-				
-				$numeric_corrects = array_filter($correct_list, fn($v) => $v !== '' && ctype_digit((string)$v));
-				foreach($numeric_corrects as $correct_no)
-				{
-					$idx = (int)$correct_no - 1;
-					if(isset($option_list[$idx]))
-					{
-						$correct_label .= ($correct_label == '') ? $option_list[$idx] : ', '.$option_list[$idx];
-					}
-				}
-				
-				// 正解時は、解説のみを表示
-				if($is_correct)
-				{
-					$result_tag  = sprintf('<p>%s<span class="result-currect">%s</span></p>', $this->Html->image('correct.png', ['width'=>'60','height'=>'60']), __('正解'));
-					$explain_tag = $getExplain($question['explain']);
-				}
-				else
-				{
-					$result_tag  = sprintf('<p>%s<span class="result-wrong">%s</span></p>', $this->Html->image('wrong.png', ['width'=>'60','height'=>'60']), __('不正解'));
-					
-					// 不正解時の表示
-					switch($wrong_mode)
-					{
-						case 0: // 正解と解説を表示しない
-							break;
-						case 1: // 正解と解説を表示する
-							$correct_tag = sprintf('<p class="correct-text bg-success">%s : %s</p>',__('正解'), $correct_label);
-							$explain_tag = $getExplain($question['explain']);
-							break;
-						case 2: // 解説のみ表示する
-							$explain_tag = $getExplain($question['explain']);
-							break;
-					}
-				}
-			}
-			?>
-			<div class="panel panel-info question question-<?= $question_index;?>">
-				<div class="panel-heading"><?= __('問').$question_index;?></div>
-				<div class="panel-body">
-				<!--問題タイトル-->
-				<h2><?= h($title) ?></h2>
-					<div class="question-text bg-warning">
-						<!--問題文-->
-						<?= $body ?>
-					</div>
-					
-					<div class="radio-group">
-						<!--選択肢-->
-						<?= $option_tag; ?>
-					</div>
-					<!--正誤画像-->
-					<?= $result_tag ?>
-					<!--正解-->
-					<?= $correct_tag ?>
-					<!--解説文-->
-					<?= $explain_tag ?>
-				</div>
-			</div>
+			<?= $this->element('ContentsQuestions/question', [
+				'contentsQuestion' => $contentsQuestion,
+				'question_index' => $question_index,
+				'question_records' => $question_records,
+				'is_record' => $is_record,
+				'wrong_mode' => $current_wrong_mode,
+			]); ?>
 			<?php $question_index++;?>
 		<?php endforeach; ?>
 		
@@ -273,7 +149,7 @@ $getExplain = function ($explain) {
 				echo '&nbsp;';
 			}
 			
-			echo '<input type="button" value="'.__('戻る').'" class="btn btn-default btn-lg" onclick="location.href=\''. $this->Url->build($course_url).'\'">';
+			echo '<input type="button" value="'.__('戻る').'" class="btn btn-default btn-lg" onclick="location.href=\''. $this->Url->build($back_url).'\'">';
 			echo '</div><!--end-->';
 			echo $this->Form->end();
 		?>

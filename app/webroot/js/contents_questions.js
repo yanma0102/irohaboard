@@ -101,13 +101,29 @@ function sendData()
 // サーバが同じ出題内容を返せるようにする。
 // ---------------------------------------------------------------------------
 
-// 受験中データの保存キー（ユーザ・コンテンツ単位）
+// 練習モードか（正式受験と退避データを分離する）
+function isPracticeMode()
+{
+	return (typeof TEST_MODE !== 'undefined' && TEST_MODE === 'practice');
+}
+
+// 受験中データの保存キー（モード・ユーザ・コンテンツ単位）
 function getTestStateKey()
 {
 	var userId		= (typeof USER_ID !== 'undefined') ? USER_ID : '0';
 	var contentId	= (typeof CONTENT_ID !== 'undefined') ? CONTENT_ID : '0';
+	var prefix		= isPracticeMode() ? 'iroha.practice.' : 'iroha.test.';
 
-	return 'iroha.test.' + userId + '.' + contentId;
+	return prefix + userId + '.' + contentId;
+}
+
+// 出題リストを Cookie へ退避するか
+//
+// 練習は記録対象ではなく、セッション切れ時は設定画面からやり直すため、
+// 正式受験のような Cookie 復元は行わない（正式受験の Cookie も壊さない）。
+function useTestStateCookie()
+{
+	return !isPracticeMode();
 }
 
 // 出題リストを退避する Cookie 名（コンテンツ単位）
@@ -129,6 +145,11 @@ function getTestStateCookieName()
 // 文字（RFC 6265 の cookie-octet 外）のため、区切りにはハイフンを使用する。
 function saveTestStateCookie(state)
 {
+	if(!useTestStateCookie())
+	{
+		return;
+	}
+
 	try
 	{
 		var userId	= (typeof USER_ID !== 'undefined') ? USER_ID : '0';
@@ -154,6 +175,11 @@ function saveTestStateCookie(state)
 // 出題リストを退避した Cookie を削除する
 function clearTestStateCookie()
 {
+	if(!useTestStateCookie())
+	{
+		return;
+	}
+
 	try
 	{
 		document.cookie = getTestStateCookieName() + '=; path=/; max-age=0; samesite=lax';

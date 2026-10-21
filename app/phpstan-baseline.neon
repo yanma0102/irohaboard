@@ -847,12 +847,6 @@ parameters:
 			path: src/Controller/ContentsController.php
 
 		-
-			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$correct\.$#'
-			identifier: property.notFound
-			count: 1
-			path: src/Controller/ContentsQuestionsController.php
-
-		-
 			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$course_id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -861,7 +855,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 3
 			path: src/Controller/ContentsQuestionsController.php
 
 		-
@@ -883,12 +877,6 @@ parameters:
 			path: src/Controller/ContentsQuestionsController.php
 
 		-
-			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: src/Controller/ContentsQuestionsController.php
-
-		-
 			message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$status\.$#'
 			identifier: property.notFound
 			count: 1
@@ -903,7 +891,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Cake\\ORM\\Table\:\:hasRight\(\)\.$#'
 			identifier: method.notFound
-			count: 1
+			count: 2
 			path: src/Controller/ContentsQuestionsController.php
 
 		-

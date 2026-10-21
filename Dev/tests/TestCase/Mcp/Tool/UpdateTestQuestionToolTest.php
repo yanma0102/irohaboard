@@ -194,6 +194,29 @@ class UpdateTestQuestionToolTest extends TestCase
     }
 
     /**
+     * カテゴリを更新できる
+     */
+    public function testUpdateCategory(): void
+    {
+        $course = $this->createCourse();
+        $admin = $this->createUser('upadmin05', 'admin');
+        $this->enrollUser((int)$admin->id, (int)$course->id);
+        $content = $this->createTestContent((int)$course->id);
+        $question = $this->createQuestion((int)$content->id);
+
+        $result = $this->tool->__invoke(
+            $this->makeContext((int)$admin->id, 'admin'),
+            (int)$question->id,
+            category: '第2章',
+        );
+
+        $this->assertSame('第2章', $result['data']['category']);
+
+        $saved = $this->getTableLocator()->get('ContentsQuestions')->get((int)$question->id);
+        $this->assertSame('第2章', $saved->get('category'));
+    }
+
+    /**
      * options と correct を配列で更新できる
      */
     public function testUpdateOptionsAndCorrect(): void

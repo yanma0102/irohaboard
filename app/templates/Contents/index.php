@@ -163,6 +163,16 @@ $is_admin_record = $this->AppView->isAdminPage() && $this->AppView->isRecordPage
 				break;
 		}
 		
+		// カスタム受験（練習）が許可されているテストは、タイトル横に練習リンクを表示する
+		if($content['kind'] == 'test' && !empty($content['allow_custom_test']) && !$is_admin_record)
+		{
+			$title_link .= ' '.$this->Html->link(
+				__('練習'),
+				['controller' => 'ContentsQuestions', 'action' => 'practice', $content['id']],
+				['class' => 'label label-success']
+			);
+		}
+
 		// 管理者による学習履歴表示の場合、学習画面へのリンクを出力しない
 		if($is_admin_record)
 			$title_link = h($content['title']);

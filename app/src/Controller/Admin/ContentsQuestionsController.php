@@ -178,7 +178,24 @@ class ContentsQuestionsController extends AppController
             $question = $question_id !== null ? $contentsQuestionsTable->get((int)$question_id) : $contentsQuestionsTable->newEmptyEntity();
         }
 
-        $this->set(compact('content', 'question'));
+        // 同一コンテンツの既存カテゴリを datalist の候補として渡す
+        $categories = [];
+
+        $categoryQuery = $contentsQuestionsTable->find()
+            ->select(['category'])
+            ->where([
+                $contentsQuestionsTable->aliasField('content_id') => $content_id,
+                $contentsQuestionsTable->aliasField('category') . ' IS NOT' => null,
+                $contentsQuestionsTable->aliasField('category') . ' !=' => '',
+            ])
+            ->distinct()
+            ->orderBy([$contentsQuestionsTable->aliasField('category') => 'ASC']);
+
+        foreach ($categoryQuery->all() as $row) {
+            $categories[] = (string)$row->get('category');
+        }
+
+        $this->set(compact('content', 'question', 'categories'));
 
         return null;
     }

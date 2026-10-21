@@ -69,6 +69,7 @@
 	<thead>
 	<tr>
 		<th><?= __('タイトル'); ?></th>
+		<th><?= __('カテゴリ'); ?></th>
 		<th><?= __('問題文'); ?></th>
 		<th><?= __('選択肢'); ?></th>
 		<th width="40" nowap><?= __('正解'); ?></th>
@@ -82,6 +83,7 @@
 	<?php foreach ($contentsQuestions as $contentsQuestion): ?>
 	<tr>
 		<td class="td-reader"><?= h($contentsQuestion['title']); ?>&nbsp;</td>
+		<td><?= ($contentsQuestion['category'] === null || $contentsQuestion['category'] === '') ? __('未分類') : h($contentsQuestion['category']); ?>&nbsp;</td>
 		<td class="td-reader"><?= h(strip_tags($contentsQuestion['body'])); ?>&nbsp;</td>
 		<td class="td-reader"><?= h($contentsQuestion['options']); ?>&nbsp;</td>
 		<td><?= h($contentsQuestion['correct']); ?>&nbsp;</td>

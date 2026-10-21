@@ -12,7 +12,7 @@ They require `curl` and `jq` to be installed on the machine where they are execu
 | Docker app running on `http://localhost:8082` | Target application |
 | `curl` | HTTP requests |
 | `jq` | JSON parsing |
-| Python 3.10+ / Playwright (Chromium) | GUI 操作テスト（`gui-image-upload.py` / `gui-test-resume.py` / `gui-test-question-count.py`） |
+| Python 3.10+ / Playwright (Chromium) | GUI 操作テスト（`gui-image-upload.py` / `gui-test-resume.py` / `gui-test-question-count.py` / `gui-test-practice.py`） |
 
 ## Environment Variables
 
@@ -158,6 +158,48 @@ BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
 | `COURSE_ID` | `1` | 受講登録を確認・作成するコース ID |
 | `TEST_CONTENT_ID` | `7` | 受験するテストコンテンツ ID（複数設問があること） |
 
+## scripts/gui-test-practice.py
+
+カスタム受験（練習）機能を実ブラウザで検証する GUI 操作テスト
+（`Dev/Docs/design/17-custom-test.md`）。管理画面の許可・カテゴリ設定から、練習の
+設定変更・採点・結果・再練習、履歴が増えないこと、正式受験の回帰まで 13 チェック。
+
+1. REST API で受講登録（テスト前に未登録だった場合のみ、終了時に解除）
+2. 管理画面で「カスタム受験を許可」を ON、対象 3 問にカテゴリを設定
+3. コンテンツ一覧に「練習」リンクが表示されること
+4. カテゴリ・出題数・制限時間・出題順・不正解表示を変更して練習を開始
+5. 指定した問題数・カテゴリ・登録順で出題されること
+6. 全問回答 → 採点 → 結果に得点・正解数・解説が出ること
+7. 練習では `ib_records` が増えないこと
+8. コンテンツ一覧の学習回数・理解度が変化しないこと
+9. 「もう一度練習」で同じ設定が引き継がれること
+10. 設定を変えて再実行すると異なる出題数で開始できること
+11. 正式受験は従来どおり記録されること（回帰）
+12. JS コンソールエラーが無いこと
+13. カテゴリ・許可フラグをテスト前の値に戻すこと
+
+- 前提: Python 3.10+ / Playwright（`pip install playwright && playwright install chromium`）
+- 対象コンテンツに 3 問以上あり、先頭 3 問が単一選択であること（既定はコンテンツ 62）
+- 正式受験の回帰確認で学習履歴（`ib_records`）が 1 件作成される
+- 管理画面のカテゴリ・許可フラグは `finally` で元に戻す
+- 既存 DB でマイグレーション後にカテゴリが保存されない場合は、モデルキャッシュ
+  （`tmp/cache/models`）を削除してから実行する
+
+```bash
+python3 Dev/scripts/gui-test-practice.py
+
+BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
+  USER_ID=1 COURSE_ID=4 TEST_CONTENT_ID=62 python3 Dev/scripts/gui-test-practice.py
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BASE_URL` | `http://localhost:8082` | Application base URL |
+| `API_USER` / `API_PASS` | `admin` / `adminpass` | 管理者ログイン |
+| `USER_ID` | `1` | 受験するユーザ ID |
+| `COURSE_ID` | `4` | 受講登録を確認・作成するコース ID |
+| `TEST_CONTENT_ID` | `62` | 練習対象のテストコンテンツ ID |
+
 ## Exit Codes
 
 | Code | Meaning |
@@ -170,5 +212,7 @@ BASE_URL=http://localhost:8082 API_USER=admin API_PASS=adminpass \
 - curl 系スクリプト（`smoke-api.sh` / `smoke-mcp.sh`）はデータを変更しない。
   `gui-image-upload.py` は画像ファイルを `webroot/uploads` へアップロードする（コンテンツは保存しない）。
   `gui-test-resume.py` は受講登録（未登録時のみ・終了時に解除）と学習履歴 1 件の作成を行う。
+  `gui-test-practice.py` は受講登録（未登録時のみ・終了時に解除）、カテゴリ・許可フラグの
+  一時変更（終了時に復元）、正式受験の回帰確認で学習履歴 1 件の作成を行う。
 - The MCP smoke requires the `/mcp` endpoint to be active (Phase 2+ build).
 - Each script prints `PASS` / `FAIL` per check and a summary at the end.

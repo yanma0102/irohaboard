@@ -310,6 +310,8 @@
 			$this->Form->unlockField('timelimit');
 			$this->Form->unlockField('pass_rate');
 			$this->Form->unlockField('question_count');
+			$this->Form->unlockField('allow_custom_test');
+			$this->Form->unlockField('practice_timelimit_max');
 			$this->Form->unlockField('wrong_mode');
 			// EasyMDE の upload-image ボタンが生成する file input（name="image"）。
 			// 保存ボタンでは使用しないため、FormProtection の検証対象から除外する。
@@ -340,7 +342,13 @@
 			
 			// ランダム出題用
 			echo $this->Form->inputExp('question_count', ['label' => __('出題数 (1-100問)')], __('指定した場合、登録した問題の中からランダムに出題され、指定しない場合は問題一覧画面の並び順で全問出題されます。'));
-			
+
+			// カスタム受験（練習）
+			echo $this->Form->inputRadio('allow_custom_test', ['label' => __('カスタム受験を許可'), 'options' => [0 => __('許可しない'), 1 => __('許可する')], 'default' => 0],
+				__('許可すると、受講者が設定を変えて反復受験できます。練習では正解・解説が表示されるため、認定試験等では許可しないでください。'));
+			echo $this->Form->inputExp('practice_timelimit_max', ['label' => __('練習の制限時間の上限 (1-100分)')],
+				__('練習で設定できる制限時間の最大値です。空欄の場合、受講者は制限なし（0分）も選べます。'));
+
 			// 問題が不正解時の表示
 			echo $this->Form->inputRadio('wrong_mode', ['label' => __('不正解時の表示'), 'options' => Configure::read('wrong_mode'), 'default' => 2],
 				__('テスト結果画面にて不正解の問題の表示方法を指定します。正解時は解説のみが表示されます。'));

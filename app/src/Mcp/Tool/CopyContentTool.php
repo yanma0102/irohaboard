@@ -115,6 +115,7 @@ class CopyContentTool
                         'sort_no' => $sortNo,
                         'question_type' => $question->question_type,
                         'title' => $question->title,
+                        'category' => $question->get('category'),
                         'body' => $question->body,
                         'image' => $question->image,
                         'options' => $question->options,

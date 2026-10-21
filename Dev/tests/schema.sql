@@ -186,6 +186,7 @@ CREATE TABLE IF NOT EXISTS `ib_contents_questions` (
   `content_id` int(8) NOT NULL DEFAULT '0',
   `question_type` varchar(20) NOT NULL DEFAULT '',
   `title` varchar(200) NOT NULL DEFAULT '',
+  `category` varchar(100) DEFAULT NULL,
   `body` text NOT NULL,
   `image` varchar(200) DEFAULT NULL,
   `options` varchar(2000) DEFAULT NULL,
@@ -196,7 +197,8 @@ CREATE TABLE IF NOT EXISTS `ib_contents_questions` (
   `created` datetime NOT NULL,
   `modified` datetime DEFAULT NULL,
   `sort_no` int(8) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_content_category` (`content_id`,`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -229,6 +231,8 @@ CREATE TABLE IF NOT EXISTS `ib_contents` (
   `timelimit` int(8) DEFAULT NULL,
   `pass_rate` int(8) DEFAULT NULL,
   `question_count` int(8) DEFAULT NULL,
+  `allow_custom_test` tinyint(1) NOT NULL DEFAULT '0',
+  `practice_timelimit_max` int(8) DEFAULT NULL,
   `wrong_mode` int(1) NOT NULL DEFAULT '1',
   `status` int(1) NOT NULL DEFAULT '1',
   `opened` datetime DEFAULT NULL,

@@ -48,6 +48,7 @@ class CreateTestQuestionTool
      * @param string|null $explain 解説
      * @param string|null $comment コメント
      * @param string|null $image 画像ファイル名
+     * @param string|null $category カテゴリ（章）
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -68,6 +69,7 @@ class CreateTestQuestionTool
         ?string $explain = null,
         ?string $comment = null,
         ?string $image = null,
+        ?string $category = null,
     ): array {
         $userId = $this->getUserId($context);
         $role = $this->getRole($context);
@@ -139,6 +141,7 @@ class CreateTestQuestionTool
             'explain' => $explain,
             'comment' => $comment,
             'image' => $image,
+            'category' => $category,
             'sort_no' => $sortNo,
         ]);
 
@@ -164,6 +167,7 @@ class CreateTestQuestionTool
                 'explain' => $entity->explain,
                 'comment' => $entity->comment,
                 'image' => $entity->image,
+                'category' => $entity->get('category'),
                 'sort_no' => $entity->sort_no,
             ],
         ];

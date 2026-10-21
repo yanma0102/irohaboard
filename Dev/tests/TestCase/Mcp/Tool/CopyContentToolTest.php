@@ -133,6 +133,7 @@ class CopyContentToolTest extends TestCase
                 'body' => '問題文' . $sortNo,
                 'question_type' => 'text',
                 'score' => 1,
+                'category' => '第1章',
                 'sort_no' => $sortNo,
             ]));
             $this->assertNotFalse($saved);
@@ -150,6 +151,11 @@ class CopyContentToolTest extends TestCase
         $this->assertSame((int)$course->id, (int)$copied->course_id);
         $this->assertSame(0, (int)$copied->status);
         $this->assertSame(2, $questionsTable->find()->where(['content_id' => $newId])->count());
+
+        $copiedQuestions = $questionsTable->find()->where(['content_id' => $newId])->all();
+        foreach ($copiedQuestions as $copiedQuestion) {
+            $this->assertSame('第1章', $copiedQuestion->get('category'));
+        }
     }
 
     /**

@@ -264,6 +264,7 @@ class ContentsQuestionsControllerTest extends TestCase
         $this->post("/admin/contents-questions/edit/{$content->id}/{$question->id}", [
             'id' => $question->id,
             'title' => '更新後の問題タイトル',
+            'category' => '第1章',
             'body' => '更新後の本文',
             'options' => 'X|Y|Z',
             'correct' => '2',
@@ -275,6 +276,7 @@ class ContentsQuestionsControllerTest extends TestCase
         // DB 確認
         $updated = $this->getTableLocator()->get('ContentsQuestions')->get((int)$question->id);
         $this->assertSame('更新後の問題タイトル', $updated->title);
+        $this->assertSame('第1章', $updated->get('category'));
         $this->assertSame(20, (int)$updated->score);
     }
 

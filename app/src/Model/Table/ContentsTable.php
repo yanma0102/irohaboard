@@ -59,6 +59,29 @@ class ContentsTable extends AppTable
     }
 
     /**
+     * 保存前に練習の制限時間上限を正規化する
+     *
+     * 管理画面の空欄（空文字）や 0 は「上限なし」を表す NULL として保存する。
+     *
+     * @param \Cake\Event\EventInterface<\App\Model\Table\ContentsTable> $event イベント
+     * @param \Cake\Datasource\EntityInterface $entity 保存するコンテンツ
+     * @param \ArrayObject<int, mixed> $options 保存オプション
+     * @return void
+     */
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    {
+        if (!$entity->isDirty('practice_timelimit_max')) {
+            return;
+        }
+
+        $timelimitMax = $entity->get('practice_timelimit_max');
+
+        if ($timelimitMax === '' || $timelimitMax === null || (int)$timelimitMax === 0) {
+            $entity->set('practice_timelimit_max', null);
+        }
+    }
+
+    /**
      * 保存後に本文の画像参照（ib_content_images）を同期する
      *
      * 管理画面・REST API・MCP のどの経路でも同じ結果になるようモデル層で行う。
@@ -136,6 +159,15 @@ class ContentsTable extends AppTable
             ->integer('question_count')
             ->range('question_count', [0, 101])
             ->allowEmptyString('question_count');
+
+        $validator
+            ->boolean('allow_custom_test')
+            ->allowEmptyString('allow_custom_test');
+
+        $validator
+            ->integer('practice_timelimit_max')
+            ->range('practice_timelimit_max', [0, 100])
+            ->allowEmptyString('practice_timelimit_max');
 
         $validator
             ->numeric('sort_no');

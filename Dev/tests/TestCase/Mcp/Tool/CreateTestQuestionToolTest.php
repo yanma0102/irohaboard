@@ -170,10 +170,12 @@ class CreateTestQuestionToolTest extends TestCase
             '足し算',
             '基礎',
             null,
+            category: '第1章',
         );
 
         $this->assertArrayHasKey('data', $result);
         $this->assertSame('問題1', $result['data']['title']);
+        $this->assertSame('第1章', $result['data']['category']);
         $this->assertSame('single', $result['data']['question_type']);
         $this->assertSame(['1', '2', '3'], $result['data']['options']);
         $this->assertSame([2], $result['data']['correct']);
@@ -185,6 +187,7 @@ class CreateTestQuestionToolTest extends TestCase
         $saved = $this->getTableLocator()->get('ContentsQuestions')->get((int)$result['data']['id']);
         $this->assertSame('1|2|3', $saved->options);
         $this->assertSame('2', $saved->correct);
+        $this->assertSame('第1章', $saved->get('category'));
         $this->assertSame((int)$content->id, (int)$saved->content_id);
     }
 

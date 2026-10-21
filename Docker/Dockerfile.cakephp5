@@ -1,4 +1,7 @@
-FROM php:8.4-apache
+# PHP 8.4.27 で php2shell (CVE-2026-109618/109619) を修正済み。
+# 公式タグが未公開の間は docker-library/php の Dockerfile から
+# 同じバージョンをローカルビルドしてから本イメージをビルドする。
+FROM php:8.4.27-apache
 
 # Composer 本体を同梱（コンテナ内で `composer install` を実行できるようにする）
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
@@ -16,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     libsasl2-dev \
     unzip \
     git \
+    apache2 \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu \
     && docker-php-ext-install -j$(nproc) \
@@ -37,7 +41,8 @@ RUN a2enmod rewrite headers
 COPY Docker/apache-vhost.cakephp5.conf /etc/apache2/sites-available/000-default.conf
 COPY Docker/apache-app.conf /etc/apache2/conf-available/irohaboard.conf
 RUN a2enconf irohaboard \
-    && echo 'ServerName localhost' >> /etc/apache2/apache2.conf
+    && echo 'ServerName localhost' >> /etc/apache2/apache2.conf \
+    && printf '\n# conf-enabled/security.conf の ServerTokens OS を上書きする\nServerTokens Prod\nServerSignature Off\n' >> /etc/apache2/apache2.conf
 
 # Apache MPM(prefork) 設定をコピー（ワーカー数上限と定期再生成でメモリ肥大を防止）
 COPY Docker/mpm-prefork.conf /etc/apache2/mods-available/mpm_prefork.conf

@@ -316,7 +316,8 @@ $config['ldap_uid_attribute'] = 'uid';          // ユーザID属性 (sAMAccount
 $config['ldap_user_dn_pattern'] = 'uid=%s,ou=people,dc=irohaboard,dc=local';  // DN パターン
 
 // LDAP 連携の有効化 (true : 有効, false : 無効)
-$config['ldap_enabled'] = true;
+// LDAP コンテナ停止に伴い無効化。再開する場合は LDAP サーバーを起動して true に戻す。
+$config['ldap_enabled'] = false;
 
 // LDAP StartTLS の使用 (true : 使用, false : 不使用)
 $config['ldap_tls'] = false;

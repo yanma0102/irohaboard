@@ -92,6 +92,9 @@ class MigrationVerificationTest extends TestCase
         $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS `ib_content_images`', $sql);
         $this->assertStringContainsString('`file_name` varchar(255) NOT NULL DEFAULT \'\'', $sql);
         $this->assertStringContainsString('`idx_content_images_content_id` (`content_id`)', $sql);
+        $this->assertStringContainsString('`is_active` tinyint(1) NOT NULL DEFAULT \'1\'', $sql);
+        $this->assertStringContainsString('`body` mediumtext,', $sql);
+        $this->assertStringContainsString('`body` mediumtext NOT NULL,', $sql);
     }
 
     /**
@@ -105,6 +108,14 @@ class MigrationVerificationTest extends TestCase
         $sql = (string)file_get_contents(ROOT . DS . 'config' . DS . 'schema' . DS . 'update.sql');
 
         $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS `ib_content_images`', $sql);
+        $this->assertStringContainsString(
+            'ALTER TABLE ib_users ADD COLUMN is_active',
+            $sql,
+        );
+        $this->assertStringContainsString(
+            'ALTER TABLE ib_contents MODIFY body mediumtext',
+            $sql,
+        );
         $this->assertStringContainsString(
             'ALTER TABLE ib_contents ADD COLUMN allow_custom_test',
             $sql,

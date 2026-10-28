@@ -69,6 +69,16 @@ CREATE TABLE IF NOT EXISTS `ib_user_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
+-- Table structure for `ib_cake_sessions`
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `ib_cake_sessions` (
+  `id` varchar(255) NOT NULL DEFAULT '',
+  `data` mediumtext NOT NULL,
+  `expires` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- Table structure for `ib_config_overrides`
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS `ib_config_overrides` (
@@ -95,6 +105,26 @@ CREATE TABLE IF NOT EXISTS `ib_content_images` (
   KEY `idx_content_images_content_id` (`content_id`),
   KEY `idx_content_images_course_id` (`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2026-09-29 追加: ユーザ有効フラグ
+ALTER TABLE ib_users ADD COLUMN is_active tinyint(1) NOT NULL DEFAULT '1' AFTER deleted;
+
+-- 2026-10-28 修正: 長文（リッチテキスト本文など）を保存できるよう mediumtext に統一
+ALTER TABLE ib_contents MODIFY body mediumtext;
+ALTER TABLE ib_contents MODIFY comment mediumtext;
+ALTER TABLE ib_contents_questions MODIFY body mediumtext NOT NULL;
+ALTER TABLE ib_contents_questions MODIFY explain mediumtext;
+ALTER TABLE ib_contents_questions MODIFY comment mediumtext;
+ALTER TABLE ib_courses MODIFY introduction mediumtext;
+ALTER TABLE ib_courses MODIFY comment mediumtext;
+ALTER TABLE ib_infos MODIFY body mediumtext;
+ALTER TABLE ib_users MODIFY comment mediumtext;
+ALTER TABLE ib_groups MODIFY comment mediumtext;
+ALTER TABLE ib_users_groups MODIFY comment mediumtext;
+ALTER TABLE ib_users_courses MODIFY comment mediumtext;
+ALTER TABLE ib_groups_courses MODIFY comment mediumtext;
+ALTER TABLE ib_infos_groups MODIFY comment mediumtext;
+ALTER TABLE ib_cake_sessions MODIFY data mediumtext NOT NULL;
 
 -- 2026-10-20 追加: カスタム受験（練習）設定と問題カテゴリ
 ALTER TABLE ib_contents ADD COLUMN allow_custom_test tinyint(1) NOT NULL DEFAULT '0' AFTER question_count;

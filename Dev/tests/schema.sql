@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `ib_users_groups` (
   `group_id` int(8) NOT NULL DEFAULT '0',
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
-  `comment` text,
+  `comment` mediumtext,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_group` (`user_id`,`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `ib_users_courses` (
   `ended` date DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
-  `comment` text,
+  `comment` mediumtext,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_course` (`user_id`,`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -39,13 +39,14 @@ CREATE TABLE IF NOT EXISTS `ib_users` (
   `name` varchar(50) NOT NULL DEFAULT '',
   `role` varchar(20) NOT NULL DEFAULT '',
   `email` varchar(50) NOT NULL DEFAULT '',
-  `comment` text,
+  `comment` mediumtext,
   `last_logined` datetime DEFAULT NULL,
   `started` datetime DEFAULT NULL,
   `ended` datetime DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'ユーザ有効フラグ (1=有効, 0=無効)',
   PRIMARY KEY (`id`),
   UNIQUE KEY `login_id` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -105,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `ib_records` (
 CREATE TABLE IF NOT EXISTS `ib_infos` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `title` varchar(200) NOT NULL,
-  `body` text,
+  `body` mediumtext,
   `opened` datetime DEFAULT NULL,
   `closed` datetime DEFAULT NULL,
   `created` datetime DEFAULT NULL,
@@ -124,7 +125,7 @@ CREATE TABLE IF NOT EXISTS `ib_infos_groups` (
   `group_id` int(8) NOT NULL DEFAULT '0',
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
-  `comment` text,
+  `comment` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -135,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `ib_infos_groups` (
 CREATE TABLE IF NOT EXISTS `ib_groups` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `title` varchar(200) NOT NULL DEFAULT '',
-  `comment` text,
+  `comment` mediumtext,
   `created` datetime NOT NULL,
   `modified` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -157,7 +158,7 @@ CREATE TABLE IF NOT EXISTS `ib_groups_courses` (
   `ended` date DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
-  `comment` text,
+  `comment` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -167,13 +168,13 @@ CREATE TABLE IF NOT EXISTS `ib_groups_courses` (
 CREATE TABLE IF NOT EXISTS `ib_courses` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `title` varchar(200) NOT NULL DEFAULT '',
-  `introduction` text,
+  `introduction` mediumtext,
   `opened` datetime DEFAULT NULL,
   `created` datetime NOT NULL,
   `modified` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
   `sort_no` int(8) NOT NULL DEFAULT '0',
-  `comment` text,
+  `comment` mediumtext,
   `user_id` int(8) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -187,13 +188,13 @@ CREATE TABLE IF NOT EXISTS `ib_contents_questions` (
   `question_type` varchar(20) NOT NULL DEFAULT '',
   `title` varchar(200) NOT NULL DEFAULT '',
   `category` varchar(100) DEFAULT NULL,
-  `body` text NOT NULL,
+  `body` mediumtext NOT NULL,
   `image` varchar(200) DEFAULT NULL,
   `options` varchar(2000) DEFAULT NULL,
   `correct` varchar(200) NOT NULL DEFAULT '',
   `score` int(8) NOT NULL DEFAULT '0',
-  `explain` text,
-  `comment` text,
+  `explain` mediumtext,
+  `comment` mediumtext,
   `created` datetime NOT NULL,
   `modified` datetime DEFAULT NULL,
   `sort_no` int(8) NOT NULL DEFAULT '0',
@@ -227,7 +228,7 @@ CREATE TABLE IF NOT EXISTS `ib_contents` (
   `url` varchar(200) DEFAULT NULL,
   `file_name` varchar(200) DEFAULT NULL,
   `kind` varchar(20) NOT NULL DEFAULT '',
-  `body` text,
+  `body` mediumtext,
   `timelimit` int(8) DEFAULT NULL,
   `pass_rate` int(8) DEFAULT NULL,
   `question_count` int(8) DEFAULT NULL,
@@ -240,7 +241,7 @@ CREATE TABLE IF NOT EXISTS `ib_contents` (
   `modified` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
   `sort_no` int(8) NOT NULL DEFAULT '0',
-  `comment` text,
+  `comment` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -286,7 +287,7 @@ CREATE TABLE IF NOT EXISTS `ib_user_tokens` (
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS `ib_cake_sessions` (
   `id` varchar(255) NOT NULL DEFAULT '',
-  `data` text NOT NULL,
+  `data` mediumtext NOT NULL,
   `expires` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

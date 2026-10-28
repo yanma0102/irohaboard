@@ -726,6 +726,34 @@ class ContentsControllerTest extends TestCase
     }
 
     /**
+     * 編集フォームが Summernote の file input を検証対象外にしていること
+     *
+     * Summernote は画像アップロード用の file input（name="files"）をフォーム内に
+     * 挿入する。未選択でも空で POST されるため、unlock していないと保存時に
+     * FormProtection が失敗し「トークンの有効期限が切れました」になる。
+     */
+    public function testEditFormUnlocksSummernoteFileInput(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('Summernoteコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id, 'リッチテキスト');
+
+        $this->get("/admin/contents/edit/{$course->id}/{$content->id}");
+        $this->assertResponseOk();
+
+        $body = (string)$this->_response->getBody();
+        $this->assertMatchesRegularExpression('/name="_Token\[unlocked\]" value="([^"]*)"/', $body);
+        preg_match('/name="_Token\[unlocked\]" value="([^"]*)"/', $body, $matches);
+        $unlocked = explode('|', urldecode($matches[1]));
+
+        $this->assertContains(
+            'files',
+            $unlocked,
+            'Summernote の file input（files）が FormProtection の検証対象から除外されていない',
+        );
+    }
+
+    /**
      * プレビュー: Markdown コンテンツが HTML に変換されること
      *
      * Admin preview は AJAX で Markdown→HTML 変換後セッションに書き込む（autoRender=false）。

@@ -313,8 +313,11 @@
 			$this->Form->unlockField('allow_custom_test');
 			$this->Form->unlockField('practice_timelimit_max');
 			$this->Form->unlockField('wrong_mode');
-			// EasyMDE の upload-image ボタンが生成する file input（name="image"）。
-			// 保存ボタンでは使用しないため、FormProtection の検証対象から除外する。
+			// リッチテキスト / Markdown エディタがフォーム内に挿入する file input。
+			// Summernote は name="files"、EasyMDE は name="image" を使用する。
+			// 保存ボタンでは送信されない（空で POST される）ため、
+			// FormProtection の検証対象から除外する。
+			$this->Form->unlockField('files');
 			$this->Form->unlockField('image');
 			echo $this->Form->control('id');
 			echo $this->Form->control('title', ['label' => __('コンテンツ名')]);

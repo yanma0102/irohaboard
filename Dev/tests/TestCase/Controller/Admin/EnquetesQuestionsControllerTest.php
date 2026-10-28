@@ -307,6 +307,35 @@ class EnquetesQuestionsControllerTest extends TestCase
     }
 
     /**
+     * 編集フォームが Summernote の file input を検証対象外にしていること
+     *
+     * Summernote は画像アップロード用の file input（name="files"）をフォーム内に
+     * 挿入する。未選択でも空で POST されるため、unlock していないと保存時に
+     * FormProtection が失敗し「トークンの有効期限が切れました」になる。
+     */
+    public function testEditFormUnlocksSummernoteFileInput(): void
+    {
+        $admin = $this->loginAsAdmin();
+        $course = $this->createCourse('Summernoteアンケートコース', (int)$admin->id);
+        $content = $this->createContent((int)$course->id, (int)$admin->id);
+        $question = $this->createQuestion((int)$content->id, 'リッチテキスト問題');
+
+        $this->get("/admin/enquetes-questions/edit/{$content->id}/{$question->id}");
+        $this->assertResponseOk();
+
+        $body = (string)$this->_response->getBody();
+        $this->assertMatchesRegularExpression('/name="_Token\[unlocked\]" value="([^"]*)"/', $body);
+        preg_match('/name="_Token\[unlocked\]" value="([^"]*)"/', $body, $matches);
+        $unlocked = explode('|', urldecode($matches[1]));
+
+        $this->assertContains(
+            'files',
+            $unlocked,
+            'Summernote の file input（files）が FormProtection の検証対象から除外されていない',
+        );
+    }
+
+    /**
      * 編集(edit) POST テスト
      */
     public function testEditPost(): void

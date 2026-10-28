@@ -245,6 +245,21 @@ CREATE TABLE IF NOT EXISTS `ib_contents` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
+-- Table structure for `ib_content_images`
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `ib_content_images` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `content_id` int(11) NOT NULL DEFAULT '0',
+  `course_id` int(11) NOT NULL DEFAULT '0',
+  `file_name` varchar(255) NOT NULL DEFAULT '',
+  `created` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_content_images_file_name` (`file_name`),
+  KEY `idx_content_images_content_id` (`content_id`),
+  KEY `idx_content_images_course_id` (`course_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- Table structure for `ib_user_tokens`
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS `ib_user_tokens` (

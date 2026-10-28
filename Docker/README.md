@@ -75,6 +75,9 @@ docker compose -f Docker/docker-compose.hub.yml up -d
 - `docker-compose.hub.yml` は `build` を持たず、`image:` と named volume だけで
   構成されています。アプリ本体はイメージ内の `/var/www/html` を使います。
 - 初回は `http://localhost:8082/install` にアクセスしてインストールしてください。
+- **既存環境でイメージを更新した場合は、DB スキーマ更新のため
+  `http://localhost:8082/update` を 1 回実行してください。** 実行しないと、保存時に
+  新しいテーブル（例: `ib_content_images`）が無く 500 エラーになります。
 - ソースを差し替えたい場合は、`docker-compose.cakephp5.yml` のように
   `../app` を `/var/www/html` に bind マウントすればイメージ内のアプリを上書きできます。
 

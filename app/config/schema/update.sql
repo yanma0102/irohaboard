@@ -81,6 +81,27 @@ CREATE TABLE IF NOT EXISTS `ib_config_overrides` (
   UNIQUE KEY `uk_config_key` (`config_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ----------------------------
+-- Table structure for `ib_content_images`（画像とコンテンツの参照関係）
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `ib_content_images` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `content_id` int(11) NOT NULL DEFAULT '0',
+  `course_id` int(11) NOT NULL DEFAULT '0',
+  `file_name` varchar(255) NOT NULL DEFAULT '',
+  `created` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_content_images_file_name` (`file_name`),
+  KEY `idx_content_images_content_id` (`content_id`),
+  KEY `idx_content_images_course_id` (`course_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2026-10-20 追加: カスタム受験（練習）設定と問題カテゴリ
+ALTER TABLE ib_contents ADD COLUMN allow_custom_test tinyint(1) NOT NULL DEFAULT '0' AFTER question_count;
+ALTER TABLE ib_contents ADD COLUMN practice_timelimit_max int(8) DEFAULT NULL AFTER allow_custom_test;
+ALTER TABLE ib_contents_questions ADD COLUMN category varchar(100) DEFAULT NULL AFTER title;
+ALTER TABLE ib_contents_questions ADD INDEX idx_content_category (content_id, category);
+
 # 管理者アカウントのパスワードの復旧方法
 # 1. UPDATE文の前の#を削除し、「復旧したい管理者のログインID」と「パスワード」を対象のものに置換します。
 # 2. ファイルを保存後、ブラウザで /update を実行します。

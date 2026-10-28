@@ -80,6 +80,50 @@ class MigrationVerificationTest extends TestCase
     }
 
     /**
+     * /install 用 app.sql が ib_content_images を含むこと
+     *
+     * 新規インストールでは Migration を実行しないため、app.sql に
+     * テーブル定義が無いと画像参照同期（afterSave）で 500 になる。
+     */
+    public function testInstallSchemaIncludesContentImagesTable(): void
+    {
+        $sql = (string)file_get_contents(ROOT . DS . 'config' . DS . 'schema' . DS . 'app.sql');
+
+        $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS `ib_content_images`', $sql);
+        $this->assertStringContainsString('`file_name` varchar(255) NOT NULL DEFAULT \'\'', $sql);
+        $this->assertStringContainsString('`idx_content_images_content_id` (`content_id`)', $sql);
+    }
+
+    /**
+     * /update 用 update.sql が新しいテーブル・カラムを含むこと
+     *
+     * 既存環境は Migration ではなく /update で更新するため、update.sql に
+     * 追記が無いと最新コードで 500 になる。
+     */
+    public function testUpdateSchemaIncludesRecentSchemaChanges(): void
+    {
+        $sql = (string)file_get_contents(ROOT . DS . 'config' . DS . 'schema' . DS . 'update.sql');
+
+        $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS `ib_content_images`', $sql);
+        $this->assertStringContainsString(
+            'ALTER TABLE ib_contents ADD COLUMN allow_custom_test',
+            $sql,
+        );
+        $this->assertStringContainsString(
+            'ALTER TABLE ib_contents ADD COLUMN practice_timelimit_max',
+            $sql,
+        );
+        $this->assertStringContainsString(
+            'ALTER TABLE ib_contents_questions ADD COLUMN category',
+            $sql,
+        );
+        $this->assertStringContainsString(
+            'ALTER TABLE ib_contents_questions ADD INDEX idx_content_category',
+            $sql,
+        );
+    }
+
+    /**
      * ib_users テーブルのカラム構造を確認（B-3）
      */
     public function testUsersTableColumns(): void

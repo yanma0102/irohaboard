@@ -41,6 +41,10 @@ Docker を使用する場合は `Docker/docker-compose.cakephp5.yml`（LDAP 併�
 `Docker/docker-compose.cakephp5-ldap.yml`）で事前設定済みです。
 手動デプロイの場合は `.env` ファイルに `export APP_FULL_BASE_URL="https://your-domain.com"` を追加してください。
 
+既存環境を新しいバージョンへ更新した場合は、DB スキーマ更新のため
+`https://your-domain.com/update` を 1 回実行してください。実行しないと、保存時に
+新しいテーブルが無く 500 エラーになる場合があります。
+
 ## サブディレクトリでの配信
 
 ドキュメントルート直下（`http://example.com/`）ではなく、サブディレクトリ
